@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>valenti Admin - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <h2>대시보드 인사이트</h2>
+    <div class="header-tools">
+      <!--
+      <div class="search-wrapper">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="사용자 검색...">
+      </div>
+  -->
+      <input type="date" id="stats-date" value="2026-03-27">
+
+      <button class="btn-refresh">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2">
+          <path
+              d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        새로고침
+      </button>
+    </div>
+  </header>
+
+  <section class="admin-content">
+    <div class="stat-cards">
+      <div class="card">
+        <span class="label">신규 가입자</span>
+        <div class="value">128 <small>▲ 12%</small></div>
+      </div>
+      <div class="card">
+        <span class="label">오늘의 매출</span>
+        <div class="value">₩1,240,000</div>
+      </div>
+      <div class="card">
+        <span class="label">미처리 문의</span>
+        <div class="value warning">7건</div>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="grid-item chart-area">
+        <h3>사용자 활동 트렌드 (DAU)</h3>
+        <div id="activity-chart" class="mock-chart"></div>
+      </div>
+      <div class="grid-item list-area">
+        <h3>최근 이상 결제 감지 (보안/금융)</h3>
+        <table class="admin-table">
+          <thead>
+          <tr>
+            <th>사용자</th>
+            <th>금액</th>
+            <th>상태</th>
+            <th>관리</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr class="danger">
+            <td>user_chess01</td>
+            <td>₩55,000</td>
+            <td>중복 결제 의심</td>
+            <td>
+              <button class="btn-sm">상세보기</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

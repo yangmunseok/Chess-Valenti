@@ -1,0 +1,186 @@
+/* --- [1] 에디터 레이아웃 --- */
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 라벨 스타일 (표 헤더와 통일) */
+.input-group label {
+  font-size: 12px;
+  color: #4b5563; /* 톤다운된 그레이 */
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* 제목 입력창 (Valenti 스타일) */
+.valenti-input {
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 20px 24px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.valenti-input:focus {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.02);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* --- [2] QuillJS 다크 테마 커스텀 --- */
+
+/* 에디터 컨테이너 전체 */
+.ql-toolbar.ql-snow {
+  background: #1c2128;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px 14px 0 0;
+  padding: 15px;
+}
+
+#editor-container {
+  height: 500px; /* 작성 영역 높이 */
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: none !important;
+  border-radius: 0 0 14px 14px;
+  color: #c9d1d9;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* 툴바 내부 버튼 및 아이콘 색상 조정 */
+.ql-snow .ql-stroke {
+  stroke: #8b949e !important;
+}
+
+.ql-snow .ql-fill {
+  fill: #8b949e !important;
+}
+
+.ql-snow .ql-picker {
+  color: #8b949e !important;
+}
+
+/* 툴바 호버/활성화 상태 */
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke {
+  stroke: #3b82f6 !important;
+}
+
+/* 에디터 포커스 시 보더 강조 */
+#editor-container.ql-container:focus-within {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 에디터 내부 패딩 */
+.ql-editor {
+  padding: 30px;
+}
+
+/* Placeholder 색상 */
+.ql-editor.ql-blank::before {
+  color: #484f58 !important;
+  font-style: normal;
+  left: 30px;
+}
+
+/* --- [3] 하단 액션 버튼 --- */
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8b949e;
+  padding: 14px 30px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.btn-publish {
+  background: #3b82f6;
+  border: none;
+  color: #fff;
+  padding: 14px 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.btn-publish:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);
+}
+
+.page-btn {
+  background: #333;
+  border: none;
+  color: #fff;
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #8b949e;
+  padding: 14px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.btn-valenti-primary {
+  background: #3b82f6;
+  border: none;
+  color: #fff;
+  padding: 14px 35px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.3s;
+}
+
+.btn-valenti-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+}

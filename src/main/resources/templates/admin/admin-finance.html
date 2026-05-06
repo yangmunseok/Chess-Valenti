@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>valenti Admin - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/btn-refactor.css">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <meta name="_csrf" th:content="${_csrf.token}">
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <h2>결제 및 금융 관리</h2>
+    <div class="header-tools">
+      <button class="btn-outline-sm btn-excel">결제 리포트 추출</button>
+      <input type="month" value="2026-03">
+    </div>
+  </header>
+
+  <section class="admin-content">
+    <div class="insight-grid-top">
+      <div class="insight-card highlight">
+        <span class="label">이번 달 총 매출</span>
+        <div class="value">₩12,450,000 <small class="up">▲ 8.4%</small></div>
+      </div>
+      <div class="insight-card">
+        <span class="label">결제 취소/환불 건수</span>
+        <div class="value warning">12건 <small>0.8%</small></div>
+      </div>
+      <div class="insight-card danger-light">
+        <span class="label">이상 거래 감지 (FDS)</span>
+        <div class="value danger">3건 <small>조치 필요</small></div>
+      </div>
+    </div>
+
+    <div class="table-filter-bar">
+      <div class="tab-sub-group">
+        <button class="tab-btn-sm active" onclick="switchTab(event,'tab-payments')">전체 내역</button>
+        <button class="tab-btn-sm" onclick="switchTab(event,'tab-refund')">환불 요청</button>
+        <button class="tab-btn-sm danger-text" onclick="switchTab(event,'tab-fds')">이상 거래 의심
+        </button>
+      </div>
+    </div>
+    <div th:replace="~{fragment/content :: financeTable(content=${payments})}"></div>
+    <div th:replace="~{fragment/content :: #tab-fds}"></div>
+    <div th:replace="~{fragment/content :: refundTable(content=${payments})}"></div>
+  </section>
+</main>
+<script>
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+  document.getElementById('tab-payments').display = 'block';
+
+  function switchTab(event, tabId) {
+    document.querySelectorAll(".tab-btn-sm").forEach(btn => btn.classList.remove("active"))
+    document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"))
+    event.currentTarget.classList.add("active");
+    document.getElementById(tabId).classList.add("active");
+  }
+
+  function requestRefund(id) {
+    fetch("/payment/refund/request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [csrfHeader]: csrfToken
+      },
+      body: JSON.stringify(id)
+    }).then(() => location.reload());
+  }
+
+  function approveRefund(id) {
+    fetch("/payment/refund/accept", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [csrfHeader]: csrfToken
+      },
+      body: JSON.stringify(id)
+    }).then(() => location.reload());
+  }
+
+  function rejectRefund(id) {
+    fetch("/payment/refund/reject", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [csrfHeader]: csrfToken
+      },
+      body: JSON.stringify(id)
+    }).then(() => location.reload());
+  }
+</script>
+</body>
+</html>

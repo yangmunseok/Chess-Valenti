@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+  <title>valenti Admin - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <h2>소통 및 문의 관리</h2>
+  </header>
+  <div class="admin-tabs" th:data-current="${mode}">
+    <button id="tab-inquiry" class="tab-btn"
+            onclick="window.location='/admin/support?mode=inquiry'">1:1 문의 내역
+      <span
+          class="badge-count">7</span></button>
+    <button id="tab-notice" class="tab-btn" onclick="window.location='/admin/support?mode=notice'">
+      공지사항 관리
+    </button>
+    <button id="tab-faq" class="tab-btn" onclick="window.location='/admin/support?mode=faq'">FAQ
+      설정
+    </button>
+  </div>
+  <div id="tab-inquiry-content" class="tab-content">
+    <section
+        th:replace="~{fragment/content :: inquirySection(inquiries=${inquiries},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
+  </div>
+  <div id="tab-notice-content" class="tab-content">
+    <section
+        th:replace="~{fragment/content :: noticeSection(contents=${notice},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
+  </div>
+  <div id="tab-faq-content" class="tab-content">
+    <section th:replace="~{fragment/content :: faqSection(contents=${faq})}"></section>
+  </div>
+</main>
+
+<!--section class="support-answer-section">
+  <div class="user-question-box">
+    <div class="question-meta">
+      <span class="question-user">양문석 님 (#10293)</span>
+      <span class="question-date">2026-03-27 15:42</span>
+    </div>
+    <div class="question-text">
+      안녕하세요. 어제 프리미엄 플랜을 결제했는데 아직 계정에 반영이 안 된 것 같습니다.
+      Lichess 데이터 동기화 기능도 여전히 잠겨있네요. 확인 부탁드립니다!
+    </div>
+  </div>
+</section-->
+
+<script type="module" th:src="@{/js/btnhandler.js}"></script>
+<script type="module" th:src="@{/js/newStructure/pagination.js}"></script>
+</body>
+<script>
+  const mode = document.querySelector('.admin-tabs').dataset.current
+  console.log(mode);
+
+  if (mode === 'inquiry' || mode === null) {
+    document.getElementById('tab-inquiry').classList.add('active');
+    document.getElementById('tab-inquiry-content').classList.add('active');
+  } else if (mode === 'faq') {
+    document.getElementById('tab-faq').classList.add('active');
+    document.getElementById('tab-faq-content').classList.add('active');
+  } else if (mode === 'notice') {
+    document.getElementById('tab-notice').classList.add('active');
+    document.getElementById('tab-notice-content').classList.add('active');
+  }
+
+  function showAnswerModal(btn) {
+    const id = btn.dataset.id;
+
+    document.querySelector(".support-answer-section").style.display = "flex";
+  }
+
+  function hideAnswerModal() {
+    document.querySelector(".support-answer-section").style.display = "none";
+  }
+
+  function switchTab(event, tabId) {
+    // 1. 모든 탭 버튼에서 active 제거
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => tab.classList.remove('active'));
+
+    // 2. 모든 컨텐츠 영역 숨기기
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+
+    // 3. 클릭된 버튼과 해당 컨텐츠만 활성화
+    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+</script>
+</html>

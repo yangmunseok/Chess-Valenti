@@ -1,0 +1,129 @@
+/* --- 로딩 전용 고급 레이아웃 --- */
+.loading-layout {
+  background-color: #1a1b26; /* 다크 테마 */
+  margin: 0;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.loading-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+}
+
+/* --- 추상화된 체스 로더 (Insight Loader) --- */
+.insigh-loader {
+  position: relative;
+  width: 80px; /* 컴팩트한 크기 */
+  height: 80px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px; /* 칸 사이 간격 */
+  transform: rotate(45deg); /* 마름모 꼴로 배치 */
+}
+
+.grid-square {
+  background: rgba(187, 154, 247, 0.05); /* 기본은 아주 연한 보라색 */
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+/* 중앙 빛나는 칸 (Core) */
+.grid-square.active {
+  background: rgba(187, 154, 247, 0.2);
+  border: 1px solid rgba(187, 154, 247, 0.4);
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.3);
+}
+
+/* 칸들이 순차적으로 깜빡이는 애니메이션 */
+.insigh-loader .grid-square {
+  animation: grid-blink 1.8s infinite ease-in-out;
+}
+
+/* 깜빡이는 순서 조정 (3x3 패턴) */
+.sq1 {
+  animation-delay: 0.0s;
+}
+
+.sq2, .sq4 {
+  animation-delay: 0.2s;
+}
+
+.sq3, .sq5, .sq7 {
+  animation-delay: 0.4s;
+}
+
+.sq6, .sq8 {
+  animation-delay: 0.6s;
+}
+
+.sq9 {
+  animation-delay: 0.8s;
+}
+
+@keyframes grid-blink {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 1;
+    background: rgba(187, 154, 247, 0.3);
+    box-shadow: 0 0 10px rgba(187, 154, 247, 0.2);
+  }
+}
+
+/* 격자 위를 흐르는 빛의 선 (Flow Line) */
+.flow-line {
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+  animation: flow-pass 1.8s infinite ease-in-out;
+  transform: translateY(-50%) rotate(-45deg); /* 격자 회전에 맞춰 조정 */
+  z-index: 2;
+}
+
+@keyframes flow-pass {
+  0% {
+    left: -20px;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    left: 80px;
+    opacity: 0;
+  }
+}
+
+/* --- 메시지 영역 --- */
+.loading-text-group h2 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.loading-text-group p {
+  color: #565f89;
+  font-size: 14px;
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.5;
+}

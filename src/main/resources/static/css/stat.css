@@ -1,0 +1,1113 @@
+/* stats.css */
+.stats-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  color: var(--text-primary);
+}
+
+/* Hero Section */
+.stats-hero {
+  text-align: center;
+  max-width: 600px;
+}
+
+.stats-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -1px;
+}
+
+.stats-hero p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.input-container {
+  background: var(--bg-panel);
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.platform-toggle {
+  display: flex;
+  background: #000;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.tgl-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.tgl-btn.active {
+  background: #333;
+  color: #fff;
+}
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  color: #fff;
+  outline: none;
+}
+
+#analyze-btn {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  padding: 0 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Progress Section */
+.progress-card {
+  width: 400px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.custom-loader {
+  width: 80px;
+  height: 80px;
+  border: 4px solid rgba(255, 255, 255, 0.05);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #111;
+  border-radius: 3px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--accent-blue);
+  box-shadow: 0 0 15px var(--accent-blue);
+  transition: width 0.3s ease;
+}
+
+.status-steps {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.status-steps li {
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-steps li.done {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.status-steps li.done::before {
+  content: '✓';
+}
+
+/* Dashboard */
+.stats-dashboard {
+  width: 100%;
+  max-width: 1100px;
+  animation: fadeIn 0.5s ease;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.highlight-green {
+  border-top: 4px solid #4ADE80;
+}
+
+.highlight-red {
+  border-top: 4px solid #EF4444;
+}
+
+.card-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.structure-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.structure-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  gap: 16px;
+  align-items: center;
+}
+
+.mini-board-wrapper {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+
+/* 실제 보드가 그려질 div 스타일 */
+.board {
+  width: 100%;
+  height: 100%;
+}
+
+.card-stats-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 흑백 전환 버튼 */
+
+.side-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.side-btn.active {
+  background: #333;
+  color: #fff;
+}
+
+.count-summary {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.win-rate-bar {
+  display: flex;
+  width: 100%;
+  height: 24px; /* 텍스트가 들어갈 수 있게 높이 확보 */
+  background: #222;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 10px 0;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+
+.bar {
+  height: 100%;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  color: #fff;
+}
+
+/* 색상 정의: 기존 테마와 어울리는 톤 */
+.bar.white {
+  background-color: #eee;
+  color: #000;
+}
+
+.bar.draw {
+  background-color: #666;
+  color: #fff;
+}
+
+.bar.black {
+  background-color: #333;
+  color: #fff;
+}
+
+.bar.win {
+  background-color: #4ADE80; /* 승: 그린 */
+  color: #064e3b; /* 가독성을 위해 어두운 글자색 */
+}
+
+.bar.loss {
+  background-color: #334155; /* 패: 흑색 UI에 맞춘 짙은 네이비/블랙 */
+  color: #f1f5f9;
+}
+
+.count-summary {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: right;
+  opacity: 0.8;
+}
+
+/* 데이터가 없을 때의 바 스타일 */
+.win-rate-bar.no-data {
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 사선 패턴 효과 */
+.win-rate-bar.no-data::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.02) 10px,
+      rgba(255, 255, 255, 0.02) 20px
+  );
+}
+
+.no-data-text {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+}
+
+.side-selector {
+  display: flex;
+  gap: 2px;
+  background: #000;
+  padding: 3px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+/* Total 버튼을 위한 약간의 구분감 (선택 사항) */
+.side-btn[data-side="total"] {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 14px;
+  margin-right: 4px;
+}
+
+/* --- 필터 및 입력창 --- */
+.insight-filters {
+  background: rgba(30, 35, 53, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 40px auto;
+  max-width: 800px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 25px;
+  justify-content: center;
+}
+
+.type-selector .chip {
+  display: inline-block;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.type-selector .chip:has(input:checked) {
+  background: rgba(187, 154, 247, 0.2);
+  border-color: #bb9af7;
+  color: #bb9af7;
+}
+
+.type-selector input {
+  display: none;
+}
+
+/* --- 진행 상태 카드 --- */
+.progress-card-v2 {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #1a1b26;
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid rgba(187, 154, 247, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.live-counter {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #9499b8;
+}
+
+.live-counter strong {
+  color: #bb9af7;
+  font-family: 'monospace';
+}
+
+.sep {
+  margin: 0 10px;
+  opacity: 0.3;
+}
+
+.progress-track-v2 {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  margin: 25px 0;
+  overflow: hidden;
+}
+
+.progress-fill-accent {
+  width: 30%; /* 서버 통신 시작 시 임의로 약간 채워둠 */
+  height: 100%;
+  background: linear-gradient(90deg, #7aa2f7, #bb9af7);
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.5);
+}
+
+/* --- 실시간 로그 윈도우 --- */
+.stat-log-window {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  height: 120px;
+  overflow-y: auto;
+}
+
+.log-list {
+  list-style: none;
+  padding: 0;
+}
+
+.log-item {
+  font-size: 12px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.log-item.load {
+  color: #7aa2f7;
+}
+
+.log-item.filter {
+  color: #bb9af7;
+}
+
+/* --- 공통 입력창 기본 스타일 --- */
+.stat-input,
+#username-input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  padding: 12px 16px;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box; /* 패딩이 너비를 뚫지 않도록 고정 */
+}
+
+/* 날짜 입력창 (stat-input) 특화 */
+.stat-input {
+  width: 180px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 유저 아이디 입력창 (username-input) 특화 */
+#username-input {
+  flex: 1; /* 부모 컨테이너(search-bar-v2) 내에서 가득 차게 */
+  min-width: 250px;
+  background: rgba(122, 162, 247, 0.05); /* 약간 파란빛이 도는 배경 */
+  border-color: rgba(122, 162, 247, 0.2);
+  letter-spacing: 0.5px;
+}
+
+/* Hover 상태: 테두리가 살짝 밝아짐 */
+.stat-input:hover,
+#username-input:hover {
+  border-color: rgba(187, 154, 247, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Focus 상태: 메인 테마색인 보라색으로 빛남 */
+.stat-input:focus,
+#username-input:focus {
+  border-color: #bb9af7;
+  background: rgba(187, 154, 247, 0.1);
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.2),
+  inset 0 0 1px rgba(187, 154, 247, 0.5);
+  transform: translateY(-1px); /* 아주 미세하게 떠오르는 효과 */
+}
+
+/* 입력창 내부 placeholder 색상 */
+#username-input::placeholder {
+  color: rgba(148, 153, 184, 0.5);
+}
+
+/* 날짜 선택 아이콘(캘린더) 커스텀 (크롬/엣지용) */
+.stat-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(1) saturate(5) hue-rotate(240deg); /* 보라색 톤으로 변경 */
+  cursor: pointer;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.stat-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.type-selector {
+  display: flex;
+  column-gap: 4px;
+}
+
+.stat-btn-primary {
+  background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 24px; /* 상하 패딩을 입력창과 동일하게 12px로 맞춤 */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 15px rgba(187, 154, 247, 0.3); /* 그림자로 입체감 추가 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+/* Hover: 더 밝게 빛나며 위로 떠오름 */
+.stat-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(187, 154, 247, 0.5);
+  filter: brightness(1.1);
+}
+
+/* Active: 실제로 눌리는 물리적 피드백 */
+.stat-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(187, 154, 247, 0.2);
+}
+
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+/* 히어로 및 필터 섹션 */
+.stats-hero {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  background: linear-gradient(to right, #fff, var(--accent-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+  color: var(--text-dim);
+  margin-bottom: 40px;
+}
+
+.insight-filters {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.filter-row {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 30px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+/* 입력창 및 버튼 (높이 밸런스 핵심) */
+.stat-input, #username-input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  padding: 14px 16px; /* 통통한 볼륨감 */
+  outline: none;
+  transition: 0.3s;
+}
+
+.stat-input:focus, #username-input:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.2);
+}
+
+.type-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.type-selector .chip {
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.type-selector .chip:has(input:checked) {
+  background: rgba(187, 154, 247, 0.15);
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  font-weight: 600;
+}
+
+.type-selector input {
+  display: none;
+}
+
+/* 검색 바 레이아웃 */
+.search-bar-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.stat-btn-primary {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 0 30px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 4px 15px rgba(187, 154, 247, 0.3);
+}
+
+.stat-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(187, 154, 247, 0.5);
+  filter: brightness(1.1);
+}
+
+/* 실시간 분석 카드 */
+.progress-card-v2 {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 40px;
+  border: 1px solid rgba(187, 154, 247, 0.3);
+  margin-top: 40px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-indicator {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.custom-loader-sm {
+  width: 30px;
+  height: 30px;
+  border: 4px solid rgba(187, 154, 247, 0.1);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.live-counter {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--text-dim);
+}
+
+.live-counter strong {
+  color: var(--accent-purple);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.progress-track-v2 {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  margin: 30px 0;
+  overflow: hidden;
+}
+
+.progress-fill-accent {
+  width: 0%;
+  height: 100%;
+  background: var(--accent-purple);
+  box-shadow: 0 0 20px var(--accent-purple);
+  transition: width 0.4s ease;
+}
+
+.stat-log-window {
+  background: #161925;
+  border-radius: 12px;
+  padding: 20px;
+  height: 150px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.log-label {
+  font-size: 10px;
+  color: #565f89;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.log-item {
+  font-size: 12px;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+}
+
+/* 전체 컨테이너 */
+.friendly-progress {
+  max-width: 600px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 50px 30px;
+  background: rgba(36, 40, 59, 0.4);
+  border-radius: 30px;
+  backdrop-filter: blur(20px);
+}
+
+/* 중앙 빛나는 구체(Orb) 애니메이션 */
+.analysis-orb {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, var(--accent-purple), transparent);
+  border-radius: 50%;
+  margin: 0 auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(187, 154, 247, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.chess-icon {
+  font-size: 40px;
+  filter: drop-shadow(0 0 10px white);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 50px rgba(187, 154, 247, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+/* 텍스트 스타일 */
+#friendly-status {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+#friendly-sub {
+  color: var(--text-dim);
+  font-size: 15px;
+}
+
+/* 단계별 스텝퍼(Stepper) */
+.stepper-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+  gap: 10px;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 80px;
+}
+
+.step-dot {
+  width: 12px;
+  height: 12px;
+  background: #363a4f;
+  border-radius: 50%;
+  transition: 0.5s;
+}
+
+.step-item span {
+  font-size: 12px;
+  color: #565f89;
+  transition: 0.5s;
+}
+
+/* 활성화된 스텝 */
+.step-item.active .step-dot {
+  background: var(--accent-purple);
+  box-shadow: 0 0 15px var(--accent-purple);
+}
+
+.step-item.active span {
+  color: #fff;
+  font-weight: 600;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #363a4f;
+  max-width: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.line-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--accent-purple);
+  transition: 1s ease;
+}
+
+/* 중단 버튼 (고스트 스타일) */
+.btn-ghost {
+  margin-top: 40px;
+  background: transparent;
+  border: none;
+  color: #565f89;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 실시간 수집 현황판 */
+.live-status-board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 20px 40px;
+  margin: 30px auto;
+  max-width: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-value.highlight {
+  color: var(--accent-purple);
+  text-shadow: 0 0 15px rgba(187, 154, 247, 0.4);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 40px;
+}
+
+/* 버튼 그룹 및 가이드 텍스트 */
+.action-footer {
+  margin-top: 40px;
+}
+
+.guide-text {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 중간 분석 버튼 스타일 */
+.btn-secondary-sm {
+  background: rgba(187, 154, 247, 0.1);
+  border: 1px solid var(--accent-purple);
+  color: var(--accent-purple);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-secondary-sm:hover {
+  background: var(--accent-purple);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(187, 154, 247, 0.3);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  color: #565f89;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* --- 상단 스테퍼(Stepper) --- */
+.stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 50px;
+  padding: 0 20px;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+}
+
+.step-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #161925;
+  border: 2px solid #363a4f;
+  color: #565f89;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.4s;
+}
+
+.step-item span {
+  font-size: 13px;
+  color: #565f89;
+  transition: 0.4s;
+}
+
+/* 활성화된 단계 스타일 */
+.step-item.active .step-icon {
+  background: var(--accent-purple);
+  border-color: var(--accent-purple);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.4);
+}
+
+.step-item.active span {
+  color: #fff;
+  font-weight: 600;
+}
+
+.step-connector {
+  flex: 1;
+  max-width: 800px;
+  height: 2px;
+  background: #363a4f;
+  margin: 0 10px;
+  margin-bottom: 22px; /* 텍스트 높이 고려 */
+  position: relative;
+}
+
+.connector-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--accent-purple);
+  transition: width 0.6s ease;
+}
+
+/* --- 버튼 디자인 보강 --- */
+.stat-btn-primary.secondary {
+  background: rgba(187, 154, 247, 0.1);
+  border: 2px solid var(--accent-purple);
+  box-shadow: none;
+  color: var(--accent-purple);
+}
+
+.stat-btn-primary.secondary:hover {
+  background: var(--accent-purple);
+  color: #fff;
+  box-shadow: 0 5px 15px rgba(187, 154, 247, 0.3);
+}
+
+.btn-ghost-danger {
+  background: transparent;
+  border: none;
+  color: #f7768e;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  opacity: 0.7;
+}
+
+.btn-ghost-danger:hover {
+  opacity: 1;
+}
+
+.footer-tip {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #565f89;
+}

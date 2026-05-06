@@ -1,0 +1,90 @@
+/* --- [1] 레이아웃 보정 --- */
+.support-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  background: #161b22;
+  padding: 50px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 카테고리와 제목을 한 줄에 배치 */
+.input-row {
+  display: flex;
+  gap: 20px;
+}
+
+.category-select {
+  flex: 0 0 200px; /* 카테고리 선택창 고정폭 */
+}
+
+.title-input {
+  flex: 1;
+}
+
+/* --- [5] 셀렉트 박스 및 옵션 디자인 보정 --- */
+
+/* 셀렉트 박스 본체 */
+select.valenti-input {
+  background-color: #161b22;
+  color: #ffffff;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  outline: none;
+  padding-right: 40px; /* 화살표 아이콘 공간 */
+}
+
+/* 드롭다운 옵션 스타일 보정 */
+/* ※ 주의: OS 및 브라우저에 따라 배경색 적용 범위가 다를 수 있습니다. */
+select.valenti-input option {
+  background-color: #1c2128; /* 옵션 목록 배경 */
+  color: #ffffff;
+  padding: 12px;
+}
+
+/* 셀렉트 박스 호버 및 포커스 */
+select.valenti-input:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+select.valenti-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* --- [6] (선택사항) 커스텀 드롭다운을 위한 팁 --- */
+/* 만약 브라우저 기본 option이 너무 안 예쁘다면,
+   나중에 'Choices.js'나 'Select2' 같은 라이브러리를 써서
+   완벽한 다크 테마 드롭다운을 만드는 게 가장 깔끔하긴 합니다.
+   지금은 CSS로 최대한 톤을 맞춰두었습니다! */
+
+/* --- [3] 하단 안내 문구 --- */
+.support-note {
+  flex: 1;
+  font-size: 13px;
+  color: #4b5563;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* 에디터 높이 조정 (문의용은 조금 더 짧게) */
+#editor-container {
+  height: 350px !important;
+}
+
+/* --- [4] 반응형 대응 --- */
+@media (max-width: 768px) {
+  .input-row {
+    flex-direction: column;
+  }
+
+  .category-select {
+    flex: none;
+  }
+
+  .support-form-section {
+    padding: 30px;
+  }
+}

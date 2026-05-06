@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Valenti - Post Detail</title>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/home.css}" rel="stylesheet">
+  <link th:href="@{/css/post.css}" rel="stylesheet">
+</head>
+<body class="valenti-dark">
+
+<div class="dashboard-wrapper">
+  <div th:replace="~{fragment/component :: sidebar(username=${username}, url='')}"></div>
+  <main class="main-content">
+    <div class="home-container">
+      <nav class="post-nav">
+        <a href="/" class="btn-back">← 목록으로 돌아가기</a>
+      </nav>
+
+      <article class="post-container">
+        <header class="post-header">
+          <div class="post-meta-top">
+            <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Post)}"
+                  class="category-tag" th:text="${post.type}"></span>
+
+            <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Inquiry)}"
+                  class="category-tag" th:text="${#strings.substring(post.category,8)}"></span>
+
+            <span class="post-date"
+                  th:text="${@timeUtil.format(post.createdAt,'yyyy-MM-dd HH:mm')}"></span>
+          </div>
+          <h1 class="post-title" th:text="${post.title}"></h1>
+        </header>
+
+        <section class="post-content ql-snow">
+          <div class="ql-editor" th:utext="${post.content}">
+          </div>
+        </section>
+
+        <!--footer class="post-footer">
+          <div class="author-info">
+            <div class="avatar">V</div>
+            <span>Admin Official</span>
+          </div>
+        </footer-->
+      </article>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

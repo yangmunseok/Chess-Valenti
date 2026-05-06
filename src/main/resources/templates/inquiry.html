@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <title>Valenti - Support</title>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/editor.css">
+  <link rel="stylesheet" href="/css/inquiry.css">
+</head>
+<body class="valenti-dark">
+
+<div class="dashboard-wrapper">
+  <div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
+
+  <main class="main-content">
+    <div class="home-container">
+      <header class="home-hero">
+        <p class="hero-label">CUSTOMER SUPPORT</p>
+        <h1>운영진에게 <span class="blue-text">문의하기</span></h1>
+        <p class="hero-desc">서비스 이용 중 불편한 점이나 제안하고 싶은 내용을 자유롭게 남겨주세요.</p>
+      </header>
+
+      <section class="support-form-section">
+        <div class="input-row">
+          <div class="input-group category-select">
+            <label>CATEGORY</label>
+            <select id="inquiry-category" class="valenti-input">
+              <option value="INQUIRY_GENERAL">일반 문의</option>
+              <option value="INQUIRY_BUG">버그 리포트</option>
+              <option value="INQUIRY_SUGGESTION">기능 제안</option>
+              <option value="INQUIRY_ACCOUNT">계정/결제 문의</option>
+            </select>
+          </div>
+          <div class="input-group title-input">
+            <label>SUBJECT</label>
+            <input type="text" placeholder="문의 제목을 입력하세요." class="valenti-input" id="post-title">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>MESSAGE</label>
+          <div id="editor-container"></div>
+        </div>
+
+        <div class="editor-actions">
+          <p class="support-note">문의하신 내용은 운영진 검토 후 가입하신 이메일로 회신 드립니다.</p>
+          <button class="btn-publish" id="save-post">문의 제출하기 →</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+  var quill = new Quill('#editor-container', {
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        ['link', 'image', 'code-block'],
+        [{'list': 'ordered'}, {'list': 'bullet'}]
+      ]
+    },
+    placeholder: '문의 내용을 상세히 작성해주시면 빠른 처리가 가능합니다.',
+    theme: 'snow'
+  });
+
+  document.getElementById('save-post').addEventListener('click', function () {
+    const title = document.getElementById('post-title').value;
+    const content = quill.root.innerHTML; // HTML 형태로 내용 가져오기
+    const category = document.getElementById('inquiry-category').value;
+    if (!title) {
+      alert('제목을 입력해주세요.');
+      return;
+    }
+
+    console.log("발행 데이터:", {title, content});
+    fetch("/api/inquiries",
+        {
+          method: 'post', headers: {
+            "Content-Type": "application/json",
+            [csrfHeader]: csrfToken
+          }, body: JSON.stringify({title, content, category})
+        }).then(
+        (res) => {
+          alert('글이 성공적으로 기록되었습니다.')
+        });
+  });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>valenti - Chess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/analysis.css}" rel="stylesheet">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+  <script type="module" th:src="@{/js/newStructure/status.js}"></script>
+</head>
+<body>
+
+<div th:replace="~{/fragment/component :: sidebar(username=${username}, url=${url})}"></div>
+
+<div class="main-content">
+  <div class="upper-section">
+    <div class="board-container">
+      <div class="player-info">
+        <div class="player-profile">
+          <!--
+          <div class="avatar">AS</div>
+          <div class="player-name">
+            <span th:text="${blackPlayer}"></span>
+            <span class="player-tag" th:text="${blackTitle}"></span>
+          </div>
+          -->
+          <div class="player-name"><span th:text="${blackPlayer}"></span></div>
+        </div>
+        <div class="player-tag" th:text="${blackElo}"></div>
+      </div>
+
+      <div class="board" id="chess-board"
+           th:data-legalmove="${legalMove}" th:data-san="${legalMoveSan}"></div>
+
+      <div class="player-info">
+        <div class="player-profile">
+          <!--
+          <div class="avatar"
+               style="background: rgba(59, 130, 246, 0.1); color: var(--accent-blue);">
+            Y
+          </div>
+          <div class="player-name">
+            <span th:text="${whitePlayer}"></span>
+            <span class="player-tag" th:text="${whiteTitle}"></span>
+          </div>
+          -->
+          <div class="player-name"><span th:text="${whitePlayer}"></span></div>
+        </div>
+        <div class="player-tag" th:text="${whiteElo}"></div>
+      </div>
+    </div>
+    <div class="analysis-panel">
+
+      <div class="engine-header">
+        <div class="engine-info">
+          <label class="toggle-container">
+            <input type="checkbox" class="toggle">
+            <span class="slider"></span>
+          </label>
+          <div class="engine-details">
+            <span>SF 18 · 15MB <span class="engine-name">NNUE</span></span>
+          </div>
+        </div>
+
+        <!--
+        <button class="icon-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        -->
+        <span class="engine-evaluation"
+              style="display: none; margin-left: 10px; font-weight: bold;">
+        +0.25
+      </span>
+      </div>
+
+      <div class="move-history" id="move-history">
+
+        <!--
+        <div class="annotation-block">
+          <span class="highlight-move">5. Qc2</span> <span class="highlight-move">cxd4</span> <span
+            class="highlight-move">6. Nxd4</span> <span class="highlight-move">Nc6</span>
+
+          <div class="variation-line">
+            <span class="highlight-move">7. Nxc6</span> <span class="highlight-move">dxc6</span>
+            <span class="highlight-move">8. a3</span> <span class="highlight-move">Be7</span>
+            <span class="highlight-move">9. Bf4</span> <span class="highlight-move highlight-good">Qa5!</span>
+            The ...e6-e5 advance will solve the problem of the c8-bishop. Black is already completely
+            fine, and in the following game he was able to take over the initiative.
+            <br><br>
+            <span class="highlight-move highlight-inacc">10. e3?!</span> <span
+              class="highlight-move highlight-good">Nh5!</span> Gaining the advantage of the bishop
+            pair.
+          </div>
+
+          <div class="variation-line">
+            <span class="highlight-move">7. e3</span> <span class="highlight-move">O-O</span>
+            <span class="highlight-move">8. Be2</span> <span class="highlight-move">d5</span> didn't
+            pose Black any problem.
+          </div>
+        </div>
+        -->
+      </div>
+
+      <div class="side-pannel">
+        <div id="annotation-editor" class="panel active">
+          <div class="editor-label">Annotation</div>
+          <textarea class="editor-textarea" placeholder="이 수에 대한 설명을 입력하세요..."></textarea>
+          <div class="editor-footer">
+            <button class="btn btn-primary btn-md">
+              Save
+            </button>
+          </div>
+        </div>
+        <div id="extra-menu" class="panel">
+          <div class="menu-grid">
+            <button class="menu-item-btn">
+              <span class="icon">♟️</span> 폰 구조 탐색
+            </button>
+
+            <button class="menu-item-btn disabled" disabled>
+              <span class="icon">🔍</span> 엔진 분석 (준비중)
+            </button>
+            <button class="menu-item-btn disabled" disabled>
+              <span class="icon">📊</span> 오프닝 통계 (준비중)
+            </button>
+            <div class="menu-placeholder">향후 기능이 추가될 공간입니다...</div>
+          </div>
+        </div>
+        <div id="pawn-filter-section" class="panel">
+          <div class="filter-header">
+            <button class="back-to-menu" id="filter-back-btn">← 뒤로가기</button>
+            <h3>기물 구성 필터</h3>
+          </div>
+
+          <div class="filter-scroll-area">
+            <div class="piece-group">
+              <div class="group-label">White Pieces</div>
+              <div class="filter-grid">
+                <div class="filter-item" data-piece="wq">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">1</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+                <div class="filter-item" data-piece="wr">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">2</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+                <div class="filter-item" data-piece="wb">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">2</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+                <div class="filter-item" data-piece="wn">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">2</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="piece-group">
+              <div class="group-label">Black Pieces</div>
+              <div class="filter-grid">
+                <div class="filter-item" data-piece="bq">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">1</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+                <div class="filter-item" data-piece="br">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">2</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+                <div class="filter-item" data-piece="bb">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">2</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+                <div class="filter-item" data-piece="bn">
+                  <div class="piece-icon-wrapper">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg">
+                  </div>
+                  <div class="stepper">
+                    <button type="button" class="minus">-</button>
+                    <span class="count">2</span>
+                    <button type="button" class="plus">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-actions">
+              <button class="action-btn secondary" id="search-no-filter">필터 없이 검색</button>
+              <button class="action-btn primary" id="search-with-filter">조건 적용 검색</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="playback-controls">
+        <button class="btn btn-ghost btn-md" id="btn-first">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 20L9 12l10-8zM5 19V5"/>
+          </svg>
+        </button>
+
+        <button class="btn btn-ghost btn-md" id="go-back-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+
+        <button class="btn btn-ghost btn-md" id="go-front-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+
+        <button class="btn btn-ghost btn-md" id="btn-last">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 4l10 8-10 8zM19 5v14"/>
+          </svg>
+        </button>
+        <div
+            style="width: 1px; height: 16px; background: var(--border-color); margin: 0 8px;"></div>
+        <button class="btn btn-ghost btn-md" id="menu-toggle-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="move-context-menu" class="context-menu">
+    <div class="context-menu-item" onclick="addSymbol('!')">Excellent <span class="symbol-badge"
+                                                                            style="color:#4ADE80">!</span>
+    </div>
+    <div class="context-menu-item" onclick="addSymbol('!!')">Brilliant <span class="symbol-badge"
+                                                                             style="color:#22D3EE">!!</span>
+    </div>
+    <div class="context-menu-item" onclick="addSymbol('?')">Mistake <span class="symbol-badge"
+                                                                          style="color:#F87171">?</span>
+    </div>
+    <div class="context-menu-item" onclick="addSymbol('??')">Blunder <span class="symbol-badge"
+                                                                           style="color:#EF4444">??</span>
+    </div>
+    <div class="context-menu-item" onclick="addSymbol('?!')">Inaccuracy <span class="symbol-badge"
+                                                                              style="color:#60A5FA">?!</span>
+    </div>
+    <div class="context-menu-item" onclick="addSymbol('')">Clear Symbol</div>
+  </div>
+  <div class="pgn-card">
+    <div class="pgn-card-header">
+      <span class="pgn-card-title">Game Notation (PGN)</span>
+      <button class="btn btn-ghost btn-md" id="copyPgnBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span class="btn-text">Copy</span>
+      </button>
+    </div>
+    <textarea class="pgn-content" id="pgnInput" readonly> </textarea>
+  </div>
+  <div id="pawn-structure-analysis" class="analysis-footer" style="display: none;">
+    <div class="stats-header">
+      <div class="stats-item">
+        <span class="stats-label">총 게임 수</span>
+        <span class="stats-value" id="total-games">0</span>
+      </div>
+      <div class="stats-item">
+        <span class="stats-label">승률 통계</span>
+        <div class="win-rate-bar">
+          <div id="win-bar" class="bar white" title="White Win">0%</div>
+          <div id="draw-bar" class="bar draw" title="Draw">0%</div>
+          <div id="loss-bar" class="bar black" title="Black Win">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-list-container">
+      <table class="game-table">
+        <thead>
+        <tr>
+          <th>Event</th>
+          <th>White</th>
+          <th>Black</th>
+          <th>Result</th>
+          <th>Date</th>
+          <th>View</th>
+        </tr>
+        </thead>
+        <tbody id="game-list-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-controls">
+      <button id="prev-page" class="page-btn">이전</button>
+      <span id="page-info">1 / 10</span>
+      <button id="next-page" class="page-btn">다음</button>
+    </div>
+  </div>
+  <div id="promotion-overlay" class="promotion-overlay" style="display: none;">
+    <div class="promotion-dialog">
+      <p>기물을 선택하세요</p>
+      <div class="promotion-options">
+        <button data-piece="q" class="promo-btn">
+          <div class="piece q"></div>
+        </button>
+        <button data-piece="r" class="promo-btn">
+          <div class="piece r"></div>
+        </button>
+        <button data-piece="b" class="promo-btn">
+          <div class="piece b"></div>
+        </button>
+        <button data-piece="n" class="promo-btn">
+          <div class="piece n"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" th:inline="javascript">
+  import {setPossibleMoves} from "/js/newStructure/state.js";
+  import {renderBoardFromFen, updateSquareEvent, initBoard} from "/js/newStructure/board.js";
+  import {initHistoryEvents} from "/js/newStructure/history.js";
+  import {importPGN} from "/js/newStructure/pgnParser.js";
+  import {selectPromotion} from "/js/newStructure/game.js";
+
+  const fen = /*[[${fen}]]*/ "start";
+  const legalMove = /*[[${legalMove}]]*/ "start";
+  const pgn = /*[[${pgn}]]*/ "start";
+  console.log(fen)
+  // 1. 체스판 HTML 격자 세팅
+  initBoard();
+
+  // 2. 우측 패널(Annotation, Click 등) UI 이벤트 초기화
+  initHistoryEvents();
+
+  renderBoardFromFen(fen);
+  setPossibleMoves(legalMove);
+  importPGN(pgn);
+  updateSquareEvent();
+
+  const promoButtons = document.querySelectorAll('.promo-btn');
+  promoButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      // 클릭된 버튼의 data-piece 값을 가져옵니다 ('q', 'r' 등)
+      const selectedPiece = this.getAttribute('data-piece');
+      // 이전에 정의한 프로모션 실행 함수를 호출합니다.
+      selectPromotion(selectedPiece);
+    });
+  });
+
+  document.getElementById('copyPgnBtn').addEventListener('click', function () {
+    const pgnInput = document.getElementById('pgnInput');
+    const btnText = this.querySelector('.btn-text');
+    const originalBtn = this;
+
+    // 복사 실행
+    pgnInput.select(); // 텍스트 선택 시각화 (선택사항)
+    navigator.clipboard.writeText(pgnInput.value).then(() => {
+      // 버튼 피드백
+      const originalText = btnText.textContent;
+// ... (복사 로직은 그대로)
+// 복사 성공 시 효과 수정
+      btnText.textContent = 'Copied!';
+// originalBtn.style.backgroundColor = '#10b981'; // [제거] 초록색 변경 제거
+      originalBtn.style.borderColor = '#666'; // [추가] 테두리만 살짝 강조
+
+      setTimeout(() => {
+        btnText.textContent = originalText;
+        originalBtn.style.borderColor = ''; // 원래 테두리로
+      }, 1500);
+    });
+  });
+</script>
+</body>
+</html>

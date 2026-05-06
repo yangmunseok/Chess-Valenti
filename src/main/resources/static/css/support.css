@@ -1,0 +1,325 @@
+/* 후원 페이지 레이아웃 */
+.support-container {
+  text-align: center;
+  padding-top: 80px;
+}
+
+.support-hero h1 {
+  font-size: 2.5rem;
+  margin-top: 20px;
+}
+
+.support-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: rgba(187, 154, 247, 0.1);
+  border: 1px solid var(--accent-purple);
+  color: var(--accent-purple);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 티어 카드 그리드 */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-top: 60px;
+}
+
+.tier-card {
+  background: var(--card-bg);
+  padding: 40px 30px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.4s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tier-card:hover {
+  transform: translateY(-10px);
+  border-color: rgba(187, 154, 247, 0.3);
+}
+
+/* 추천 카드 강조 (Knight Tier) */
+.tier-card.featured {
+  border: 2px solid var(--accent-purple);
+  background: linear-gradient(180deg, rgba(187, 154, 247, 0.05) 0%, var(--card-bg) 100%);
+  transform: scale(1.05);
+}
+
+.featured-label {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-purple);
+  color: #1a1b26;
+  padding: 4px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tier-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.tier-price {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  margin: 15px 0;
+}
+
+.tier-features {
+  list-style: none;
+  padding: 0;
+  margin: 30px 0;
+  text-align: left;
+  min-height: 120px;
+}
+
+.tier-features li {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tier-features li::before {
+  content: "✓";
+  color: var(--accent-purple);
+  font-weight: bold;
+}
+
+.support-footer {
+  margin-top: 80px;
+  font-size: 13px;
+  color: #565f89;
+}
+
+.custom-card {
+  background: rgba(30, 35, 53, 0.4);
+  border: 1px dashed rgba(187, 154, 247, 0.4); /* 자유로운 느낌을 위해 점선 테두리 */
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  transition: 0.3s;
+}
+
+.custom-card:hover {
+  background: rgba(30, 35, 53, 0.6);
+  border-style: solid;
+}
+
+.custom-header {
+  margin-bottom: 30px;
+}
+
+.custom-header .emoji {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* 금액 입력창 래퍼 */
+.amount-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.amount-input-wrapper:focus-within {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.1);
+}
+
+.currency {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent-purple);
+}
+
+#custom-amount {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  width: 100%;
+  outline: none;
+}
+
+/* 자유 후원 섹션 전체 컨테이너 */
+.custom-support {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column; /* 요소들을 위아래로 배치 */
+  align-items: center;
+  gap: 30px; /* 요소들 사이의 공통 간격 설정 */
+}
+
+/* 금액 입력 및 버튼 박스 */
+.custom-support-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* quick-presets와의 간격을 위해 하단 마진 추가 */
+  margin-bottom: 10px;
+}
+
+/* 퀵 버튼 (프리셋) 영역 */
+.quick-presets {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap; /* 모바일 등 좁은 화면에서 줄바꿈 허용 */
+  padding-top: 10px; /* 시각적 분리감을 위해 상단 패딩 추가 */
+  border-top: 1px solid rgba(255, 255, 255, 0.05); /* 은은한 구분선 (선택 사항) */
+  width: 100%;
+  max-width: 500px;
+}
+
+/* 프리셋 버튼 스타일 보강 */
+.quick-presets button {
+  background: rgba(187, 154, 247, 0.05);
+  border: 1px solid rgba(187, 154, 247, 0.2);
+  color: var(--text-dim);
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-presets button:hover {
+  background: rgba(187, 154, 247, 0.15);
+  border-color: var(--accent-purple);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* 인라인 스텝퍼 래퍼 */
+.inline-stepper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0 45px 0 15px; /* 오른쪽에 버튼 공간 확보 */
+  height: 48px; /* 입력창과 버튼 높이 통일 */
+  transition: 0.3s;
+}
+
+.inline-stepper:focus-within {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 15px rgba(187, 154, 247, 0.15);
+}
+
+.currency-label {
+  color: var(--accent-purple);
+  font-weight: 800;
+  margin-right: 8px;
+}
+
+#custom-amount {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  width: 120px;
+  outline: none;
+  margin: 0;
+}
+
+/* 우측 내장 버튼 영역 */
+.stepper-btns {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 32px;
+}
+
+.stepper-btns button {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: 0.2s;
+}
+
+.stepper-btns svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 3;
+}
+
+.stepper-btns button:hover {
+  background: rgba(187, 154, 247, 0.2);
+}
+
+.stepper-btns button:hover svg {
+  stroke: var(--accent-purple);
+}
+
+/* 제출 버튼 높이 맞춤 */
+.donate-submit {
+  height: 48px;
+  padding: 0 25px;
+  white-space: nowrap;
+}
+
+#pay-amount::-webkit-outer-spin-button,
+#pay-amount::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 모달 오버레이 (배경) */
+.toss-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: none; /* 기본은 숨김 */
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.toss-modal-overlay.active {
+  display: block;
+}

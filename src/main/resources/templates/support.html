@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Support Chess Insights</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <link rel="stylesheet" th:href="@{/css/stat.css}">
+  <link rel="stylesheet" th:href="@{/css/support.css}">
+  <link rel="stylesheet" th:href="@{/css/loading.css}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+</head>
+<body>
+<div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
+<div th:replace="~{fragment/loading :: loadingPage}"></div>
+<div class="container support-container" style="display: none;">
+  <section class="support-hero">
+    <div class="support-badge">Support Us</div>
+    <h1>Chess Insights를 응원해주세요</h1>
+    <p>여러분의 소중한 후원은 더 정교한 폰 구조 분석 알고리즘과 <br>쾌적한 서버 환경을 만드는 데 전액 사용됩니다.</p>
+  </section>
+
+  <div class="tier-grid">
+    <div class="tier-card">
+      <div class="tier-icon">♟</div>
+      <h3>Standard</h3>
+      <p class="tier-price">₩3,000</p>
+      <ul class="tier-features">
+        <li>개발자에게 따뜻한 커피 한 잔</li>
+        <li>후원자 전용 배지 부여</li>
+      </ul>
+      <button class="stat-btn-primary donate-btn" onclick="showTossModal()" data-donation="3000">
+        후원하기
+      </button>
+    </div>
+
+    <div class="tier-card featured">
+      <div class="featured-label">Most Popular</div>
+      <div class="tier-icon">♞</div>
+      <h3>Premium</h3>
+      <p class="tier-price">₩10,000</p>
+      <ul class="tier-features">
+        <li>서버 유지비 1개월 지원</li>
+        <li>분석 우선순위 큐 적용</li>
+        <li>신규 기능 베타 테스터 권한</li>
+      </ul>
+      <button class="stat-btn-primary donate-btn" onclick="showTossModal()" data-donation="10000">
+        후원하기
+      </button>
+    </div>
+
+    <div class="tier-card">
+      <div class="tier-icon">♛</div>
+      <h3>Vip</h3>
+      <p class="tier-price">₩30,000</p>
+      <ul class="tier-features">
+        <li>서비스 개발의 든든한 조력자</li>
+        <li>명예의 전당 아이디 등재</li>
+        <li>모든 유료 기능 평생 무료</li>
+      </ul>
+      <button class="stat-btn-primary donate-btn" onclick="showTossModal()" data-donation="30000">
+        후원하기
+      </button>
+    </div>
+  </div>
+  <section class="custom-support">
+    <div class="custom-card">
+      <div class="custom-header">
+        <span class="emoji">☕</span>
+        <h3>원하는 만큼 응원하기</h3>
+        <p>정해진 금액 외에 자유롭게 후원하실 수 있습니다.</p>
+      </div>
+
+      <div class="custom-support-box">
+        <div class="inline-stepper">
+          <span class="currency-label">₩</span>
+          <input type="number" id="pay-amount" placeholder="0" min="0" step="1000">
+
+          <div class="stepper-btns">
+            <button class="step-up" onclick="adjustStep(1000)" title="1,000원 추가">
+              <svg viewBox="0 0 24 24">
+                <path d="M18 15l-6-6-6 6"/>
+              </svg>
+            </button>
+            <button class="step-down" onclick="adjustStep(-1000)" title="1,000원 감소">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button class="stat-btn-primary donate-submit donate-btn" onclick="showTossModal()">후원하기
+        </button>
+      </div>
+
+      <div class="quick-presets">
+        <button onclick="setAmount(5000)">+ 5천원</button>
+        <button onclick="setAmount(10000)">+ 1만원</button>
+        <button onclick="setAmount(50000)">+ 5만원</button>
+        <button onclick="resetAmount()">초기화</button>
+      </div>
+    </div>
+  </section>
+  <footer class="support-footer">
+    <p>결제 관련 문의: support@chessinsights.com</p>
+  </footer>
+  <div class="toss-modal-overlay">
+    <div id="payment-method"></div>
+    <div id="toss-agreement"></div>
+    <button class="btn-primary" id="payment-button" style="margin-top: 30px"
+            th:data-email="${email}" th:data-username="${username}">
+      결제하기
+    </button>
+  </div>
+</div>
+<script src="/js/newStructure/payment.js"></script>
+</body>
+<script>
+  function setAmount(val) {
+    const input = document.getElementById('pay-amount');
+    const current = parseInt(input.value) || 0;
+    input.value = current + val;
+  }
+
+  function resetAmount() {
+    document.getElementById('pay-amount').value = '';
+  }
+
+  function sendCustomDonation() {
+    const amount = document.getElementById('pay-amount').value;
+    if (!amount || amount < 1000) {
+      alert("최소 후원 금액은 1,000원입니다.");
+      return;
+    }
+    alert(`${parseInt(amount).toLocaleString()}원 후원을 시작합니다. 감사합니다!`);
+    // 실제 결제 API 호출 로직으로 연결
+  }
+
+  function adjustStep(val) {
+    const input = document.getElementById('pay-amount');
+    const current = parseInt(input.value) || 0;
+
+    // 0원 이하로 내려가지 않게 방어 로직
+    const nextValue = current + val;
+    input.value = nextValue < 0 ? 0 : nextValue;
+
+    // 입력창에 포커스를 주어 유저가 바로 수정 가능하게 함
+    input.focus();
+  }
+
+  //payment
+  function showTossModal() {
+    document.querySelector('.toss-modal-overlay').classList.add('active');
+  }
+
+</script>
+</html>

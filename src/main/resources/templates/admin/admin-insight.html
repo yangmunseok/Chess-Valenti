@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>valenti Admin - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js"></script>
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <h2>데이터 분석 & 인사이트</h2>
+    <div class="header-tools">
+      <select class="admin-select-sm">
+        <option>전체 사용자 그룹</option>
+        <option>VIP 사용자 전용</option>
+        <option>신규 가입자(7일 이내)</option>
+      </select>
+      <input type="date" value="2026-03-01"> ~ <input type="date" value="2026-03-27">
+      <button class="btn-primary">데이터 추출 (CSV)</button>
+    </div>
+  </header>
+
+  <section class="admin-content">
+    <div class="insight-grid-top">
+      <div class="insight-card">
+        <span class="label">평균 체류 시간</span>
+        <div class="value">14분 22초 <small class="up">▲ 2분</small></div>
+        <div class="mini-graph" id="stay-time-graph"></div>
+      </div>
+      <div class="insight-card">
+        <span class="label">결제 전환율 (CVR)</span>
+        <div class="value">4.2% <small class="down">▼ 0.5%</small></div>
+        <div class="mini-graph" id="cvr-graph"></div>
+      </div>
+      <div class="insight-card">
+        <span class="label">재방문율 (Retention)</span>
+        <div class="value">68% <small class="up">▲ 5%</small></div>
+        <div class="mini-graph" id="retention-graph"></div>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="grid-item full-width">
+        <div class="chart-header">
+          <h3>주요 기능별 이용 현황 (인기도)</h3>
+          <div class="chart-legend">
+            <span class="dot analysis"></span> 분석 모드
+            <span class="dot play"></span> 게임 플레이
+            <span class="dot social"></span> 커뮤니티
+          </div>
+        </div>
+        <div class="main-chart-canvas">
+          <div class="chart-placeholder">성장 곡선 및 기능 이용 추이 그래프 영역</div>
+        </div>
+      </div>
+
+      <div class="grid-item">
+        <h3>사용자 권한별 비중</h3>
+        <div class="pie-chart-area">
+          <div class="chart-placeholder-circle"></div>
+        </div>
+      </div>
+
+      <div class="grid-item">
+        <h3>접속 환경 (Browser / OS)</h3>
+        <ul class="stats-list">
+          <li><span>Chrome</span>
+            <div class="progress-bar">
+              <div class="fill" style="width: 70%"></div>
+            </div>
+            70%
+          </li>
+          <li><span>Safari</span>
+            <div class="progress-bar">
+              <div class="fill" style="width: 20%"></div>
+            </div>
+            20%
+          </li>
+          <li><span>Others</span>
+            <div class="progress-bar">
+              <div class="fill" style="width: 10%"></div>
+            </div>
+            10%
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

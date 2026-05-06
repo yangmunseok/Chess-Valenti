@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>valenti Admin - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <h2>사용자 관리 <span class="count">전체 1,284명</span></h2>
+    <div class="header-tools">
+      <form action="/admin/users" method="GET" class="search-form">
+        <div class="search-container">
+          <input type="search" name="email" placeholder="이메일를 입력하세요..." class="search-input">
+
+          <button type="submit" class="search-submit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </header>
+
+  <section class="admin-mini-dashboard">
+    <div class="mini-card">
+      <span class="label">오늘 신규 가입</span>
+      <div class="value"><span th:text="${newUsersCnt}">24</span> <small
+          th:if="${diffNewUser!=0}"
+          th:class="${diffNewUser>0? 'plus': 'minus'}"
+          th:text="${diffNewUser>0? '+'+diffNewUser : diffNewUser}"></small>
+      </div>
+    </div>
+    <div class="mini-card">
+      <span class="label">현재 접속 중</span>
+      <div class="value"><span th:text="${onlineUserCnt}"></span><span class="dot-online"></span>
+      </div>
+    </div>
+    <div class="mini-card">
+      <span class="label">멤버십 전환율</span>
+      <div th:text="${#numbers.formatPercent(membershipRatio, 1, 1)}"
+           class="value">8.4% <!--small class="up">▲ 1.2%</small--></div>
+    </div>
+    <div class="mini-card">
+      <span class="label">이달의 후원자</span>
+      <div class="value">
+        <span th:text="${newSupporter}"></span>
+        <small th:if="${diffNewSupporter!=0}"
+               th:class="${diffNewSupporter>0? 'plus': 'minus'}"
+               th:text="${newSupporter>0? '+'+newSupporter : newSupporter}"></small>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-content">
+    <table class="admin-table">
+      <thead>
+      <tr>
+        <th>사용자</th>
+        <th>권한</th>
+        <th>가입일</th>
+        <th>최근 접속</th>
+        <th>상태</th>
+        <!--th>계정 제어</th-->
+        <th>관리</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="user : ${users.content}">
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-sm"
+                 th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}"></div>
+            <div class="user-meta"><strong th:text="${user.username}"></strong><span
+                th:text="${user.email}">munseok@example.com</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span
+              th:if="${user.membershipLevel == T(org.spring.createa.chessvalenti.domain.MembershipLevel).FREE}"
+              class="badge badge-free">FREE</span>
+          <span
+              th:if="${user.membershipLevel == T(org.spring.createa.chessvalenti.domain.MembershipLevel).STANDARD}"
+              class="badge badge-standard">STANDARD</span>
+          <span
+              th:if="${user.membershipLevel == T(org.spring.createa.chessvalenti.domain.MembershipLevel).PREMIUM}"
+              class="badge badge-premium">PREMIUM</span>
+          <span
+              th:if="${user.membershipLevel == T(org.spring.createa.chessvalenti.domain.MembershipLevel).VIP}"
+              class="badge badge-vip">VIP</span>
+        </td>
+        <td th:text="${@timeUtil.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${@timeUtil.timeAgo(user.lastLogin)}"></td>
+        <td class="status-cell" th:if="${#lists.contains(loginUsers,user)}"><span
+            class="status-indicator online"></span> 온라인
+        </td>
+        <td class="status-cell" th:unless="${#lists.contains(loginUsers,user)}"><span
+            class="status-indicator offline"></span> 오프라인
+        </td>
+        <!--td class="action-cell">
+          <button class="btn-action-stop" title="활동 정지" onclick="openStopModal(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+            </svg>
+            활동 정지
+          </button>
+        </td-->
+        <td>
+          <div class="row-actions">
+            <a th:href="${#strings.concat('/admin/users/',user.userId)}"
+               class="btn-icon"
+               title="상세보기">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </a>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" th:data-page="${currentPage}">
+      <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
+        <a th:text="${page}" th:href="@{/admin/users(page=${page}-1)}" class="btn"
+           th:classappend="${currentPage + 1 == page} ? 'active'"></a>
+      </th:block>
+      <button onclick="setCurrentPage(currentPage+10)" class="btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </section>
+</main>
+<div th:replace="~{/fragment/component :: stopModal}"></div>
+</body>
+<script>
+  let currentPage = 1;
+  const pagination = document.querySelector('.pagination');
+  setCurrentPage(pagination.dataset.page);
+
+  function setCurrentPage(page) {
+    if (page < 1) {
+      page = 1;
+    }
+    currentPage = page;
+    let buttons = pagination.getElementsByTagName("button");
+
+    if (buttons.length - 2 < page) {
+      currentPage = buttons.length - 2;
+      page = buttons.length - 2;
+      buttons[buttons.length - 1].disabled = true;
+    }
+    if (page < 11) {
+      buttons[0].disabled = true;
+    }
+
+    for (let i = 1; i < buttons.length - 1; i++) {
+      const btn = buttons[i];
+      const num = parseInt(btn.textContent);
+      const bottom = Math.floor(num / 10) * 10 + 1;
+      btn.style.display = 'block';
+      if (num < bottom || bottom > page + 10) {
+        btn.style.display = 'none';
+      }
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('stop-modal').classList.remove('active');
+  }
+
+  // 오버레이 클릭 시 닫기
+  window.onclick = function (event) {
+    const modal = document.getElementById('stop-modal');
+    if (event.target == modal) {
+      closeModal();
+    }
+  }
+
+  // 전역 변수로 현재 조작 중인 행을 저장 (예시용)
+  let currentTargetRow = null;
+
+  function openStopModal(button) {
+    // 버튼이 속한 tr(행)을 찾아서 저장
+    currentTargetRow = button.closest('tr');
+
+    const modal = document.getElementById('stop-modal');
+    modal.classList.add('active');
+  }
+
+  function confirmStop() {
+    console.log(currentTargetRow);
+    if (!currentTargetRow) {
+      return;
+    }
+
+    // 1. 상태 컬럼(td)을 찾아 내용 변경
+    const statusCell = currentTargetRow.querySelector('.status-cell'); // HTML에 클래스 추가 필요
+    statusCell.innerHTML = `
+        <span class="status-indicator stopped"></span>
+        <span class="badge-stopped">활동 정지</span>
+    `;
+
+    // 2. 제어 버튼을 '정지 해제'로 변경 (선택 사항)
+    const actionCell = currentTargetRow.querySelector('.action-cell');
+    actionCell.innerHTML = `
+        <button class="btn-action-resume" onclick="resumeUser(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            정지 해제
+        </button>
+    `;
+
+    // 3. 행 스타일 변경
+    currentTargetRow.classList.add('user-stopped');
+
+    alert("해당 사용자의 활동이 정지되었습니다.");
+    closeModal();
+  }
+</script>
+</html>

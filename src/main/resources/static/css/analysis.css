@@ -1,0 +1,1074 @@
+/* --- Analysis Panel Specifics --- */
+.analysis-panel {
+  position: relative;
+  width: 380px; /* 분석 패널은 텍스트가 많아 조금 더 넓게 설정 */
+  height: 644px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Engine Header */
+.engine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.engine-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.engine-name {
+  color: #4ADE80; /* NNUE 등 활성화 표시용 녹색 */
+  font-weight: 600;
+}
+
+/* iOS Style Toggle */
+.toggle {
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  background: var(--border-color);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: left 250ms linear;
+}
+
+.toggle:checked {
+  background: var(--accent-blue);
+}
+
+.toggle:checked::after {
+  left: 18px;
+}
+
+/* Annotations & Variations */
+.move-history {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+.move-entry {
+  display: flex;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+*/
+/*
+.annotation-block {
+  background: var(--bg-hover);
+  padding: 12px 16px 12px 24px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+*/
+.variation-line {
+  border-left: 2px solid var(--border-highlight);
+  padding-left: 12px;
+  margin-top: 8px;
+}
+
+.highlight-move {
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.highlight-move:hover {
+  color: var(--accent-blue);
+}
+
+.highlight-good {
+  color: #4ADE80;
+}
+
+/* 좋은 수 초록색 하이라이트 */
+.highlight-inacc {
+  color: #60A5FA;
+}
+
+/* 실수 파란색 하이라이트 */
+
+/* Playback Controls */
+.playback-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-base);
+}
+
+/* --- Context Menu (Right Click) --- */
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-highlight);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  display: none; /* 기본적으로 숨김 */
+  min-width: 120px;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.context-menu-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.symbol-badge {
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+/* --- Annotation Editor (Bottom) --- */
+.annotation-editor {
+  margin: 16px;
+  padding: 16px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.editor-textarea {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  height: 80px;
+  width: 100%;
+}
+
+.editor-textarea::placeholder {
+  color: var(--border-highlight);
+}
+
+.editor-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 기호별 색상 정의 */
+.sig-brilliant {
+  color: #22D3EE !important;
+  font-weight: 700;
+}
+
+/* !! 하늘색 */
+.sig-excellent {
+  color: #4ADE80 !important;
+}
+
+/* ! 초록색 */
+.sig-mistake {
+  color: #FB923C !important;
+}
+
+/* ? 주황색 */
+.sig-blunder {
+  color: #F87171 !important;
+  font-weight: 700;
+}
+
+/* ?? 빨간색 */
+.sig-inaccuracy {
+  color: #60A5FA !important;
+}
+
+/* ?! 파란색 */
+
+.annotation-block.new-save {
+  border-left: 3px solid var(--accent-blue);
+}
+
+/* 클릭한 기물의 위치 */
+.square.selected-sq {
+  background-color: rgba(255, 255, 0, 0.5) !important; /* 노란색 하이라이트 */
+}
+
+/* 1. 이동 가능한 칸의 점(기본 상태) */
+.square.possible-move::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: rgba(0, 0, 0, 0.15); /* 점 색상 */
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: none !important; /* 테두리 효과 완전 차단 */
+  transition: background-color 0.2s; /* 부드러운 하버 효과 */
+}
+
+/* 2. 이동 가능한 칸에 마우스를 올렸을 때 (::after 위치 고정) */
+.square.possible-move:hover::after {
+  /* 기존 hover의 inset: 0이나 box-shadow가 점을 망치지 않게 초기화 */
+  inset: auto !important;
+  box-shadow: none !important;
+
+  /* 위치와 크기를 고정 */
+  width: 12px !important;
+  height: 12px !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+
+  /* 점을 조금 더 진하게 표현 */
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 3. 배경색만 살짝 변경하여 클릭 가능하다는 피드백 제공 */
+.square.possible-move:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  cursor: pointer;
+}
+
+/* 기보 행 스타일 */
+.move-entry {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr; /* 번호 / 백 / 흑 */
+  align-items: center;
+  padding: 4px 8px;
+}
+
+/* 주석 블록 스타일 */
+.annotation-block {
+  background-color: #262421; /* 이미지와 유사한 어두운 배경 */
+  color: #bababa;
+  padding: 12px;
+  margin: 4px 0;
+  font-size: 0.9em;
+  line-height: 1.5;
+  border-radius: 4px;
+  grid-column: 1 / span 3; /* 행 전체를 차지 */
+}
+
+/* 생략 기호 스타일 */
+.move-notation:empty::before {
+  content: "...";
+  color: #666;
+}
+
+/* 바리에이션을 담는 독립된 블록 */
+.variation-block {
+  display: block;
+  margin: 4px 0;
+}
+
+/* 바리에이션 안의 또 다른 중첩 바리에이션 (인라인 유지) */
+.variation-inline {
+  display: inline;
+}
+
+/* 괄호 () 스타일 */
+.var-paren {
+  font-weight: bold;
+  color: #888;
+}
+
+/* 서브 바리에이션 내부에 들어가는 주석 */
+.inline-comment {
+  font-style: italic;
+  margin: 0 4px;
+}
+
+/* 메인 주석 블록 (중괄호 제거 버전) */
+.annotation-block {
+  background-color: #2b2b2b; /* 깔끔한 회색 */
+  color: #d1d1d1;
+  padding: 12px 16px;
+  margin: 6px 0 12px 0;
+  font-size: 0.95em;
+  border-radius: 4px;
+  line-height: 1.5;
+  border-left: 3px solid #555;
+}
+
+/* 서브 바리에이션 컨테이너 */
+.variation-container {
+  padding: 4px 12px;
+  margin: 2px 0;
+  color: #888; /* 약간 흐리게 처리하여 메인과 구분 */
+}
+
+/* 바리에이션 내 주석 */
+.var-comment {
+  color: #aaa;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+/* 괄호 스타일 */
+.paren {
+  font-weight: bold;
+  color: #666;
+  margin: 0 2px;
+}
+
+/* 바리에이션 내 이동 수 */
+.var-move {
+  color: #bbb;
+}
+
+/* 기보 리스트 하단 결과 표시 */
+.game-result-display {
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 10px;
+  font-weight: 800;
+  font-size: 1.2em;
+  color: #fff;
+  border-top: 1px solid #3d3d3d;
+  letter-spacing: 2px;
+  background: rgba(255, 255, 255, 0.03); /* 미세한 배경 강조 */
+  border-radius: 0 0 4px 4px;
+}
+
+/* 패널 제어 */
+.panel {
+  margin: 16px;
+  padding: 16px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel.active {
+  display: flex; /* active 클래스가 붙으면 보임 */
+}
+
+/* 메뉴 그리드 레이아웃 */
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+.menu-placeholder {
+  grid-column: span 2;
+  text-align: center;
+  color: #666;
+  font-size: 0.8em;
+  padding: 20px;
+  border: 1px dashed #333;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.analysis-footer {
+  background-color: #1e1e1e;
+  border-top: 2px solid #333;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+/* 통계 대시보드 */
+.stats-header {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stats-label {
+  color: #888;
+  font-size: 0.85em;
+}
+
+.stats-value {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+/* 승률 바 시각화 */
+.win-rate-bar {
+  display: flex;
+  width: 300px;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 0.75em;
+  line-height: 24px;
+  text-align: center;
+}
+
+.bar.white {
+  background-color: #eee;
+  color: #000;
+}
+
+.bar.draw {
+  background-color: #666;
+  color: #fff;
+}
+
+.bar.black {
+  background-color: #333;
+  color: #fff;
+}
+
+/* 게임 테이블 */
+.game-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.game-table th {
+  text-align: left;
+  color: #888;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.game-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.game-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* 페이지네이션 */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.page-btn {
+  background: #333;
+  border: none;
+  color: #fff;
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 전체 레이아웃 컨테이너가 있다면 */
+.main-content {
+  display: flex;
+  flex-direction: column; /* 세로로 쌓이도록 변경 */
+  width: 100%;
+  min-height: 100vh; /* 최소 화면 높이는 채우되 */
+  height: auto; /* 내용이 많아지면 높이가 늘어나게 함 */
+  overflow-y: auto; /* 세로 스크롤 허용 */
+}
+
+/* 상단 영역 (보드 + 기보 패널) */
+.upper-section {
+  display: flex; /* 보드와 기보는 옆으로 나란히 */
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* 하단 분석 영역 (폰 구조 탐색) */
+.analysis-footer {
+  width: 100%; /* 가로 전체 차지 */
+  background-color: #1e1e1e;
+  border-top: 2px solid #333;
+  padding: 20px;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+  margin-top: 10px;
+  clear: both; /* 주변 요소의 영향을 받지 않도록 */
+}
+
+/* 메뉴 그리드 컨테이너 */
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 8px;
+}
+
+/* 개별 메뉴 버튼 (카드 스타일) */
+.menu-item-btn {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03); /* 아주 투명한 배경 */
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 20px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column; /* 아이콘과 텍스트 세로 배치 */
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-align: left;
+}
+
+/* 아이콘 스타일 */
+.menu-item-btn .icon {
+  font-size: 24px;
+  transition: transform 0.3s ease;
+}
+
+/* 호버 효과: 배경이 밝아지며 파란색 글로우 발생 */
+.menu-item-btn:hover:not(.disabled) {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3),
+  0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+.menu-item-btn:hover .icon {
+  transform: scale(1.1);
+}
+
+/* 활성화된 버튼에 왼쪽 바 포인트 추가 (옵션) */
+.menu-item-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0%;
+  background: var(--accent-blue);
+  transition: height 0.3s ease;
+  border-radius: 0 4px 4px 0;
+}
+
+.menu-item-btn:hover::before {
+  height: 40%;
+}
+
+/* 비활성화 버튼 (준비중 스타일) */
+.menu-item-btn.disabled {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.menu-item-btn.disabled .icon {
+  filter: grayscale(1);
+}
+
+/* 하단 공간 안내 문구 */
+.menu-placeholder {
+  grid-column: span 2;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+.filter-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-highlight);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 15px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.filter-header h3 {
+  font-size: 1.1em;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.filter-header p {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.filter-item img {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+}
+
+/* Stepper 디자인 */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #000;
+  padding: 4px 8px;
+  border-radius: 20px;
+}
+
+.stepper button {
+  background: none;
+  border: none;
+  color: var(--accent-blue);
+  font-size: 18px;
+  cursor: pointer;
+  width: 24px;
+}
+
+.stepper span {
+  font-weight: 600;
+  min-width: 15px;
+  text-align: center;
+}
+
+/* 하단 버튼 */
+.filter-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.action-btn.primary {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.action-btn.secondary {
+  background: #333;
+  color: #ccc;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* 1. 상단 헤더 고정 */
+.filter-header {
+  flex-shrink: 0;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.back-to-menu {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.back-to-menu:hover {
+  color: var(--accent-blue);
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2열 배치로 사이드바 너비에 맞춤 */
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.filter-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-item img {
+  width: 32px;
+  height: 32px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 15px;
+}
+
+.stepper button {
+  background: none;
+  border: none;
+  color: var(--accent-blue);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.filter-actions {
+  display: flex;
+  flex-direction: column; /* 사이드바 공간 확보를 위해 세로 배치 */
+  gap: 8px;
+}
+
+/* 2. 중앙 기물 리스트 (이 부분만 스크롤) */
+.filter-scroll-area {
+  flex: 1; /* 남은 공간 모두 차지 */
+  overflow-y: auto; /* 내용 많으면 스크롤 생성 */
+  padding: 16px;
+  min-height: 0; /* Flex 자식 스크롤 버그 방지 */
+}
+
+/* 기물 그룹 레이블 */
+.piece-group {
+  margin-bottom: 20px;
+}
+
+.group-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--accent-blue);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+}
+
+/* 촘촘한 그리드 */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.filter-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-item img {
+  width: 28px; /* 크기를 줄여서 공간 확보 */
+  height: 28px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+
+.stepper button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.stepper button:hover {
+  color: var(--accent-blue);
+}
+
+.stepper .count {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 12px;
+  text-align: center;
+}
+
+/* 기물을 담는 아이템 박스 수정 */
+.filter-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+/* 기물 아이콘을 감싸는 컨테이너 (새로 추가) */
+.piece-icon-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05); /* 기물 뒤에 밝은 원형 배경 */
+  border-radius: 50%;
+  padding: 5px;
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
+}
+
+/* 흑색 기물 그룹일 경우 배경을 조금 더 밝게 처리하여 대비 극대화 */
+.piece-group:nth-child(2) .piece-icon-wrapper {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-item img {
+  width: 30px;
+  height: 30px;
+  /* 흑색 기물에 흰색 그림자를 살짝 넣어 테두리 효과 부여 */
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
+}
+
+/* 필터 패널 전체 설정 */
+#pawn-filter-section {
+  display: none; /* 기본값 */
+  padding: 0; /* 내부 여백은 자식 요소에서 처리 */
+}
+
+#pawn-filter-section.active {
+  position: absolute;
+  bottom: 60px; /* playback-controls 높이만큼 띄움 */
+  left: 0;
+  right: 0;
+  top: 40px; /* engine-header 높이만큼 띄움 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 특정 부분 스크롤바 없애기 */
+#move-history {
+  -ms-overflow-style: none;
+}
+
+#move-history::-webkit-scrollbar {
+  display: none;
+}
+
+/* 스크롤바 커스텀 (디자인 일관성) */
+.filter-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--border-highlight);
+  border-radius: 10px;
+}
+
+.view-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.clickable-move.selected-node {
+  background: #3d3d3d;
+}
+
+/* 1. 전체 컨테이너: 위쪽 콘텐츠와 너비를 맞춥니다. */
+.pgn-card {
+  /* [핵심 수정] 위쪽 체스보드+분석창 합친 너비에 맞춰서 설정 (예: 960px) */
+  /* 사용하시는 메인 레이아웃의 너비가 있다면 그 값으로 고정해주세요. */
+  max-width: 960px;
+  width: calc(100% - 40px); /* 화면이 작아질 때를 위한 여백 */
+  margin: 20px auto; /* 중앙 정렬 */
+
+  background-color: #1e2126; /* [톤 다운] 좀 더 어두운 배경으로 변경 */
+  border-radius: 8px; /* 곡률을 위쪽 창들과 비슷하게 줄임 */
+  border: 1px solid #2d3038; /* 테두리 선명도를 줄임 */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none; /* [수정] 붕 떠보이는 그림자 제거 */
+}
+
+/* 2. 헤더: 좀 더 플랫하게 디자인 */
+.pgn-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px; /* 여백 줄임 */
+  background-color: #2a2d35; /* 헤더 배경을 살짝만 밝게 */
+  border-bottom: 1px solid #2d3038;
+}
+
+.pgn-card-title {
+  color: #bababa; /* [수정] 텍스트 색상을 무채색으로 톤 다운 */
+  font-size: 13px;
+  font-weight: 500;
+  font-family: sans-serif;
+}
+
+/* 3. 복사 버튼: 보라색을 빼고 무채색/어두운 톤으로 변경 (유저 친화적) */
+.pgn-copy-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #383c44; /* [톤 다운] 무채색 배경 */
+  color: #d1d5db; /* 텍스트 색상 무채색 */
+  border: 1px solid #454a54; /* 약한 테두리 추가 */
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.pgn-copy-button:hover {
+  background-color: #454a54; /* 호버 시에만 살짝 밝게 */
+  transform: none; /* [수정] 움직이는 효과 제거 (더 플랫하게) */
+}
+
+.pgn-copy-button:active {
+  background-color: #2f333a; /* 클릭 시 더 어둡게 */
+}
+
+/* 4. Textarea 본문: 가독성 유지 */
+.pgn-content {
+  width: 100%;
+  height: 120px; /* [수정] 높이를 조금 줄여서 컴팩트하게 */
+  padding: 16px;
+  background-color: transparent;
+  border: none;
+  color: #d1d5db;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* 스크롤바 디자인 */
+.pgn-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pgn-content::-webkit-scrollbar-thumb {
+  background: #3f444e;
+  border-radius: 3px;
+}

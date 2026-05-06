@@ -1,0 +1,600 @@
+:root {
+  /* Linear Dark Blue Palette */
+  --bg-base: #0A0D14;
+  --bg-panel: #111520;
+  --bg-hover: #1A2133;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-highlight: rgba(255, 255, 255, 0.15);
+
+  /* Typography */
+  --text-primary: #F1F5F9;
+  --text-secondary: #8B94A5;
+
+  /* Accents */
+  --accent-blue: #3B82F6;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --danger: #EF4444;
+  --danger-glow: rgba(239, 68, 68, 0.1);
+
+  /* 보드 색상을 조금 더 밝고 대비가 명확한 톤으로 교체 */
+  --square-light: #B8C0D1; /* 밝은 칸: 연한 블루그레이 */
+  --square-dark: #50658E; /* 어두운 칸: 차분한 미드나잇 블루 */
+
+  --text-dim: #9499b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+a,
+a:link,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none;
+  color: inherit;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  display: flex;
+  min-height: 100vh;
+  overflow: visible;
+  /* Subtle top radial glow */
+  background-image: radial-gradient(circle at 50% -20%, var(--accent-glow), transparent 60%);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- [1] 기본 레이아웃 및 테마 --- */
+.dashboard-wrapper {
+  display: flex;
+  background-color: #0d1117;
+  min-height: 100vh;
+  width: 100vw;
+  color: #f0f6fc;
+  font-family: 'Inter', 'Pretendard', sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 60px 80px;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 240px;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  text-decoration: none;
+}
+
+
+.logo-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-blue);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent-blue);
+}
+
+.nav-item {
+  color: var(--text-secondary);
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+}
+
+/* --- Main Layout --- */
+.main-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  gap: 40px;
+}
+
+/* --- Board Area --- */
+.board-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 580px;
+}
+
+.player-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.player-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.player-name {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-tag {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.square {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  position: relative;
+}
+
+.light {
+  background-color: var(--square-light);
+}
+
+.dark {
+  background-color: var(--square-dark);
+}
+
+.square:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 2px var(--accent-blue);
+  pointer-events: none;
+}
+
+/*
+.piece {
+  font-size: 44px;
+  cursor: grab;
+  transition: transform 0.1s ease;
+  font-family: 'Chess Alpha';
+}
+*/
+
+.piece {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: grab;
+}
+
+.piece:active {
+  transform: scale(1.1);
+  cursor: grabbing;
+}
+
+/*
+.piece.w {
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.piece.b {
+  color: black;
+}
+*/
+/* White Pieces */
+.piece.white.p {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
+}
+
+.piece.white.n {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg');
+}
+
+.piece.white.b {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg');
+}
+
+.piece.white.r {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg');
+}
+
+.piece.white.q {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg');
+}
+
+.piece.white.k {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg');
+}
+
+/* Black Pieces */
+.piece.black.p {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg');
+}
+
+.piece.black.n {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg');
+}
+
+.piece.black.b {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg');
+}
+
+.piece.black.r {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg');
+}
+
+.piece.black.q {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg');
+}
+
+.piece.black.k {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
+}
+
+/* --- Right Panel (Moves & Controls) --- */
+.game-panel {
+  width: 320px;
+  height: 644px; /* Matches board + headers approx */
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.panel-header {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab {
+  flex: 1;
+  padding: 14px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-blue);
+}
+
+.move-history {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-anchor: none;
+}
+
+.move-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+}
+
+.move-row.starting {
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+}
+
+.dot-indicator {
+  width: 6px;
+  height: 6px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+}
+
+.bonus-message {
+  margin: 16px;
+  padding: 12px 16px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--accent-blue);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.move-entry {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.move-number {
+  width: 40px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.move-notation {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.clickable-move {
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  overflow-anchor: none;
+}
+
+.clickable-move:hover {
+  background: rgba(59, 130, 246, 0.15); /* Linear 스타일의 파란색 하이라이트 */
+  color: var(--accent-blue);
+}
+
+.clickable-move.highlight-move:hover {
+  background: transparent;
+  color: var(--accent-blue);
+}
+
+.clickable-move.highlight-move {
+  padding: 0;
+  border-radius: 0;
+  transition: none;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-base);
+}
+
+/*
+.btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.btn:hover {
+  border-color: var(--border-highlight);
+  background: var(--bg-hover);
+}
+*/
+
+.btn.danger:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--danger);
+  background: var(--danger-glow);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 메뉴와 프로필을 양 끝으로 분리 */
+  padding-bottom: 20px;
+}
+
+.user-section {
+  margin-top: auto; /* 메뉴가 적어도 하단에 붙도록 설정 */
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.user-profile:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--accent-blue);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.user-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  color: #EF4444; /* 로그아웃은 레드 계열로 강조 */
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* CSS: 기존 테마와 통일성 유지 */
+.promotion-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* 보드 살짝 어둡게 */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 8px;
+}
+
+.promotion-dialog {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.promotion-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.promo-btn {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.promo-btn:hover {
+  background: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+/* 기물 아이콘은 기존에 사용하던 SVG나 이미지를 class로 매핑 */

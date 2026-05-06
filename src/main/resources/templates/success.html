@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <link rel="stylesheet" th:href="@{/css/success.css}">
+</head>
+<body>
+<div
+    th:replace="~{fragment/component :: sidebar(username=${username}, url='/payment/success')}"></div>
+<div class="container full-height-center">
+  <div class="success-full-card">
+    <div class="success-header-visual">
+      <div class="glow-orb"></div>
+      <div class="check-animation">
+        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="success-content">
+      <h1>후원이 완료되었습니다!</h1>
+      <p class="thanks-msg"
+         th:text="|${username}님의 소중한 후원은 더 정교한 분석 서비스를 만드는 데 큰 힘이 됩니다.|"></p>
+
+      <div class="payment-summary">
+        <div class="summary-item">
+          <span>결제 금액</span>
+          <strong id="display-amount"></strong>
+        </div>
+        <div class="summary-item">
+          <span>후원 등급</span>
+          <span class="tier-tag">Knight Tier</span>
+        </div>
+        <div class="summary-item">
+          <span>결제 일시</span>
+          <span id="display-date"></span>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button class="stat-btn-primary" onclick="location.href='insight.html'">분석 페이지로 돌아가기
+        </button>
+        <button class="btn-outline-sm" onclick="window.print()">영수증 출력</button>
+      </div>
+    </div>
+
+    <div class="share-section">
+      <span>주변에 공유하기</span>
+      <div class="share-icons">
+        <button class="share-btn">🔗</button>
+        <button class="share-btn">🐦</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // 쿼리 파라미터 값이 결제 요청할 때 보낸 데이터와 동일한지 반드시 확인하세요.
+  // 클라이언트에서 결제 금액을 조작하는 행위를 방지할 수 있습니다.
+  const urlParams = new URLSearchParams(window.location.search);
+  const paymentKey = urlParams.get("paymentKey");
+  const orderId = urlParams.get("orderId");
+  const amount = urlParams.get("amount");
+
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+  const displayAmount = document.getElementById('display-amount');
+  const displayDate = document.getElementById('display-date');
+
+  async function confirm() {
+    const requestData = {
+      paymentKey: paymentKey,
+      orderId: orderId,
+      amount: amount,
+    };
+
+    console.log(requestData);
+
+    const response = await fetch("/payment/confirm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [csrfHeader]: csrfToken
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      // 결제 실패 비즈니스 로직을 구현하세요.
+      window.location.href = `/html/fail.html?message=${json.message}&code=${json.code}`;
+    }
+
+    // 결제 성공 비즈니스 로직을 구현하세요.
+    displayAmount.textContent = '₩' + json.balanceAmount;
+    const date = new Date(json.approvedAt);
+    const formatted = new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+    displayDate.textContent = formatted;
+    console.log(json);
+  }
+
+  confirm();
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>valenti - Sign Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/login.css}" rel="stylesheet">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      valenti
+    </div>
+
+    <div class="login-header">
+      <h1>계정 만들기</h1>
+      <p>valenti와 함께 체스 실력을 분석해보세요.</p>
+    </div>
+
+    <form action="/signup" method="POST" class="login-form">
+      <div class="input-group">
+        <label for="email">이메일</label>
+        <input type="email" id="email" name="email" placeholder="name@example.com" required>
+      </div>
+
+      <div class="input-group">
+        <label for="username">사용자 이름</label>
+        <input type="text" id="username" name="username" placeholder="영문, 숫자 4자 이상" required>
+      </div>
+
+      <div class="input-group">
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+
+      <div class="input-group">
+        <label for="password-confirm">비밀번호 확인</label>
+        <input type="password" id="password-confirm" name="passwordConfirm" placeholder="••••••••"
+               required>
+      </div>
+
+      <input type="hidden"
+             th:name="${_csrf.parameterName}"
+             th:value="${_csrf.token}"/>
+
+      <button id="signup-btn" type="submit" class="btn btn-primary btn-lg" disabled>가입하기</button>
+    </form>
+
+    <div class="footer-links">
+      이미 계정이 있으신가요? <a href="/login">로그인</a>
+    </div>
+  </div>
+</div>
+
+</body>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const password = document.getElementById('password');
+    const passwordConfirm = document.getElementById('password-confirm');
+    const email = document.getElementById('email');
+    const username = document.getElementById('username');
+    const submitBtn = document.getElementById('signup-btn');
+
+    // 메시지를 표시할 엘리먼트 생성 및 삽입
+    const message = document.createElement('div');
+    message.className = 'input-helper';
+    passwordConfirm.parentNode.appendChild(message);
+
+    function validatePasswords() {
+      const p1 = password.value;
+      const p2 = passwordConfirm.value;
+
+      if (p2.length === 0) {
+        message.innerText = '';
+        return false;
+      }
+
+      if (p1 === p2) {
+        message.innerText = '비밀번호가 일치합니다.';
+        message.style.color = '#4ADE80'; // 성공 색상 (그린)
+        passwordConfirm.style.borderColor = '#4ADE80';
+        return true;
+      }
+
+      message.innerText = '비밀번호가 일치하지 않습니다.';
+      passwordConfirm.style.borderColor = '#EF4444';
+      message.style.color = '#EF4444'; // 에러 색상 (레드)
+
+      return false;
+    }
+
+    function checkForm() {
+      if (validatePasswords()) {
+        if (email.value.length > 0 && username.value.length > 0) {
+          submitBtn.disabled = false;
+          return;
+        }
+      }
+      submitBtn.disabled = true;
+    }
+
+    email.addEventListener('input', checkForm);
+    username.addEventListener('input', checkForm);
+    password.addEventListener('input', checkForm);
+    passwordConfirm.addEventListener('input', checkForm);
+  });
+</script>
+</html>

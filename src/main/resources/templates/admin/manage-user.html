@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <meta name="user_id" th:content="${user.userId}"/>
+  <title>valenti Admin - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <div class="header-title-group">
+      <a href="/admin/users" class="btn-back">← 목록으로</a>
+      <h2>사용자 관리 </h2>
+    </div>
+    <div class="header-tools">
+      <button class="btn-glass btn-outline btn-md">데이터 동기화</button>
+      <button id="user-unban-btn" class="btn-glass btn-outline btn-md" th:if="${user.banned}">계정 정지
+        해제
+      </button>
+      <button id="user-ban-btn" class="btn-danger" th:unless="${user.banned}">계정
+        정지
+      </button>
+    </div>
+  </header>
+
+  <div class="user-detail-grid">
+    <section class="detail-card info-section">
+      <h3>기본 프로필</h3>
+      <div class="profile-header">
+        <div class="user-avatar-lg"
+             th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}"></div>
+        <div class="profile-text">
+          <p class="name" th:text="${user.username}"></p>
+          <p class="email" th:text="${user.email}"></p>
+        </div>
+      </div>
+
+      <form class="admin-form" th:action="@{/admin/api/users/{id}(id=${user.userId})}">
+        <div class="form-group">
+          <label>사용자 권한 등급</label>
+          <select class="admin-select" name="role">
+            <option value="ROLE_USER">일반 사용자</option>
+            <option value="ROLE_ADMIN">관리자</option>
+          </select>
+        </div>
+
+        <button id="user-role-btn" type="button" class="btn-save">설정 저장</button>
+      </form>
+    </section>
+
+    <!--
+    <section class="detail-card insight-section">
+      <h3>활동 분석 인사이트</h3>
+      <div class="insight-stats">
+        <div class="mini-stat">
+          <span>로그인 빈도</span>
+          <strong>주 12회</strong>
+        </div>
+        <div class="mini-stat">
+          <span>주요 사용 기능</span>
+          <strong>Pawn Structure Analysis</strong>
+        </div>
+      </div>
+
+      <div class="activity-log">
+        <h4>최근 활동 기록</h4>
+        <ul>
+          <li><span class="time">2026-03-27 10:20</span> Lichess DB 동기화 완료</li>
+          <li><span class="time">2026-03-26 18:45</span> 결제 완료 (Premium Plan)</li>
+          <li><span class="time">2026-03-25 14:12</span> 비밀번호 변경</li>
+        </ul>
+      </div>
+    </section>
+    -->
+  </div>
+</main>
+</body>
+<script>
+  const form = document.querySelector('.admin-form');
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+  const id = document.querySelector('meta[name="user_id"]').content;
+  console.log(id)
+  const banBtn = document.getElementById('user-ban-btn');
+  const unbanBtn = document.getElementById('user-unban-btn');
+  if (banBtn != null) {
+    banBtn.addEventListener('click', (e) => {
+      console.log('click')
+      fetch(`/admin/api/users/${id}`, {
+        method: 'PATCH', headers: {
+          "Content-Type": "application/json",
+          [csrfHeader]: csrfToken
+        }, body: JSON.stringify({ban: true})
+      }).then(
+          (res) => {
+            alert('유저를 벤하였습니다.')
+            const json = res.json().then((json) => console.log(json))
+          })
+    })
+  }
+
+  if (unbanBtn != null) {
+    unbanBtn.addEventListener('click', (e) => {
+      fetch(`/admin/api/users/${id}`, {
+        method: 'PATCH', headers: {
+          "Content-Type": "application/json",
+          [csrfHeader]: csrfToken
+        }, body: JSON.stringify({ban: false})
+      }).then(
+          (res) => {
+            alert('유저의 계정정지를 해제하였습니다.')
+            const json = res.json().then((json) => console.log(json))
+          })
+
+    })
+  }
+
+  document.getElementById('user-role-btn').addEventListener('click', (e) => {
+    const role = document.querySelector('.admin-select').value
+    fetch(`/admin/api/users/${id}`, {
+      method: 'PATCH', headers: {
+        "Content-Type": "application/json",
+        [csrfHeader]: csrfToken
+      }, body: JSON.stringify({role})
+    }).then(
+        (res) => {
+          alert(`유저의 권한을 ${role}로 변경하였습니다.`)
+          const json = res.json().then((json) => console.log(json))
+        })
+  })
+</script>
+</html>

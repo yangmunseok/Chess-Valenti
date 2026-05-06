@@ -1,0 +1,192 @@
+/* 성공 페이지 배경 */
+.success-page-bg {
+  background: radial-gradient(circle at center, #1e2335 0%, #1a1b26 100%);
+  overflow: hidden;
+}
+
+.full-height-center {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* 메인 성공 카드 */
+.success-full-card {
+  background: var(--card-bg);
+  width: 100%;
+  max-width: 500px;
+  padding: 60px 40px;
+  border-radius: 32px;
+  border: 1px solid rgba(187, 154, 247, 0.2);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 체크 애니메이션 (고급형) */
+.success-header-visual {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.glow-orb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: var(--accent-purple);
+  filter: blur(40px);
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.checkmark {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: var(--accent-purple);
+  stroke-miterlimit: 10;
+  margin: 0 auto;
+  z-index: 2;
+  position: relative;
+}
+
+.checkmark__circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 2;
+  stroke-miterlimit: 10;
+  stroke: var(--accent-purple);
+  fill: none;
+  animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark__check {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 요약 내역 보드 */
+.payment-summary {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 35px 0;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.summary-item:last-child {
+  margin-bottom: 0;
+}
+
+.summary-item strong, .tier-tag {
+  color: #fff;
+  font-weight: 700;
+}
+
+.tier-tag {
+  color: var(--accent-purple);
+}
+
+/* 하단 버튼 및 공유 */
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-outline-sm {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-outline-sm:hover {
+  border-color: var(--text-dim);
+  color: #fff;
+}
+
+.share-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.share-section span {
+  font-size: 12px;
+  color: #565f89;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.share-icons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.stat-btn-primary {
+  background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 24px; /* 상하 패딩을 입력창과 동일하게 12px로 맞춤 */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 4px 15px rgba(187, 154, 247, 0.3); /* 그림자로 입체감 추가 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+/* Hover: 더 밝게 빛나며 위로 떠오름 */
+.stat-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(187, 154, 247, 0.5);
+  filter: brightness(1.1);
+}
+
+/* Active: 실제로 눌리는 물리적 피드백 */
+.stat-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(187, 154, 247, 0.2);
+}

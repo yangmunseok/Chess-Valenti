@@ -1,0 +1,1268 @@
+:root {
+  --admin-bg: #0f111a;
+  --sidebar-bg: #161925;
+  --card-bg: #1f2335;
+  --accent-purple: #7aa2f7; /* 관리자 페이지는 블루-퍼플 톤으로 차별화 */
+  --warning-red: #f7768e;
+}
+
+.admin-body {
+  display: flex;
+  background: var(--admin-bg);
+  color: #c0caf5;
+  margin: 0;
+}
+
+/* 사이드바 스타일 */
+.admin-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--sidebar-bg);
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-logo {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 40px;
+  color: #fff;
+}
+
+.admin-logo span {
+  color: var(--accent-purple);
+  font-size: 14px;
+}
+
+.admin-menu {
+  list-style: none;
+  flex: 1;
+}
+
+.admin-menu li {
+  margin-bottom: 10px;
+}
+
+.admin-menu a {
+  text-decoration: none;
+  color: #9499b8;
+  padding: 12px 15px;
+  display: block;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.admin-menu li.active a, .admin-menu a:hover {
+  background: rgba(122, 162, 247, 0.1);
+  color: var(--accent-purple);
+}
+
+/* 메인 컨텐츠 영역 */
+.admin-main {
+  display: flex;
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card .value {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.card .warning {
+  color: var(--warning-red);
+}
+
+/* 테이블 스타일 */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-table td {
+  padding: 15px 12px;
+}
+
+.admin-table tr.danger {
+  background: rgba(247, 118, 142, 0.05);
+}
+
+.btn-sm {
+  background: var(--accent-purple);
+  border: none;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Header Tools Layout */
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* 요소 사이 간격 */
+}
+
+/* 날짜 선택기 & 입력창 공통 스타일 */
+.header-tools input[type="date"],
+.header-tools input[type="text"] {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* 날짜 선택기 아이콘 색상 변경 (크롬 기준) */
+.header-tools input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* 아이콘을 흰색으로 */
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.header-tools input:focus {
+  border-color: var(--accent-purple);
+  background: rgba(122, 162, 247, 0.05);
+  box-shadow: 0 0 0 3px rgba(122, 162, 247, 0.1);
+}
+
+/* 새로고침 버튼 스타일 */
+.btn-refresh {
+  background: #1f2335;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c0caf5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-refresh:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-refresh:active {
+  transform: translateY(0);
+}
+
+/* 폼 전체를 감싸는 컨테이너 */
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 400px; /* 원하는 너비 */
+}
+
+/* 입력창 스타일 */
+.search-input {
+  width: 100%;
+  padding: 12px 45px 12px 15px; /* 오른쪽(버튼자리) 여백 확보 */
+  font-size: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  outline: none;
+  background-color: white;
+  color: black;
+}
+
+/* 돋보기 버튼 스타일 (투명하게 만들기) */
+.search-submit-btn {
+  position: absolute;
+  right: 12px; /* 오른쪽에 고정 */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  z-index: 10; /* 입력창보다 위로 올리기 */
+}
+
+.search-submit-btn:hover {
+  color: #3b82f6; /* 호버 시 색상 변경 */
+}
+
+/* 포커스 효과 */
+.search-input:focus {
+  border-color: #3b82f6;
+  color: white;
+}
+
+/* 사용자 상세 페이지 레이아웃 */
+.user-detail-grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+  margin-top: 30px;
+}
+
+.detail-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 프로필 영역 */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar-lg {
+  width: 64px;
+  height: 64px;
+  background: var(--accent-purple);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* 어드민 전용 폼 요소 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: #9499b8;
+  margin-bottom: 8px;
+}
+
+.admin-select, .admin-form textarea {
+  width: 100%;
+  background: #161925;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  color: #fff;
+  outline: none;
+}
+
+.btn-save {
+  width: 100%;
+  background: var(--accent-purple);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+/* 활동 로그 스타일 */
+.activity-log {
+  margin-top: 30px;
+}
+
+.activity-log h4 {
+  font-size: 14px;
+  margin-bottom: 15px;
+  color: #9499b8;
+}
+
+.activity-log ul {
+  list-style: none;
+}
+
+.activity-log li {
+  font-size: 13px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: #c0caf5;
+}
+
+.activity-log li .time {
+  color: rgba(255, 255, 255, 0.3);
+  margin-right: 12px;
+}
+
+.btn-back {
+  color: var(--accent-purple);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.btn-danger {
+  background: rgba(247, 118, 142, 0.1);
+  color: #f7768e;
+  border: 1px solid #f7768e;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+
+/* 사용자 셀 구성 */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-sm {
+  width: 32px;
+  height: 32px;
+  background: #3b4261;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-meta span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* 권한 배지 */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 기존 VIP 배지 (참고용) */
+.badge-vip {
+  background: rgba(187, 154, 247, 0.1);
+  color: #bb9af7;
+  border: 1px solid rgba(187, 154, 247, 0.2);
+}
+
+/* Free - 깔끔하고 신선한 느낌의 Green */
+.badge-free {
+  background: rgba(158, 206, 106, 0.1);
+  color: #9ece6a;
+  border: 1px solid rgba(158, 206, 106, 0.2);
+}
+
+/* Standard - 신뢰감 있고 차분한 Blue */
+.badge-standard {
+  background: rgba(122, 162, 247, 0.1);
+  color: #7aa2f7;
+  border: 1px solid rgba(122, 162, 247, 0.2);
+}
+
+/* Premium - 화려하고 고급스러운 Gold/Orange */
+.badge-premium {
+  background: rgba(255, 158, 100, 0.1);
+  color: #ff9e64;
+  border: 1px solid rgba(255, 158, 100, 0.2);
+}
+
+
+/* 상태 표시기 */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.status-indicator.online {
+  background: #9ece6a;
+  box-shadow: 0 0 8px #9ece6a;
+}
+
+/* 테이블 액션 바 */
+.table-actions {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+/* 페이지네이션 */
+.pagination {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.pagination .pages {
+  color: #9499b8;
+  font-size: 14px;
+}
+
+.pagination .pages strong {
+  color: var(--accent-purple);
+  border-bottom: 2px solid var(--accent-purple);
+}
+
+/* 실시간 미니 대시보드 위젯 */
+.admin-mini-dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.mini-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  transition: transform 0.2s;
+}
+
+.mini-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+}
+
+.mini-card .label {
+  display: block;
+  font-size: 12px;
+  color: #9499b8;
+  margin-bottom: 8px;
+}
+
+.mini-card .value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.mini-card .value small {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mini-card .value .plus {
+  color: #9ece6a;
+}
+
+.mini-card .value .up {
+  color: #bb9af7;
+}
+
+.mini-card .value .minus {
+  color: #f7768e;
+}
+
+/* 접속 중 표시 애니메이션 */
+.dot-online {
+  width: 8px;
+  height: 8px;
+  background: #9ece6a;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 10px #9ece6a;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+/* 엑셀 버튼 디테일 */
+.btn-excel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-color: rgba(158, 206, 106, 0.3) !important;
+  color: #9ece6a !important;
+}
+
+.btn-excel:hover {
+  background: rgba(158, 206, 106, 0.1) !important;
+}
+
+/* --- 아이콘 버튼 (Row Action Buttons) --- */
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: #9499b8;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.btn-icon:hover {
+  background: rgba(122, 162, 247, 0.1);
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+}
+
+/* --- 페이지네이션 (Pagination) --- */
+.pagination {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination .btn {
+  text-decoration: none;
+  background: #1a1b26;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #9499b8;
+  min-width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.pagination .btn:hover:not(:disabled) {
+  background: rgba(122, 162, 247, 0.1);
+  color: var(--accent-purple);
+  border-color: var(--accent-purple);
+}
+
+.pagination .btn.active {
+  background: var(--accent-purple);
+  color: #fff;
+  border-color: var(--accent-purple);
+}
+
+.pagination .btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination .page-dots {
+  color: rgba(255, 255, 255, 0.2);
+  padding: 0 8px;
+}
+
+/* 활동 정지 전용 버튼 스타일 */
+.btn-action-stop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(247, 118, 142, 0.05);
+  border: 1px solid rgba(247, 118, 142, 0.2);
+  color: #f7768e;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action-stop svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-action-stop:hover {
+  background: #f7768e;
+  color: #fff;
+  border-color: #f7768e;
+  box-shadow: 0 4px 12px rgba(247, 118, 142, 0.2);
+}
+
+/* --- 정지 해제 버튼 디자인 (Professional Green) --- */
+
+.btn-action-resume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* 아이콘과 텍스트 간격 */
+  background: rgba(158, 206, 106, 0.05); /* 차분한 그린 배경 */
+  border: 1px solid rgba(158, 206, 106, 0.15); /* 부드러운 그린 테두리 */
+  color: #9ece6a; /* 강조된 그린 텍스트 */
+  padding: 8px 16px; /* 넉넉한 여백 */
+  border-radius: 8px; /* 부드러운 라운딩 */
+  font-size: 13px; /* 가독성 좋은 폰트 크기 */
+  font-weight: 600; /* 약간 굵게 */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 전환 효과 */
+  box-shadow: 0 0 0 0 rgba(158, 206, 106, 0); /* 초기 그림자 없음 */
+}
+
+/* 버튼 내 아이콘 설정 */
+.btn-action-resume svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.5; /* 아이콘 두께 */
+  transition: transform 0.3s ease; /* 아이콘 애니메이션 */
+}
+
+/* Hover 상태: 더 밝게, 위로 살짝 뜨고, 네온 발광 효과 */
+.btn-action-resume:hover {
+  background: #9ece6a; /* 배경색 채우기 */
+  color: #fff; /* 텍스트 흰색으로 변경 */
+  border-color: #9ece6a;
+  transform: translateY(-2px); /* 위로 살짝 이동 */
+  box-shadow: 0 6px 16px rgba(158, 206, 106, 0.3); /* 네온 그린 발광 효과 */
+}
+
+/* Hover 시 아이콘 애니메이션 (선택사항: 살짝 커지거나 회전) */
+.btn-action-resume:hover svg {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Active 상태: 눌리는 피드백 */
+.btn-action-resume:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(158, 206, 106, 0.2);
+}
+
+/* 모달 오버레이 (배경) */
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: none; /* 기본은 숨김 */
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.admin-modal-overlay.active {
+  display: flex;
+}
+
+/* 모달 본체 */
+.admin-modal {
+  background: #1f2335;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: modalAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 30px 30px 10px;
+  text-align: center;
+}
+
+.icon-warning {
+  width: 50px;
+  height: 50px;
+  background: rgba(247, 118, 142, 0.1);
+  color: #f7768e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  margin: 0 auto 15px;
+  border: 2px solid #f7768e;
+}
+
+.modal-body {
+  padding: 20px 30px;
+  text-align: center;
+}
+
+.modal-body p {
+  margin-bottom: 8px;
+  color: #c0caf5;
+}
+
+.modal-body .desc {
+  font-size: 13px;
+  color: #9499b8;
+  margin-bottom: 20px;
+}
+
+.modal-footer {
+  padding: 20px 30px 30px;
+  display: flex;
+  gap: 12px;
+}
+
+.modal-footer button {
+  flex: 1;
+  padding: 12px;
+  font-weight: 600;
+}
+
+/* 모달 전용 위험 버튼 */
+.btn-danger-confirm {
+  background: #f7768e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-danger-confirm:hover {
+  background: #ff5a77;
+}
+
+/* 정지 상태 배지 */
+.badge-stopped {
+  background: rgba(247, 118, 142, 0.1);
+  color: #f7768e;
+  border: 1px solid rgba(247, 118, 142, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* 정지된 행의 시각적 처리 (선택 사항: 가독성을 위해 살짝 흐리게) */
+tr.user-stopped {
+  background: rgba(247, 118, 142, 0.02);
+}
+
+tr.user-stopped td {
+  color: rgba(192, 202, 245, 0.5); /* 텍스트 투명도 조절 */
+}
+
+/* 정지된 행의 상태 표시점 */
+.status-indicator.stopped {
+  background: #f7768e;
+  box-shadow: 0 0 8px #f7768e;
+  animation: none; /* 정지 상태는 애니메이션 제외 */
+}
+
+/* 탭 시스템 */
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  color: #9499b8;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  position: relative;
+  transition: 0.2s;
+}
+
+.tab-btn.active {
+  color: var(--accent-purple);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent-purple);
+}
+
+.badge-count {
+  background: var(--warning-red);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+
+/* 유형별 태그 (Tag) */
+.type-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tag-payment {
+  background: rgba(122, 162, 247, 0.1);
+  color: #7aa2f7;
+}
+
+.tag-bug {
+  background: rgba(247, 118, 142, 0.1);
+  color: #f7768e;
+}
+
+/* 상태 표시 */
+.status-waiting {
+  color: #f7768e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.td-title {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 소형 셀렉트 박스 디자인 */
+.admin-select-sm {
+  background: #1a1b26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #c0caf5;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-select-sm:focus {
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 2px rgba(122, 162, 247, 0.1);
+}
+
+/* --- 답변 작성 섹션 (Support Detail) --- */
+.support-answer-section {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin-inline: auto;
+  background: #1a1b26;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 24px;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 유저 질문 영역 */
+.user-question-box {
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.question-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.question-user {
+  color: var(--accent-purple);
+  font-weight: 600;
+}
+
+.question-date {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.question-text {
+  color: #fff;
+  line-height: 1.6;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+/* 관리자 답변 입력 영역 */
+.admin-reply-box {
+  padding: 24px;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.reply-header h4 {
+  font-size: 14px;
+  color: #9499b8;
+}
+
+.macro-select {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(122, 162, 247, 0.1);
+  color: var(--accent-purple);
+  border: 1px solid rgba(122, 162, 247, 0.2);
+  border-radius: 4px;
+}
+
+.reply-textarea {
+  width: 100%;
+  min-height: 180px;
+  background: #161925;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  margin-bottom: 20px;
+}
+
+.reply-textarea:focus {
+  border-color: var(--accent-purple);
+}
+
+.reply-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* 기본적으로 모든 탭 컨텐츠는 숨김 */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+/* active 클래스가 붙은 탭만 표시 */
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.badge-pin {
+  background: rgba(255, 159, 28, 0.1);
+  color: #ff9f1c;
+  border: 1px solid rgba(255, 159, 28, 0.2);
+}
+
+.badge-normal {
+  background: rgba(255, 255, 255, 0.05);
+  color: #9499b8;
+}
+
+/* FAQ 설정 전용 */
+.faq-setup-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+}
+
+.faq-edit-item {
+  background: #1a1b26;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.faq-item-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  gap: 15px;
+}
+
+.drag-handle {
+  color: rgba(255, 255, 255, 0.2);
+  cursor: grab;
+}
+
+.admin-input-flat {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  outline: none;
+}
+
+.faq-item-body {
+  padding: 15px 20px 20px 50px;
+}
+
+.btn-add-faq {
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  color: #9499b8;
+  padding: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-add-faq:hover {
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  background: rgba(122, 162, 247, 0.02);
+}
+
+/* 인사이트 전용 그리드 */
+.insight-grid-top {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.insight-card {
+  background: var(--card-bg);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.main-chart-canvas {
+  height: 350px;
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* 프로그레스 바 (접속 환경 통계용) */
+.stats-list {
+  list-style: none;
+  margin-top: 20px;
+}
+
+.stats-list li {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+.stats-list li span {
+  width: 60px;
+  color: #9499b8;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar .fill {
+  height: 100%;
+  background: var(--accent-purple);
+  border-radius: 10px;
+}
+
+/* 차트 범례 (Legend) */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: #9499b8;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.analysis {
+  background: var(--accent-purple);
+}
+
+.dot.play {
+  background: #9ece6a;
+}
+
+.dot.social {
+  background: #f7768e;
+}
+
+/* 금융 대시보드 특화 */
+.insight-card.highlight {
+  border-left: 4px solid var(--accent-purple);
+}
+
+.insight-card.danger-light {
+  border-left: 4px solid #f7768e;
+  background: rgba(247, 118, 142, 0.02);
+}
+
+/* 이상 거래 행 강조 */
+.row-fds-warning {
+  background: rgba(247, 118, 142, 0.05) !important;
+}
+
+.badge-fds {
+  background: #f7768e;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.badge-success {
+  background: rgba(158, 206, 106, 0.1);
+  color: #9ece6a;
+  border: 1px solid rgba(158, 206, 106, 0.2);
+}
+
+/* 서브 탭 스타일 */
+.tab-sub-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.tab-btn-sm {
+  background: none;
+  border: none;
+  color: #9499b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding-bottom: 5px;
+}
+
+.tab-btn-sm.active {
+  color: #fff;
+  border-bottom: 2px solid #fff;
+}
+
+.danger-text {
+  color: #f7768e !important;
+}
+
+.faq-actions {
+  display: flex;
+  gap: 0.5rem
+}

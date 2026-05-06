@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>valenti - Chess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body>
+<section th:fragment="inquirySection(inquiries,currentPage,totalPages)" class="admin-content">
+  <!--div class="table-filter-bar">
+    <select class="admin-select-sm">
+      <option>모든 유형</option>
+      <option>결제 문의</option>
+      <option>계정/인증</option>
+      <option>버그 제보</option>
+    </select>
+    <select class="admin-select-sm">
+      <option>답변 대기</option>
+      <option>처리 중</option>
+      <option>답변 완료</option>
+    </select>
+  </div-->
+
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th>유형</th>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>등록일</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="inquiry: ${inquiries}">
+      <td><span class="type-tag tag-payment"
+                th:text="${#strings.substring(inquiry.category,8)}">결제</span>
+      </td>
+      <td class="td-title" th:text="${inquiry.title}">프리미엄 결제 후에도 기능이 활성화되지 않아요.</td>
+      <td th:text="${inquiry.writer.username}">양문석</td>
+      <td th:text="${@timeUtil.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+      <!--td><span class="status-waiting">답변 대기</span></td-->
+      <td>
+        <a class="btn btn-glass btn-outline btn-md"
+           th:href="|/admin/inquiries/${inquiry.id}|">
+          확인하기
+        </a>
+        <a class="btn btn-danger btn-md"
+           onclick="deleteInquiry(this)">
+          삭제하기
+        </a>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <div class="pagination" th:data-page="${currentPage}">
+    <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
+      <a th:text="${page}" th:href="@{/admin/support(page=${page}-1,mode='inquiry')}" class="btn"
+         th:classappend="${currentPage + 1 == page} ? 'active'"></a>
+    </th:block>
+    <button onclick="setCurrentPage(currentPage+10)" class="btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
+</section>
+<section th:fragment="noticeSection(contents,currentPage,totalPages)" class="admin-content">
+  <div class="table-actions">
+    <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
+    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor'">+새 공지 등록
+    </button>
+  </div>
+
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th><input type="checkbox"></th>
+      <th>제목</th>
+      <th>등록일</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="content: ${contents}">
+      <td><input type="checkbox"></td>
+      <td class="td-title" th:text="${content.title}">[공지] valenti 서비스 정기 점검 안내 (3/30)</td>
+      <td th:text="${@timeUtil.format(content.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-27</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-icon"
+                  th:onclick="|window.location='@{/admin/posts/{id}(id=${content.postId})}'|">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+            </svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination" th:data-page="${currentPage}">
+    <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
+      <a th:text="${page}" th:href="@{/admin/support(page=${page}-1,mode='notice')}" class="btn"
+         th:classappend="${currentPage + 1 == page} ? 'active'"></a>
+    </th:block>
+    <button onclick="setCurrentPage(currentPage+10)" class="btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
+</section>
+<section th:fragment="faqSection(contents)" class="admin-content">
+  <div class="faq-setup-container" id="faq-container" th:data-size="${#lists.size(contents)}">
+    <div th:each="content: ${contents}" class="faq-edit-item" th:data-id="${content.postId}">
+      <div class="faq-item-header">
+        <span class="drag-handle">⠿</span>
+        <input type="text" class="admin-input-flat" th:value="${content.title}">
+        <div class="faq-actions">
+          <button class="btn-icon delete-faq-btn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+          <button class="btn-icon save-faq-btn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="faq-item-body">
+        <textarea class="reply-textarea" style="min-height: 80px;"
+                  th:text="${content.content}"></textarea>
+      </div>
+    </div>
+
+    <button class="btn-add-faq" id="faq-add-btn">+ 새 자주 묻는 질문 추가</button>
+  </div>
+  <template id="faq-form-template">
+    <div class="faq-edit-item">
+      <div class="faq-item-header">
+        <span class="drag-handle">⠿</span>
+        <input type="text" class="admin-input-flat" placeholder="제목을 입력하세요">
+        <div class="faq-actions">
+          <button class="btn-icon delete-faq-btn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+          <button class="btn-icon save-faq-btn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="faq-item-body">
+        <textarea class="reply-textarea" style="min-height: 80px;"
+                  placeholder="답변을 입력하세요"></textarea>
+      </div>
+    </div>
+  </template>
+</section>
+
+<div th:fragment="financeTable(content)" id="tab-payments" class="tab-content active">
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th>결제ID</th>
+      <th>사용자</th>
+      <th>상품명</th>
+      <th>결제금액</th>
+      <th>결제수단</th>
+      <th>상태</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <th:block th:each="payment: ${content}">
+      <tr th:classappend="${payment.state==T(org.spring.createa.chessvalenti.domain.PaymentState).PAYMENT_FAILED}? 'row-fds-warning':''">
+        <td th:text="${payment.paymentId}"></td>
+        <td th:text="${payment.user.username}"></td>
+        <td th:text="${payment.product}"></td>
+        <td th:text="${#numbers.formatCurrency(payment.amount)}"></td>
+        <td th:text="${payment.method}"></td>
+        <td><span class="badge badge-success">결제 완료</span></td>
+        <td>
+          <button class="btn btn-outline btn-glass btn-md"
+                  th:onclick="|requestRefund(${payment.paymentId})|">환불
+          </button>
+        </td>
+        <td></td>
+      </tr>
+    </th:block>
+    </tbody>
+  </table>
+</div>
+<div th:fragment="refundTable(content)" id="tab-refund" class="tab-content">
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th>요청일시</th>
+      <th>사용자</th>
+      <th>결제금액</th>
+      <th>환불 사유</th>
+      <th>승인 상태</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <th:block th:each="payment: ${content}">
+      <tr th:if="${payment.state == T(org.spring.createa.chessvalenti.domain.PaymentState).REFUND_PENDING}">
+        <td th:text="${@timeUtil.format(payment.updatedAt, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${payment.user.username}"></td>
+        <td th:text="${#numbers.formatCurrency(payment.amount)}"></td>
+        <td class="td-reason">서비스 이용 불편 (단심 변심)</td>
+        <td><span class="status-waiting">승인 대기</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="btn-action-resume" th:onclick="|approveRefund(${payment.paymentId})|">승인
+            </button>
+            <button class="btn-icon danger" th:onclick="|rejectRefund(${payment.paymentId})|">✕
+            </button>
+          </div>
+        </td>
+      </tr>
+    </th:block>
+    </tbody>
+  </table>
+</div>
+<div id="tab-fds" class="tab-content">
+  <div class="fds-alert-banner">
+    ⚠️ 현재 <strong>3건</strong>의 미처리 이상 거래가 감지되었습니다. 신속한 확인이 필요합니다.
+  </div>
+
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th>감지일시</th>
+      <th>사용자</th>
+      <th>위험 점수</th>
+      <th>탐지 사유</th>
+      <th>최근 접속 IP</th>
+      <th>조치</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="row-fds-critical">
+      <td>2026-03-27 18:05</td>
+      <td>unknown_user_99</td>
+      <td><span class="risk-score high">95점</span></td>
+      <td>
+        <div class="fds-tags">
+          <span class="tag-fds">해외 IP 결제</span>
+          <span class="tag-fds">연속 결제 실패</span>
+        </div>
+      </td>
+      <td>103.21.XX.XX (Ukraine)</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-action-stop" onclick="openStopModal(this)">계정 잠금</button>
+          <button class="btn btn-outline btn-glass btn-md">조사 완료</button>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+</body>

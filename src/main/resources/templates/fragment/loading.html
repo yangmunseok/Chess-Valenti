@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>잠시만 기다려주세요 - Chess Insights</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/loading.css}" rel="stylesheet">
+</head>
+<body>
+<div class="loading-layout" th:fragment="loadingPage">
+  <div class="loading-container">
+    <div class="insigh-loader">
+      <div class="grid-square sq1"></div>
+      <div class="grid-square sq2"></div>
+      <div class="grid-square sq3"></div>
+      <div class="grid-square sq4"></div>
+      <div class="grid-square sq5 active"></div>
+      <div class="grid-square sq6"></div>
+      <div class="grid-square sq7"></div>
+      <div class="grid-square sq8"></div>
+      <div class="grid-square sq9"></div>
+
+      <div class="flow-line"></div>
+    </div>
+
+    <div class="loading-text-group">
+      <h2 id="loading-title">페이지를 로딩중입니다.</h2>
+      <p id="loading-sub">잠시만 기다려주세요</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

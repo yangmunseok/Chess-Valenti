@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/stat.css}" rel="stylesheet">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
+<div class="container">
+  <section class="stats-hero">
+    <div class="hero-content">
+      <h1>Chess Insights</h1>
+      <p>Lichess 데이터를 기반으로 정밀한 폰 구조 통계를 확인하세요.</p>
+    </div>
+
+    <div class="insight-filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>분석 시작일</label>
+          <input type="date" id="start-date" class="stat-input" value="2026-01-01">
+        </div>
+
+        <div class="filter-group">
+          <label>게임 유형 (복수 선택)</label>
+          <div class="type-selector">
+            <label class="chip"><input type="checkbox" name="timeControl" value="bullet">
+              Bullet</label>
+            <label class="chip"><input type="checkbox" name="timeControl" value="blitz" checked>
+              Blitz</label>
+            <label class="chip"><input type="checkbox" name="timeControl" value="rapid" checked>
+              Rapid</label>
+            <label class="chip"><input type="checkbox" name="timeControl" value="classical">
+              Classical</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="search-bar-v2">
+        <div class="platform-toggle">
+          <button class="tgl-btn active" data-platform="lichess">Lichess</button>
+          <button class="tgl-btn" data-platform="chesscom" disabled title="준비 중">Chess.com</button>
+        </div>
+        <div class="input-wrapper">
+          <input type="text" id="username-input" placeholder="Lichess 아이디 입력...">
+          <button id="analyze-btn" class="btn btn-primary btn-md">
+            <span>분석 시작</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="progress-section" class="friendly-progress" style="display: none;">
+    <div class="stepper-container">
+      <div class="step-item active" id="step-load">
+        <div class="step-icon">1</div>
+        <span>게임 수집</span>
+      </div>
+      <div class="step-connector">
+        <div class="connector-fill" id="fill-1"></div>
+      </div>
+      <div class="step-item" id="step-filter">
+        <div class="step-icon">2</div>
+        <span>구조 필터링</span>
+      </div>
+      <div class="step-connector">
+        <div class="connector-fill" id="fill-2"></div>
+      </div>
+      <div class="step-item" id="step-done">
+        <div class="step-icon">3</div>
+        <span>분석 완료</span>
+      </div>
+    </div>
+
+    <div class="main-visual">
+      <div class="analysis-orb">
+        <div class="pulse-ring"></div>
+        <div class="chess-icon">♟</div>
+      </div>
+
+      <div class="status-header">
+        <h2 id="friendly-status">기록을 읽어오고 있어요</h2>
+        <p id="friendly-sub">데이터가 쌓일수록 분석 결과가 정교해집니다.</p>
+      </div>
+
+      <div class="live-status-board">
+        <div class="stat-item">
+          <span class="stat-label">찾은 게임</span>
+          <span id="load-count" class="stat-value">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-label">추출된 구조</span>
+          <span id="filter-count" class="stat-value highlight">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-footer">
+      <div class="button-group">
+        <button id="partial-analyze-btn" class="stat-btn-primary secondary">
+          <span>여기까지 데이터로 분석 시작</span>
+        </button>
+      </div>
+      <p class="footer-tip">💡 100게임 이상 모이면 꽤 정확한 통계가 나옵니다.</p>
+    </div>
+  </section>
+  <div id="result-area" class="stats-dashboard" style="display: none;">
+    <div class="dashboard-header">
+      <h2 id="result-title">Analysis for MagnusCarlsen</h2>
+      <button class="re-search btn-ghost" onclick="location.reload()">새로 검색</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="card-label">가장 빈번한 폰 구조</div>
+        <div id="frequent-structures" class="structure-list">
+        </div>
+      </div>
+
+      <div class="stat-card highlight-green">
+        <div class="card-label">최고 승률 구조</div>
+        <div id="top-win-structures" class="structure-list">
+        </div>
+      </div>
+
+      <div class="stat-card highlight-red">
+        <div class="card-label">취약한 폰 구조</div>
+        <div id="worst-win-structures" class="structure-list">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+<script type="module" th:inline="javascript">
+  import {initBoard, renderBoardFromFen} from "/js/newStructure/board.js";
+
+  let totalLoaded = 0;
+  let totalFiltered = 0;
+  const progressSection = document.getElementById("progress-section");
+  const insightFilters = document.querySelector(".insight-filters");
+  const analyzeBtn = document.getElementById('analyze-btn');
+  const partialAnalyzeBtn = document.getElementById('partial-analyze-btn');
+  const stepLoad = document.getElementById('step-load');
+  const stepFilter = document.getElementById('step-filter');
+  const stepDone = document.getElementById('step-done');
+  const usernameInput = document.getElementById('username-input');
+  const resultArea = document.getElementById("result-area");
+  const resultTitle = document.getElementById('result-title');
+
+  const frequentStructures = document.getElementById('frequent-structures');
+  const topWinStructures = document.getElementById('top-win-structures');
+  const worstWinStructure = document.getElementById('worst-win-structures');
+  let jobId = 0
+
+  // 서버에서 전달받은 데이터를 UI에 반영하는 함수
+  function onServerUpdate(message) {
+    const type = message.goal;
+    const count = message.loadedGame;
+    const status = message.status;
+    jobId = message.jobId;
+    if (type === 'load') {
+      totalLoaded = count;
+      document.getElementById('load-count').innerText = `${totalLoaded}`;
+      stepLoad.classList.add('active');
+      stepFilter.classList.remove('active');
+      stepDone.classList.remove('active');
+
+      if (status === 'done') {
+        stepLoad.classList.remove('active')
+        stepFilter.classList.add('active');
+        totalFiltered = Object.keys(message.data).length;
+        document.getElementById(
+            'filter-count').innerText = `${totalFiltered}`;
+      }
+    } else if (type === 'filter') {
+
+      stepLoad.classList.remove('active');
+      stepFilter.classList.add('active');
+      stepDone.classList.remove('active');
+
+      if (status === 'done') {
+        totalFiltered = Object.keys(message.data).length;
+        document.getElementById(
+            'filter-count').innerText = `${totalFiltered}`;
+        stepFilter.classList.remove('active');
+        stepDone.classList.add('active');
+        renderResultPage(message.data);
+      }
+    }
+  }
+
+  const stompClient = new StompJs.Client({
+    brokerURL: 'ws://localhost:8080/valenti-socket'
+  });
+
+  connect();
+
+  stompClient.onConnect = (frame) => {
+    //console.log('Connected: ' + frame);
+    stompClient.subscribe('/topic/insight', (res) => {
+      onServerUpdate(JSON.parse(res.body))
+    });
+  };
+
+  stompClient.onWebSocketError = (error) => {
+    //console.error('Error with websocket', error);
+  };
+
+  stompClient.onStompError = (frame) => {
+    //console.error('Broker reported error: ' + frame.headers['message']);
+    //console.error('Additional details: ' + frame.body);
+  };
+
+  function connect() {
+    stompClient.activate();
+  }
+
+  function disconnect() {
+    stompClient.deactivate();
+    //console.log("Disconnected");
+  }
+
+  function sendRequest() {
+    //console.log("send Request")
+    const timeControls = document.getElementsByName("timeControl")
+    let perfType = ""
+    Array.from(timeControls).map((el) => {
+      if (el.checked) {
+        perfType += "," + el.value;
+      }
+    })
+    perfType = perfType.substring(1);
+    const since = new Date(document.getElementById('start-date').value).getTime();
+    stompClient.publish({
+      destination: "/app/insight",
+      body: JSON.stringify({username: usernameInput.value, perfType, since})
+    });
+  }
+
+  function sendCancel() {
+    //console.log("send Cancel")
+    stompClient.publish({
+      destination: "/app/insight",
+      body: JSON.stringify(
+          {username: usernameInput.value, cancel: true, id: jobId})
+    });
+  }
+
+  analyzeBtn.onclick = () => {
+    const user = document.getElementById('username-input').value;
+    if (!user) {
+      return alert("아이디를 입력해주세요.");
+    }
+
+    insightFilters.style.display = 'none';
+    progressSection.style.display = 'block';
+    sendRequest();
+  }
+
+  partialAnalyzeBtn.onclick = () => {
+    sendCancel();
+  }
+
+  function updateCardUI(cardElement, stats, side) {
+
+    const barContainer = cardElement.querySelector('.win-rate-bar')
+
+    // 데이터가 없는 경우 처리
+    if (side !== "total" && stats.whiteWon + stats.blackWon + stats.drawn === 0) {
+      barContainer.classList.add('no-data');
+      barContainer.innerHTML = `<span class="no-data-text">No games played as ${side}</span>`;
+      cardElement.querySelector('.count-summary').innerText = `0W 0D 0L`;
+      return;
+    }
+
+    // 데이터가 있는 경우 (기존 로직)
+    barContainer.classList.remove('no-data');
+    // 다시 원래의 바 구조가 필요하므로 innerHTML을 복구하거나 미리 생성해둔 요소를 조작
+
+    if (side === "total") {
+      barContainer.innerHTML = `
+    <div class="bar win"></div>
+    <div class="bar draw"></div>
+    <div class="bar loss"></div>
+  `;
+      const drawn = Math.round((stats.white.drawn + stats.black.drawn) / 2);
+      const total = getTotal(stats);
+      const winP = Math.round(getWinRate(stats) * 100);
+      const lossP = Math.round(getLossRate(stats) * 100);
+      const drawP = 100 - winP - lossP;
+      const winBar = barContainer.querySelector('.win');
+      const drawBar = barContainer.querySelector('.draw');
+      const lossBar = barContainer.querySelector('.loss');
+
+      renderBar(winBar, winP);
+      renderBar(drawBar, drawP);
+      renderBar(lossBar, lossP);
+
+      cardElement.querySelector(
+          '.count-summary').innerText = `${stats.white.whiteWon
+      + stats.black.blackWon}W ${stats.white.drawn + stats.black.drawn}D ${stats.white.blackWon
+      + stats.black.whiteWon}L`;
+      return;
+    }
+
+    barContainer.innerHTML = `
+    <div class="bar white"></div>
+    <div class="bar draw"></div>
+    <div class="bar black"></div>
+  `;
+
+    const drawn = Math.round(stats.drawn / 2);
+    const total = stats.whiteWon + drawn + stats.blackWon;
+    const whiteWonP = Math.round((stats.whiteWon / total) * 100);
+    const drawP = Math.round((drawn / total) * 100);
+    const blackWonP = 100 - whiteWonP - drawP;
+
+    // 다시 찾기 (innerHTML 교체 후)
+    const newWhiteWonBar = barContainer.querySelector('.white');
+    const newDrawBar = barContainer.querySelector('.draw');
+    const newBlackWonBar = barContainer.querySelector('.black');
+
+    newWhiteWonBar.style.width = whiteWonP + '%';
+    newDrawBar.style.width = drawP + '%';
+    newBlackWonBar.style.width = blackWonP + '%';
+
+    newWhiteWonBar.innerText = whiteWonP > 10 ? whiteWonP + '%' : '';
+    newDrawBar.innerText = drawP > 10 ? drawP + '%' : '';
+    newBlackWonBar.innerText = blackWonP > 10 ? blackWonP + '%' : '';
+
+    if (side === "white") {
+      cardElement.querySelector(
+          '.count-summary').innerText = `${stats.whiteWon}W ${drawn}D ${stats.blackWon}L`;
+      return;
+    }
+    cardElement.querySelector(
+        '.count-summary').innerText = `${stats.blackWon}W ${drawn}D ${stats.whiteWon}L`;
+  }
+
+  function renderBar(barElement, percentage) {
+    barElement.style.width = percentage + '%';
+    barElement.innerHTML = percentage > 10 ? percentage + '%' : '';
+  }
+
+  function getWinRate(stats) {
+    const total = getTotal(stats)
+    const won = stats.white.whiteWon + stats.black.blackWon;
+    return won / total;
+  }
+
+  function getLossRate(stats) {
+    const total = getTotal(stats);
+    const won = stats.black.whiteWon + stats.white.blackWon;
+    return won / total;
+  }
+
+  function getTotal(stats) {
+    return stats.white.whiteWon + stats.white.drawn + stats.white.blackWon
+        + stats.black.whiteWon + stats.black.drawn + stats.black.blackWon;
+  }
+
+  function renderPawnStructure(games, canvas, canvasName) {
+    let i = 1;
+    for (const key in games) {
+      const stats = games[key];
+      console.log(canvasName + getWinRate(stats));
+      const id = canvasName + '-' + i;
+      const card = document.createElement("div");
+      card.className = "structure-card";
+      // loop 내부의 card.innerHTML 부분
+// loop 내부의 card.innerHTML 부분
+      card.innerHTML = `
+  <div class="mini-board-wrapper">
+    <div id="${id}" class="board"></div>
+  </div>
+
+  <div class="card-stats-area">
+    <div class="side-selector">
+      <button class="side-btn active" data-side="total">Total</button>
+      <button class="side-btn" data-side="white">White</button>
+      <button class="side-btn" data-side="black">Black</button>
+    </div>
+
+    <div class="rate-display">
+      <div class="win-rate-bar">
+        </div>
+      <div class="count-summary">0W 0D 0L</div>
+    </div>
+  </div>
+`;
+      canvas.appendChild(card);
+      initBoard(id);
+      renderBoardFromFen(key, id);
+
+      const buttons = card.querySelectorAll('.side-btn');
+      buttons.forEach(btn => {
+        btn.onclick = () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (btn.dataset.side === "total") {
+            updateCardUI(card, stats, "total");
+          } else {
+            updateCardUI(card, stats[btn.dataset.side], btn.dataset.side);
+          }
+        };
+      });
+      updateCardUI(card, stats, "total");
+      i++;
+    }
+  }
+
+  function renderResultPage(map) {
+    resultTitle.innerText = "Analysis for " + usernameInput.value
+    const jsonSortedByTotalGames = Object.entries(map).sort(([, v1], [, v2]) => {
+      return getTotal(v2) - getTotal(v1);
+    }).slice(0, 5).reduce((acc, [k, v]) => {
+      acc[k] = v;
+      return acc;
+    }, {});
+    const jsonSortedByWinRate = Object.entries(map).sort(([, v1], [, v2]) => {
+      return getWinRate(v2) - getWinRate(v1);
+    }).filter(([, v]) => {
+      return getTotal(v) > 10;
+    }).slice(0, 5).reduce((acc, [k, v]) => {
+      acc[k] = v;
+      return acc;
+    }, {});
+    const jsonSortedByLossRate = Object.entries(map).sort(([, v1], [, v2]) => {
+      return getLossRate(v2) - getLossRate(v1);
+    }).filter(([, v]) => {
+      return getTotal(v) > 10;
+    }).slice(0, 6).reduce((acc, [k, v]) => {
+      acc[k] = v;
+      return acc;
+    }, {});
+    renderPawnStructure(jsonSortedByTotalGames, frequentStructures, 'frequentStructures');
+    renderPawnStructure(jsonSortedByWinRate, topWinStructures, 'topWinStructures');
+    renderPawnStructure(jsonSortedByLossRate, worstWinStructure, 'worstWinStructure');
+
+    progressSection.style.display = 'none';
+    resultArea.style.display = 'block';
+    disconnect();
+  }
+</script>
+</html>
