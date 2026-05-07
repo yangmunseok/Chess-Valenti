@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.dto.game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.bhlangonijr.chesslib.game.Game;

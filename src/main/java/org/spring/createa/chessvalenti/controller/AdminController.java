@@ -7,9 +7,9 @@ import org.spring.createa.chessvalenti.domain.Payment;
 import org.spring.createa.chessvalenti.domain.Post;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.domain.User;
-import org.spring.createa.chessvalenti.dto.AddPostBody;
-import org.spring.createa.chessvalenti.dto.PatchUserRequest;
-import org.spring.createa.chessvalenti.dto.UserPrincipal;
+import org.spring.createa.chessvalenti.dto.request.PostCreateRequest;
+import org.spring.createa.chessvalenti.dto.request.PatchUserRequest;
+import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PaymentService;
 import org.spring.createa.chessvalenti.service.PostService;
@@ -151,7 +151,7 @@ public class AdminController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PatchMapping("/api/posts/{id}")
   public void updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
-      @RequestBody AddPostBody body, @PathVariable int id) {
+      @RequestBody PostCreateRequest body, @PathVariable int id) {
     postService.updatePost(id, body.title(), body.content());
   }
 
@@ -166,7 +166,7 @@ public class AdminController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PostMapping("/api/posts")
   public void savePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
-      @RequestBody AddPostBody body) {
+      @RequestBody PostCreateRequest body) {
     postService.savePost(userPrincipal.getUser(), body.title(), body.content(),
         body.postType());
   }

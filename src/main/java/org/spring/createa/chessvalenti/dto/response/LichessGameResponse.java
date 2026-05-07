@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.dto.response;
 
 public record LichessGameResponse(String winner, String pgn, String moves, LichessPlayers players,
                                   String variant) {

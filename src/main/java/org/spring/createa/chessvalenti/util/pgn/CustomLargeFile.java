@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.util.pgn;
 
 import java.io.RandomAccessFile;
 import java.util.Iterator;

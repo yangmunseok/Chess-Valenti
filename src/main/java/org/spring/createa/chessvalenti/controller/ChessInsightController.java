@@ -6,9 +6,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.spring.createa.chessvalenti.dto.GameResults;
-import org.spring.createa.chessvalenti.dto.InsightPayload;
-import org.spring.createa.chessvalenti.dto.InsightRequestMessage;
+import org.spring.createa.chessvalenti.dto.game.GameResults;
+import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
+import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.service.JobService;
 import org.spring.createa.chessvalenti.service.LichessApi;
 import org.spring.createa.chessvalenti.service.LichessService;
@@ -52,20 +52,20 @@ public class ChessInsightController {
             }
             lichessService.loadGame(lichessGameResponse, insightRequestMessage.username(), result);
             cnt.getAndIncrement();
-            InsightPayload insightPayload = new InsightPayload(insightRequestMessage.username(),
+            InsightProgressResponse insightPayload = new InsightProgressResponse(insightRequestMessage.username(),
                 cnt.get(), "pending", "load", id, null);
             simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload);
           }, sink::error, () -> {
-            InsightPayload insightPayload = new InsightPayload(insightRequestMessage.username(),
+            InsightProgressResponse insightPayload = new InsightProgressResponse(insightRequestMessage.username(),
                 cnt.get(), "done", "load", id, result);
             simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload);
 
-            InsightPayload insightPayload2 = new InsightPayload(insightRequestMessage.username(),
+            InsightProgressResponse insightPayload2 = new InsightProgressResponse(insightRequestMessage.username(),
                 cnt.get(), "pending", "filter", id, null);
             simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload2);
 
             lichessService.filterSimilarGame(result);
-            InsightPayload insightPayload3 = new InsightPayload(insightRequestMessage.username(),
+            InsightProgressResponse insightPayload3 = new InsightProgressResponse(insightRequestMessage.username(),
                 cnt.get(), "done", "filter", id, result);
             simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload3);
             sink.success(result);
@@ -73,16 +73,16 @@ public class ChessInsightController {
 
       sink.onCancel(() -> {
         canceled.set(true);
-        InsightPayload insightPayload = new InsightPayload(insightRequestMessage.username(),
+        InsightProgressResponse insightPayload = new InsightProgressResponse(insightRequestMessage.username(),
             cnt.get(), "done", "load", id, result);
         simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload);
 
-        InsightPayload insightPayload2 = new InsightPayload(insightRequestMessage.username(),
+        InsightProgressResponse insightPayload2 = new InsightProgressResponse(insightRequestMessage.username(),
             cnt.get(), "pending", "filter", id, null);
         simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload2);
 
         lichessService.filterSimilarGame(result);
-        InsightPayload insightPayload3 = new InsightPayload(insightRequestMessage.username(),
+        InsightProgressResponse insightPayload3 = new InsightProgressResponse(insightRequestMessage.username(),
             cnt.get(), "done", "filter", id, result);
         simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload3);
         sink.success(result);
@@ -90,7 +90,7 @@ public class ChessInsightController {
     });
 
     jobService.work(mono, id);
-    InsightPayload insightPayload = new InsightPayload(insightRequestMessage.username(), 0, "done",
+    InsightProgressResponse insightPayload = new InsightProgressResponse(insightRequestMessage.username(), 0, "done",
         "register", id, null);
     simpMessagingTemplate.convertAndSend("/topic/insight", insightPayload);
   }

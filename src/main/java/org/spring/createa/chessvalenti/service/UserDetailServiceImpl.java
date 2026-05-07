@@ -2,7 +2,7 @@ package org.spring.createa.chessvalenti.service;
 
 import org.spring.createa.chessvalenti.db.UserRepository;
 import org.spring.createa.chessvalenti.domain.User;
-import org.spring.createa.chessvalenti.dto.UserPrincipal;
+import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

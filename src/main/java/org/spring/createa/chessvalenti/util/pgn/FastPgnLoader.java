@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.util.pgn;
 
 import com.github.bhlangonijr.chesslib.game.Game;
 import java.io.FileNotFoundException;

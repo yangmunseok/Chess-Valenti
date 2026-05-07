@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.security;
 
 import java.util.Collection;
 import java.util.List;

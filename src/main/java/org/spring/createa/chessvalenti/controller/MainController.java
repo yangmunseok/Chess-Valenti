@@ -11,10 +11,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.domain.Inquiry;
 import org.spring.createa.chessvalenti.domain.PostType;
-import org.spring.createa.chessvalenti.dto.BoardResponse;
-import org.spring.createa.chessvalenti.dto.GameInfo;
-import org.spring.createa.chessvalenti.dto.UserPrincipal;
-import org.spring.createa.chessvalenti.dto.body.CreateInquiryBody;
+import org.spring.createa.chessvalenti.dto.response.BoardResponse;
+import org.spring.createa.chessvalenti.dto.game.GameInfo;
+import org.spring.createa.chessvalenti.security.UserPrincipal;
+import org.spring.createa.chessvalenti.dto.request.InquiryCreateRequest;
 import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.LichessService;
@@ -215,7 +215,7 @@ public class MainController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PostMapping("/api/inquiries")
   public void createInquiry(@AuthenticationPrincipal UserPrincipal userPrincipal,
-      @RequestBody CreateInquiryBody body) {
+      @RequestBody InquiryCreateRequest body) {
     inquiryService.save(
         new Inquiry(body.title(), body.content(), userPrincipal.getUser(), body.category())
     );

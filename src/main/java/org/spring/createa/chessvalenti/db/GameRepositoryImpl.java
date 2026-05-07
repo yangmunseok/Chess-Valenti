@@ -2,7 +2,7 @@ package org.spring.createa.chessvalenti.db;
 
 import com.github.bhlangonijr.chesslib.game.Game;
 import java.io.IOException;
-import org.spring.createa.chessvalenti.dto.FastPgnLoader;
+import org.spring.createa.chessvalenti.util.pgn.FastPgnLoader;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;

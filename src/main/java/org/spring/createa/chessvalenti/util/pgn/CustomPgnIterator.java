@@ -1,7 +1,8 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.util.pgn;
 
 import java.util.Iterator;
 import org.jspecify.annotations.NonNull;
+import org.spring.createa.chessvalenti.dto.game.CustomGame;
 
 public class CustomPgnIterator implements Iterable<CustomGame>, AutoCloseable {
 

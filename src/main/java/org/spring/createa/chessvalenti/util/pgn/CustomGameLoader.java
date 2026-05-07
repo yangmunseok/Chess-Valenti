@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.util.pgn;
 
 import static com.github.bhlangonijr.chesslib.pgn.PgnProperty.UTF8_BOM;
 import static com.github.bhlangonijr.chesslib.pgn.PgnProperty.isProperty;
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.spring.createa.chessvalenti.dto.game.CustomGame;
 
 public class CustomGameLoader {
 

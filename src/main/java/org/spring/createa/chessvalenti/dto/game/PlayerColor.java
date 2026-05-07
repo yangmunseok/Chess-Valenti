@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.dto.game;
 
 import com.github.bhlangonijr.chesslib.Side;
 import lombok.Getter;

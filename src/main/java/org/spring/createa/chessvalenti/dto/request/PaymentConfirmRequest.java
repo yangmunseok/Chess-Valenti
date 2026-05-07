@@ -1,4 +1,4 @@
-package org.spring.createa.chessvalenti.dto;
+package org.spring.createa.chessvalenti.dto.request;
 
 public record PaymentConfirmRequest(String paymentKey, String amount, String orderId) {
 

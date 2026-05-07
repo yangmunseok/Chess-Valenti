@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.GameIndexRepository;
 import org.spring.createa.chessvalenti.db.GameRepository;
 import org.spring.createa.chessvalenti.domain.GameIndex;
-import org.spring.createa.chessvalenti.dto.GameInfo;
+import org.spring.createa.chessvalenti.dto.game.GameInfo;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

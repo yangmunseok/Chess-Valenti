@@ -9,7 +9,7 @@ import org.spring.createa.chessvalenti.db.PaymentRepository;
 import org.spring.createa.chessvalenti.domain.Payment;
 import org.spring.createa.chessvalenti.domain.PaymentState;
 import org.spring.createa.chessvalenti.domain.User;
-import org.spring.createa.chessvalenti.dto.PaymentConfirmRequest;
+import org.spring.createa.chessvalenti.dto.request.PaymentConfirmRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
