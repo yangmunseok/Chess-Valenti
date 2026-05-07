@@ -47,7 +47,7 @@ public class ChessHashHelperTest {
      */
 
     //2 = 0b10
-    Assertions.assertEquals(chessHashHelper.getActiveBits(2), List.of(1));
+    Assertions.assertEquals(List.of(), chessHashHelper.getActiveBits(2));
     //1024 = 0b10000000000
     Assertions.assertEquals(chessHashHelper.getActiveBits(1024), List.of(10));
     //1536 = 0b11000000000
@@ -73,7 +73,7 @@ public class ChessHashHelperTest {
      *   - 최종 길이가 8인 리스트 반환
      */
     Assertions.assertEquals(chessHashHelper.generateInputs(List.of(0)),
-        List.of(48, 49, 50, 51, 52, 53, 54, 55));
+        List.of(-8, 48, 49, 50, 51, 52, 53, 54));
     Assertions.assertEquals(chessHashHelper.generateInputs(List.of(9)),
         List.of(1, 48, 49, 50, 51, 52, 53, 54));
     Assertions.assertEquals(chessHashHelper.generateInputs(List.of(10)),

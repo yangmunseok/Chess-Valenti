@@ -1,15 +1,10 @@
 package org.spring.createa.chessvalenti.service;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import org.apache.tomcat.util.json.JSONParser;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.PaymentRepository;
 import org.spring.createa.chessvalenti.domain.Payment;
 import org.spring.createa.chessvalenti.domain.PaymentState;
@@ -20,52 +15,46 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class PaymentService {
 
   @Value("${toss.payment.secret-key}")
   private String widgetSecretKey;
 
   private final UserService userService;
-  PaymentRepository paymentRepository;
+  private final PaymentRepository paymentRepository;
+  private final WebClient webClient;
 
-  public PaymentService(PaymentRepository paymentRepository, UserService userService) {
-    this.paymentRepository = paymentRepository;
-    this.userService = userService;
-  }
+  @Transactional
+  public Map<String, Object> confirmPayment(User user, PaymentConfirmRequest body) {
+    String authorizations = "Basic " + Base64.getEncoder()
+        .encodeToString((widgetSecretKey + ":").getBytes());
 
-  public Object confirmPayment(PaymentConfirmRequest body) throws Exception {
-    // 토스페이먼츠 API는 시크릿 키를 사용자 ID로 사용하고, 비밀번호는 사용하지 않습니다.
-    // 비밀번호가 없다는 것을 알리기 위해 시크릿 키 뒤에 콜론을 추가합니다.
-    Base64.Encoder encoder = Base64.getEncoder();
-    byte[] encodedBytes = encoder.encode(
-        (widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
-    String authorizations = "Basic " + new String(encodedBytes);
+    Map<String, Object> response = webClient.post()
+        .uri("https://api.tosspayments.com/v1/payments/confirm")
+        .header(HttpHeaders.AUTHORIZATION, authorizations)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(body)
+        .retrieve()
+        .bodyToMono(Map.class)
+        .cast(Map.class)
+        .block(); // 비동기 흐름을 맞추기 위해 현재는 block 사용 (추후 전체 비동기 전환 가능)
 
-    // 결제를 승인하면 결제수단에서 금액이 차감돼요.
-    URL url = new URL("https://api.tosspayments.com/v1/payments/confirm");
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    connection.setRequestProperty("Authorization", authorizations);
-    connection.setRequestProperty("Content-Type", "application/json");
-    connection.setRequestMethod("POST");
-    connection.setDoOutput(true);
+    if (response != null) {
+      int amount = Integer.parseInt(body.amount());
+      savePayment(user, amount, "toss", "donation");
+      userService.addDonation(user, amount);
+    }
 
-    OutputStream outputStream = connection.getOutputStream();
-    outputStream.write(body.toString().getBytes(StandardCharsets.UTF_8));
-
-    int code = connection.getResponseCode();
-    boolean isSuccess = code == 200;
-
-    InputStream responseStream =
-        isSuccess ? connection.getInputStream() : connection.getErrorStream();
-
-    // 결제 성공 및 실패 비즈니스 로직을 구현하세요.
-    Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
-    JSONParser parser = new JSONParser(reader);
-    responseStream.close();
-    return parser.parse();
+    return response;
   }
 
   public void savePayment(User user, int amount, String method, String product) {

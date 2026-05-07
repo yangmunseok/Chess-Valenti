@@ -4,18 +4,17 @@ import java.time.LocalDateTime;
 import org.spring.createa.chessvalenti.db.UserRepository;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.security.BannedCheckFilter;
+import org.spring.createa.chessvalenti.service.UserDetailServiceImpl;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -23,30 +22,27 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
-  UserDetailsService userDetailsService;
-  UserRepository userRepository;
+  private final UserDetailServiceImpl userDetailsService;
 
-  public SecurityConfig(UserDetailsService userDetailsService, UserRepository userRepository) {
+  public SecurityConfig(UserDetailServiceImpl userDetailsService) {
     this.userDetailsService = userDetailsService;
-    this.userRepository = userRepository;
   }
 
   @Bean
-  BannedCheckFilter bannedCheckFilter() {
+  public BannedCheckFilter bannedCheckFilter() {
     return new BannedCheckFilter();
   }
 
   @Bean
-  SessionRegistry sessionRegistry() {
+  public SessionRegistry sessionRegistry() {
     return new SessionRegistryImpl();
   }
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
-      BannedCheckFilter bannedCheckFilter) {
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+
     return httpSecurity
         .csrf(csrf -> csrf.ignoringRequestMatchers("/logout"))
         .authorizeHttpRequests(
@@ -65,9 +61,9 @@ public class SecurityConfig {
   }
 
   @Bean
-  AuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(
-        userDetailsService);
+  AuthenticationProvider authenticationProvider(UserRepository userRepository) {
+    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+    authenticationProvider.setUserDetailsService(userDetailsService);
     authenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder(5));
     return authenticationProvider;
   }
