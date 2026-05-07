@@ -4,7 +4,6 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.game.Game;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.dto.request.InquiryCreateRequest;
 import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.service.InquiryService;
-import org.spring.createa.chessvalenti.service.LichessService;
 import org.spring.createa.chessvalenti.service.PostService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -43,7 +41,6 @@ import reactor.core.publisher.Flux;
 public class MainController {
 
   private final GameService gameService;
-  private final LichessService lichessService;
   private final PostService postService;
   private final InquiryService inquiryService;
 
@@ -61,9 +58,11 @@ public class MainController {
     return "index";
   }
 
+  // Recommendation: Move to /analysis/old or merge with /analysis
   @GetMapping("/chess")
   public String chess(@RequestParam(defaultValue = "0") Long offset,
       @RequestParam(defaultValue = "0") Integer idx, Model model) {
+    log.info("Accessing old chess view with offset: {}, idx: {}", offset, idx);
     Game game = gameService.getGameWithMoves(offset, idx);
 
     model.addAttribute("game", game);
@@ -80,25 +79,15 @@ public class MainController {
   public String analysis(@RequestParam(required = false) Long offset,
       @RequestParam(defaultValue = "0") Integer idx, Model model, @AuthenticationPrincipal
       UserPrincipal userPrincipal) {
-
+    log.info("Analysis page requested by user: {}, offset: {}", userPrincipal.getUsername(),
+        offset);
     model.addAttribute("username", userPrincipal.getUsername());
     model.addAttribute("url", "/analysis");
 
     if (offset != null) {
       Game game = gameService.getGameWithMoves(offset, idx);
       if (game != null) {
-        model.addAttribute("pgn", game.toPgn(true, true));
-        model.addAttribute("whitePlayer", game.getWhitePlayer());
-        model.addAttribute("blackPlayer", game.getBlackPlayer());
-        model.addAttribute("whiteElo", game.getWhitePlayer().getElo());
-        model.addAttribute("blackElo", game.getBlackPlayer().getElo());
-        model.addAttribute("whiteTitle", game.getProperty().get("WhiteTitle"));
-        model.addAttribute("blackTitle", game.getProperty().get("BlackTitle"));
-        model.addAttribute("legalMove",
-            game.getBoard().legalMoves().stream().map(Move::toString).toList());
-        model.addAttribute("legalMoveSan",
-            game.getBoard().legalMoves().stream().map(Move::getSan).toList());
-        model.addAttribute("fen", game.getBoard().getFen());
+        populateAnalysisModel(model, game);
       }
     } else {
       Board board = new Board();
@@ -133,8 +122,8 @@ public class MainController {
         board.doMove(move);
       }
     }
-    
-    List<String> legalMoves = ignoreLegalMove ? null : 
+
+    List<String> legalMoves = ignoreLegalMove ? null :
         board.legalMoves().stream().map(Move::toString).toList();
 
     return new BoardResponse(board.getFen(), legalMoves, board.isKingAttacked(), board.isMated());
@@ -152,9 +141,10 @@ public class MainController {
       @RequestParam(required = false) Integer blackBishop,
       @RequestParam(required = false) Integer blackKnight,
       @RequestParam(defaultValue = "false") boolean usePieceFilter) {
+    log.info("Searching games by pawn structure: {}", fen);
     if (usePieceFilter) {
       return gameService.findGamesByPawnStructureAndPieceConfiguration(fen, whiteQueen,
-          whiteRook, whiteBishop, whiteKnight, blackQueen, blackRook, blackBishop, blackKnight)
+              whiteRook, whiteBishop, whiteKnight, blackQueen, blackRook, blackBishop, blackKnight)
           .delayElements(Duration.ofMillis(1));
     }
     return gameService.findGamesByPawnStructure(fen).delayElements(Duration.ofMillis(1));
@@ -163,23 +153,30 @@ public class MainController {
   @GetMapping("/games/{id}")
   public String renderGame(@PathVariable Long id, @RequestParam(defaultValue = "0") Integer idx,
       Model model) {
+    log.info("Rendering game by id: {}, idx: {}", id, idx);
     Game game = gameService.getGameWithMoves(id, idx);
-    
+
     if (game != null) {
-      model.addAttribute("game", game);
-      model.addAttribute("pgn", game.toPgn(true, true));
-      model.addAttribute("whitePlayer", game.getWhitePlayer().getName());
-      model.addAttribute("blackPlayer", game.getBlackPlayer().getName());
-      model.addAttribute("whiteElo", game.getWhitePlayer().getElo());
-      model.addAttribute("blackElo", game.getBlackPlayer().getElo());
-      model.addAttribute("legalMove",
-          game.getBoard().legalMoves().stream().map(Move::toString).toList());
-      model.addAttribute("legalMoveSan",
-          game.getBoard().legalMoves().stream().map(Move::getSan).toList());
-      model.addAttribute("fen", game.getBoard().getFen());
+      populateAnalysisModel(model, game);
     }
-    
+
     return "analysis";
+  }
+
+  private void populateAnalysisModel(Model model, Game game) {
+    model.addAttribute("game", game);
+    model.addAttribute("pgn", game.toPgn(true, true));
+    model.addAttribute("whitePlayer", game.getWhitePlayer().getName());
+    model.addAttribute("blackPlayer", game.getBlackPlayer().getName());
+    model.addAttribute("whiteElo", game.getWhitePlayer().getElo());
+    model.addAttribute("blackElo", game.getBlackPlayer().getElo());
+    model.addAttribute("whiteTitle", game.getProperty().get("WhiteTitle"));
+    model.addAttribute("blackTitle", game.getProperty().get("BlackTitle"));
+    model.addAttribute("legalMove",
+        game.getBoard().legalMoves().stream().map(Move::toString).toList());
+    model.addAttribute("legalMoveSan",
+        game.getBoard().legalMoves().stream().map(Move::getSan).toList());
+    model.addAttribute("fen", game.getBoard().getFen());
   }
 
   @GetMapping("/insight")
@@ -212,10 +209,12 @@ public class MainController {
     return "inquiry";
   }
 
+  // Recommendation: Move to /api/support/inquiries
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PostMapping("/api/inquiries")
   public void createInquiry(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestBody InquiryCreateRequest body) {
+    log.info("Creating inquiry by user: {}", userPrincipal.getUsername());
     inquiryService.save(
         new Inquiry(body.title(), body.content(), userPrincipal.getUser(), body.category())
     );

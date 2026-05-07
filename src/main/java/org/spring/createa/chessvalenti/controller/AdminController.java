@@ -1,7 +1,8 @@
 package org.spring.createa.chessvalenti.controller;
 
-import java.time.LocalDate;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.domain.Inquiry;
 import org.spring.createa.chessvalenti.domain.Payment;
 import org.spring.createa.chessvalenti.domain.Post;
@@ -9,6 +10,7 @@ import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.request.PostCreateRequest;
 import org.spring.createa.chessvalenti.dto.request.PatchUserRequest;
+import org.spring.createa.chessvalenti.dto.response.AdminUserStatsResponse;
 import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PaymentService;
@@ -35,20 +37,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Controller
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/admin")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminController {
 
   private final InquiryService inquiryService;
-  PaymentService paymentService;
-  UserService userService;
-  PostService postService;
-
-  public AdminController(PaymentService paymentService, UserService userService,
-      PostService postService, InquiryService inquiryService) {
-    this.paymentService = paymentService;
-    this.userService = userService;
-    this.postService = postService;
-    this.inquiryService = inquiryService;
-  }
+  private final PaymentService paymentService;
+  private final UserService userService;
+  private final PostService postService;
 
   @GetMapping("")
   public String adminPage() {
@@ -59,37 +55,19 @@ public class AdminController {
   public String userListPage(@PageableDefault Pageable pageable,
       @RequestParam(required = false) String email,
       Model model) {
-    Page<User> users = (email == null || email.isBlank()) ? userService.findAll(pageable)
-        : userService.findAllByEmail(email, pageable);
-    model.addAttribute("users", users);
+    AdminUserStatsResponse stats = userService.getAdminUserStats(email, pageable);
 
-    List<User> loginUsers = users.filter(user -> userService.isUserOnline(user.getUsername()))
-        .toList();
-
-    LocalDate today = LocalDate.now();
-    LocalDate yesterday = today.minusDays(1);
-    LocalDate lastMonth = today.minusMonths(1);
-    int newUserCnt = userService.countUsersByCreationDate(today.getYear(), today.getMonthValue(),
-        today.getDayOfMonth());
-    int yesterdayNewUserCnt = userService.countUsersByCreationDate(yesterday.getYear(),
-        yesterday.getMonthValue(),
-        yesterday.getDayOfMonth());
-    int newSupporter = userService.countUsersByCreationMonthAndDonationNot(
-        today.getYear(),
-        today.getMonthValue(),
-        0);
-    int lastMonthSupporter = userService.countUsersByCreationMonthAndDonationNot(
-        lastMonth.getYear(), lastMonth.getMonthValue(), 0);
-
-    model.addAttribute("loginUsers", loginUsers);
-    model.addAttribute("totalPages", users.getTotalPages());
+    model.addAttribute("users", stats.users());
+    model.addAttribute("loginUsers", stats.onlineUsers());
+    model.addAttribute("totalPages", stats.users().getTotalPages());
     model.addAttribute("currentPage", pageable.getPageNumber());
-    model.addAttribute("newUsersCnt", newUserCnt);
-    model.addAttribute("diffNewUser", newUserCnt - yesterdayNewUserCnt);
-    model.addAttribute("onlineUserCnt", userService.onlineUsersCnt());
-    model.addAttribute("membershipRatio", userService.getMemberShipRatio());
-    model.addAttribute("newSupporter", newSupporter);
-    model.addAttribute("diffNewSupporter", newSupporter - lastMonthSupporter);
+    model.addAttribute("newUsersCnt", stats.newUsersCnt());
+    model.addAttribute("diffNewUser", stats.diffNewUser());
+    model.addAttribute("onlineUserCnt", stats.onlineUserCnt());
+    model.addAttribute("membershipRatio", stats.membershipRatio());
+    model.addAttribute("newSupporter", stats.newSupporter());
+    model.addAttribute("diffNewSupporter", stats.diffNewSupporter());
+
     return "admin/user-list";
   }
 
@@ -141,32 +119,38 @@ public class AdminController {
     return "admin/admin-finance";
   }
 
+  // Recommendation: Move to /api/admin/users/{id}
   @PatchMapping("/api/users/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void updateUser(@PathVariable int id, @RequestBody PatchUserRequest body) {
-    System.out.println(id);
+    log.info("Updating user {} with body: {}", id, body);
     userService.patchUserRoleById(id, body.role(), body.ban());
   }
 
+  // Recommendation: Move to /api/admin/posts/{id}
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PatchMapping("/api/posts/{id}")
   public void updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestBody PostCreateRequest body, @PathVariable int id) {
+    log.info("Updating post {} by user {}", id, userPrincipal.getUsername());
     postService.updatePost(id, body.title(), body.content());
   }
 
+  // Recommendation: Move to /api/admin/posts/{id}
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @DeleteMapping("/api/posts/{id}")
   public void deletePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @PathVariable int id) {
+    log.info("Deleting post {} by user {}", id, userPrincipal.getUsername());
     postService.deletePost(id);
   }
 
-
+  // Recommendation: Move to /api/admin/posts
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PostMapping("/api/posts")
   public void savePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestBody PostCreateRequest body) {
+    log.info("Saving post by user {}", userPrincipal.getUsername());
     postService.savePost(userPrincipal.getUser(), body.title(), body.content(),
         body.postType());
   }

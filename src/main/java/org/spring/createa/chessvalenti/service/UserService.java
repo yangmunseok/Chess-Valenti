@@ -6,6 +6,7 @@ import java.util.List;
 import org.spring.createa.chessvalenti.db.UserRepository;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
+import org.spring.createa.chessvalenti.dto.response.AdminUserStatsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -137,6 +138,42 @@ public class UserService {
     PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
         sort);
     return userRepository.findAllByEmailContaining(email, pageRequest);
+  }
 
+  public AdminUserStatsResponse getAdminUserStats(
+      String email, Pageable pageable) {
+    Page<User> users = (email == null || email.isBlank()) ? findAll(pageable)
+        : findAllByEmail(email, pageable);
+
+    List<User> onlineUsers = users.getContent().stream()
+        .filter(user -> isUserOnline(user.getUsername()))
+        .toList();
+
+    LocalDate today = LocalDate.now();
+    LocalDate yesterday = today.minusDays(1);
+    LocalDate lastMonth = today.minusMonths(1);
+
+    int newUserCnt = countUsersByCreationDate(today.getYear(), today.getMonthValue(),
+        today.getDayOfMonth());
+    int yesterdayNewUserCnt = countUsersByCreationDate(yesterday.getYear(),
+        yesterday.getMonthValue(),
+        yesterday.getDayOfMonth());
+    int newSupporter = countUsersByCreationMonthAndDonationNot(
+        today.getYear(),
+        today.getMonthValue(),
+        0);
+    int lastMonthSupporter = countUsersByCreationMonthAndDonationNot(
+        lastMonth.getYear(), lastMonth.getMonthValue(), 0);
+
+    return new AdminUserStatsResponse(
+        users,
+        onlineUsers,
+        newUserCnt,
+        newUserCnt - yesterdayNewUserCnt,
+        onlineUsersCnt(),
+        getMemberShipRatio(),
+        newSupporter,
+        newSupporter - lastMonthSupporter
+    );
   }
 }
