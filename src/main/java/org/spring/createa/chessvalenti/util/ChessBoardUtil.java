@@ -3,24 +3,26 @@ package org.spring.createa.chessvalenti.util;
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Side;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class ChessBoardUtil {
 
-  long fileA = 0x0101010101010101L;
-  long fileB = fileA << 1;
-  long fileC = fileA << 2;
-  long fileD = fileA << 3;
-  long fileE = fileA << 4;
-  long fileF = fileA << 5;
-  long fileG = fileA << 6;
-  long fileH = fileA << 7;
+  private static final long FILE_A = 0x0101010101010101L;
+  private static final long FILE_B = FILE_A << 1;
+  private static final long FILE_C = FILE_A << 2;
+  private static final long FILE_D = FILE_A << 3;
+  private static final long FILE_E = FILE_A << 4;
+  private static final long FILE_F = FILE_A << 5;
+  private static final long FILE_G = FILE_A << 6;
+  private static final long FILE_H = FILE_A << 7;
 
   int countDoubled(long pawns) {
     int count = 0;
     for (int file = 0; file < 8; file++) {
-      long fileMask = fileA << file;
+      long fileMask = FILE_A << file;
       long filePawns = pawns & fileMask;
 
       int n = Long.bitCount(filePawns);
@@ -35,15 +37,15 @@ public class ChessBoardUtil {
     int count = 0;
 
     for (int file = 0; file < 8; file++) {
-      long fileMask = fileA << file;
+      long fileMask = FILE_A << file;
       long pawnsOnFile = pawns & fileMask;
 
       if (pawnsOnFile == 0) {
         continue;
       }
 
-      long leftMask = (file > 0) ? (fileA << (file - 1)) : 0;
-      long rightMask = (file < 7) ? (fileA << (file + 1)) : 0;
+      long leftMask = (file > 0) ? (FILE_A << (file - 1)) : 0;
+      long rightMask = (file < 7) ? (FILE_A << (file + 1)) : 0;
 
       if ((pawns & (leftMask | rightMask)) == 0) {
         count += Long.bitCount(pawnsOnFile);
@@ -58,60 +60,48 @@ public class ChessBoardUtil {
   }
 
   private long excludeWingPawn(long pawns) {
-    return pawns & (fileB | fileC | fileD | fileE | fileF | fileG);
+    return pawns & (FILE_B | FILE_C | FILE_D | FILE_E | FILE_F | FILE_G);
   }
 
   public int countCenterPawns(Board board) {
     long boardWhitePawnBB = board.getBitboard(Piece.WHITE_PAWN);
     long boardBlackPawnBB = board.getBitboard(Piece.BLACK_PAWN);
-    return bitCount((boardWhitePawnBB | boardBlackPawnBB) & (fileC | fileD | fileE | fileF));
+    return bitCount((boardWhitePawnBB | boardBlackPawnBB) & (FILE_C | FILE_D | FILE_E | FILE_F));
   }
 
-  public boolean isSimilar(Board board1, Board board2) throws Exception {
-
+  public boolean isSimilar(Board board1, Board board2) {
     long board1WhitePawnBB = board1.getBitboard(Piece.WHITE_PAWN);
     long board1BlackPawnBB = board1.getBitboard(Piece.BLACK_PAWN);
     long board2WhitePawnBB = board2.getBitboard(Piece.WHITE_PAWN);
     long board2BlackPawnBB = board2.getBitboard(Piece.BLACK_PAWN);
 
-    int board1Pawns = bitCount(board1WhitePawnBB) + bitCount(board1BlackPawnBB);
-    int board2Pawns = bitCount(board2WhitePawnBB) + bitCount(board2BlackPawnBB);
-
-    if (board1Pawns != board2Pawns) {
+    if ((bitCount(board1WhitePawnBB) + bitCount(board1BlackPawnBB)) != 
+        (bitCount(board2WhitePawnBB) + bitCount(board2BlackPawnBB))) {
       return false;
     }
+
     board1WhitePawnBB = excludeWingPawn(board1WhitePawnBB);
     board1BlackPawnBB = excludeWingPawn(board1BlackPawnBB);
     board2WhitePawnBB = excludeWingPawn(board2WhitePawnBB);
     board2BlackPawnBB = excludeWingPawn(board2BlackPawnBB);
 
-    board1Pawns = bitCount(board1WhitePawnBB) + bitCount(board1BlackPawnBB);
-    board2Pawns = bitCount(board2WhitePawnBB) + bitCount(board2BlackPawnBB);
-
-    int EqualPawns = bitCount(
-        (board1WhitePawnBB & board2WhitePawnBB) | (
-            board1BlackPawnBB & board2BlackPawnBB));
+    int board1Pawns = bitCount(board1WhitePawnBB) + bitCount(board1BlackPawnBB);
+    int board2Pawns = bitCount(board2WhitePawnBB) + bitCount(board2BlackPawnBB);
 
     if (board1Pawns + board2Pawns == 0) {
-      throw new Exception("no center pawn");
-    }
-    int similarity = 2 * EqualPawns / (board1Pawns + board2Pawns) * 100;
-
-    if (countDoubled(board1WhitePawnBB) != countDoubled(board2WhitePawnBB)) {
+      log.debug("No center pawns found for similarity comparison");
       return false;
     }
 
-    if (countDoubled(board1BlackPawnBB) != countDoubled(board2BlackPawnBB)) {
-      return false;
-    }
+    int equalPawns = bitCount((board1WhitePawnBB & board2WhitePawnBB) | 
+                              (board1BlackPawnBB & board2BlackPawnBB));
 
-    if (countIsolated(board1WhitePawnBB) != countIsolated(board2WhitePawnBB)) {
-      return false;
-    }
+    int similarity = (200 * equalPawns) / (board1Pawns + board2Pawns);
 
-    if (countIsolated(board1BlackPawnBB) != countIsolated(board2BlackPawnBB)) {
-      return false;
-    }
+    if (countDoubled(board1WhitePawnBB) != countDoubled(board2WhitePawnBB)) return false;
+    if (countDoubled(board1BlackPawnBB) != countDoubled(board2BlackPawnBB)) return false;
+    if (countIsolated(board1WhitePawnBB) != countIsolated(board2WhitePawnBB)) return false;
+    if (countIsolated(board1BlackPawnBB) != countIsolated(board2BlackPawnBB)) return false;
 
     return similarity > 80;
   }

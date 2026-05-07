@@ -3,6 +3,8 @@ package org.spring.createa.chessvalenti.service;
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.game.Game;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.GameIndexRepository;
 import org.spring.createa.chessvalenti.db.GameRepository;
 import org.spring.createa.chessvalenti.domain.GameIndex;
@@ -12,20 +14,37 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class GameService {
 
-  ObjectProvider<GameRepository> gameRepositoryProvider;
-  GameIndexRepository gameIndexRepository;
-
-  public GameService(ObjectProvider<GameRepository> gameRepositoryProvider,
-      GameIndexRepository gameIndexRepository) {
-    this.gameRepositoryProvider = gameRepositoryProvider;
-    this.gameIndexRepository = gameIndexRepository;
-  }
+  private final ObjectProvider<GameRepository> gameRepositoryProvider;
+  private final GameIndexRepository gameIndexRepository;
 
   public Game findGameByOffset(long offset) {
     GameRepository gameRepository = gameRepositoryProvider.getObject();
     return gameRepository.findGameByGameOffset(offset);
+  }
+
+  public Game getGameWithMoves(long offset, Integer idx) {
+    Game game = findGameByOffset(offset);
+    if (game == null) {
+      log.warn("Game not found for offset: {}", offset);
+      return null;
+    }
+
+    try {
+      game.loadMoveText();
+      game.setCurrentMoveList(game.getHalfMoves());
+      game.setBoard(new Board());
+      if (idx != null && idx > 0) {
+        game.gotoMove(game.getCurrentMoveList(), idx - 1);
+      }
+      return game;
+    } catch (Exception e) {
+      log.error("Error loading moves for game at offset: {}", offset, e);
+      return game;
+    }
   }
 
   private GameInfo from(GameIndex gameIndex) {
@@ -38,14 +57,14 @@ public class GameService {
       //gameInfo.setPgn(gameInfo.getGame().toPgn(true, true));
       return gameInfo;
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      log.error("Error creating GameInfo from GameIndex", e);
     }
     return null;
   }
 
   public Flux<GameInfo> findGamesByPawnStructure(Board board) {
     List<GameIndex> gameIndices = gameIndexRepository.findAllByPawnStructure(board);
-    System.out.println("repository done.");
+    log.debug("Found {} games for pawn structure", gameIndices.size());
     return Flux.fromStream(gameIndices.stream().map(this::from));
   }
 
@@ -62,7 +81,7 @@ public class GameService {
       board.loadFromFen(fen);
       return findGamesByPawnStructure(board);
     } catch (Exception ex) {
-      System.out.println(ex);
+      log.error("Error loading board from FEN: {}", fen, ex);
       return null;
     }
   }

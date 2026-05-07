@@ -4,9 +4,11 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.game.Game;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.domain.Inquiry;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.dto.BoardResponse;
@@ -36,20 +38,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import reactor.core.publisher.Flux;
 
 @Controller
+@Slf4j
+@RequiredArgsConstructor
 public class MainController {
 
-  GameService gameService;
-  LichessService lichessService;
-  PostService postService;
-  InquiryService inquiryService;
-
-  public MainController(GameService gameService, LichessService lichessService,
-      PostService postService, InquiryService inquiryService) {
-    this.gameService = gameService;
-    this.lichessService = lichessService;
-    this.postService = postService;
-    this.inquiryService = inquiryService;
-  }
+  private final GameService gameService;
+  private final LichessService lichessService;
+  private final PostService postService;
+  private final InquiryService inquiryService;
 
   @GetMapping("/")
   public String homepage(Model model) {
@@ -57,7 +53,6 @@ public class MainController {
     if (auth != null && auth.isAuthenticated() &&
         !(auth instanceof AnonymousAuthenticationToken)) {
       model.addAttribute("username", auth.getName());
-      PageRequest.of(0, 5);
       model.addAttribute("notices",
           postService.findAllByPostType(PageRequest.of(0, 5), PostType.NOTICE));
       model.addAttribute("faqs", postService.findFAQ());
@@ -67,60 +62,31 @@ public class MainController {
   }
 
   @GetMapping("/chess")
-  public String chess(@RequestParam(required = false) Long offset,
-      @RequestParam(required = false) Integer idx, Model model)
-      throws IOException {
-    if (offset == null) {
-      offset = 0L;
-    }
-    if (idx == null) {
-      idx = 0;
-    }
-    //Game game = testService.getGameByOffset(offset);
-    Game game = gameService.findGameByOffset(offset);
-    try {
-      game.loadMoveText();
-      game.setCurrentMoveList(game.getHalfMoves());
-      game.setBoard(new Board());
-      if (idx > 0) {
-        game.gotoMove(game.getCurrentMoveList(), idx - 1);
-      }
-      System.out.println(game.getBoard());
-      System.out.println(game.getMoveText());
-      System.out.println(game.getBoard().legalMoves());
-    } catch (Exception ex) {
-      System.out.println(ex);
-    }
+  public String chess(@RequestParam(defaultValue = "0") Long offset,
+      @RequestParam(defaultValue = "0") Integer idx, Model model) {
+    Game game = gameService.getGameWithMoves(offset, idx);
 
     model.addAttribute("game", game);
-    model.addAttribute("pgn", game.toPgn(true, true));
-    model.addAttribute("whiteTitle", game.getProperty().get("WhiteTitle"));
-    model.addAttribute("blackTitle", game.getProperty().get("BlackTitle"));
+    if (game != null) {
+      model.addAttribute("pgn", game.toPgn(true, true));
+      model.addAttribute("whiteTitle", game.getProperty().get("WhiteTitle"));
+      model.addAttribute("blackTitle", game.getProperty().get("BlackTitle"));
+    }
 
     return "oldIndex";
   }
 
   @GetMapping("/analysis")
   public String analysis(@RequestParam(required = false) Long offset,
-      @RequestParam(required = false) Integer idx, Model model, @AuthenticationPrincipal
-      UserPrincipal userPrincipal) throws IOException {
-    Game game;
+      @RequestParam(defaultValue = "0") Integer idx, Model model, @AuthenticationPrincipal
+      UserPrincipal userPrincipal) {
 
     model.addAttribute("username", userPrincipal.getUsername());
     model.addAttribute("url", "/analysis");
-    if (idx == null) {
-      idx = 0;
-    }
 
     if (offset != null) {
-      game = gameService.findGameByOffset(offset);
-      try {
-        game.loadMoveText();
-        game.setCurrentMoveList(game.getHalfMoves());
-        game.setBoard(new Board());
-        if (idx > 0) {
-          game.gotoMove(game.getCurrentMoveList(), idx - 1);
-        }
+      Game game = gameService.getGameWithMoves(offset, idx);
+      if (game != null) {
         model.addAttribute("pgn", game.toPgn(true, true));
         model.addAttribute("whitePlayer", game.getWhitePlayer());
         model.addAttribute("blackPlayer", game.getBlackPlayer());
@@ -133,8 +99,6 @@ public class MainController {
         model.addAttribute("legalMoveSan",
             game.getBoard().legalMoves().stream().map(Move::getSan).toList());
         model.addAttribute("fen", game.getBoard().getFen());
-      } catch (Exception ex) {
-        System.out.println(ex);
       }
     } else {
       Board board = new Board();
@@ -165,19 +129,15 @@ public class MainController {
     } else if (san != null) {
       MoveList list = new MoveList();
       list.loadFromSan(san);
-      String[] sanMoves = list.toSanArray();
-
       for (Move move : list) {
         board.doMove(move);
       }
     }
-    if (ignoreLegalMove) {
-      return new BoardResponse(board.getFen(), null, false, board.isMated());
-    }
+    
+    List<String> legalMoves = ignoreLegalMove ? null : 
+        board.legalMoves().stream().map(Move::toString).toList();
 
-    return new BoardResponse(board.getFen(),
-        board.legalMoves().stream().map(Move::toString).toList(), board.isKingAttacked(),
-        board.isMated());
+    return new BoardResponse(board.getFen(), legalMoves, board.isKingAttacked(), board.isMated());
   }
 
   @ResponseBody
@@ -191,56 +151,34 @@ public class MainController {
       @RequestParam(required = false) Integer blackRook,
       @RequestParam(required = false) Integer blackBishop,
       @RequestParam(required = false) Integer blackKnight,
-      @RequestParam(defaultValue = "false") boolean usePieceFilter, HttpServletResponse response) {
+      @RequestParam(defaultValue = "false") boolean usePieceFilter) {
     if (usePieceFilter) {
       return gameService.findGamesByPawnStructureAndPieceConfiguration(fen, whiteQueen,
-          whiteRook,
-          whiteBishop,
-          whiteKnight,
-          blackQueen,
-          blackRook,
-          blackBishop,
-          blackKnight).delayElements(Duration.ofMillis(1));
+          whiteRook, whiteBishop, whiteKnight, blackQueen, blackRook, blackBishop, blackKnight)
+          .delayElements(Duration.ofMillis(1));
     }
     return gameService.findGamesByPawnStructure(fen).delayElements(Duration.ofMillis(1));
   }
 
   @GetMapping("/games/{id}")
-  public String renderGame(@PathVariable Long id, @RequestParam(required = false) Integer idx,
+  public String renderGame(@PathVariable Long id, @RequestParam(defaultValue = "0") Integer idx,
       Model model) {
-    if (idx == null) {
-      idx = 0;
+    Game game = gameService.getGameWithMoves(id, idx);
+    
+    if (game != null) {
+      model.addAttribute("game", game);
+      model.addAttribute("pgn", game.toPgn(true, true));
+      model.addAttribute("whitePlayer", game.getWhitePlayer().getName());
+      model.addAttribute("blackPlayer", game.getBlackPlayer().getName());
+      model.addAttribute("whiteElo", game.getWhitePlayer().getElo());
+      model.addAttribute("blackElo", game.getBlackPlayer().getElo());
+      model.addAttribute("legalMove",
+          game.getBoard().legalMoves().stream().map(Move::toString).toList());
+      model.addAttribute("legalMoveSan",
+          game.getBoard().legalMoves().stream().map(Move::getSan).toList());
+      model.addAttribute("fen", game.getBoard().getFen());
     }
-    Game game = gameService.findGameByOffset(id);
-    try {
-      game.loadMoveText();
-      game.setCurrentMoveList(game.getHalfMoves());
-      game.setBoard(new Board());
-      if (idx > 0) {
-        game.gotoMove(game.getCurrentMoveList(), idx - 1);
-      }
-      System.out.println(game.getBoard());
-      System.out.println(game.getMoveText());
-    } catch (Exception ex) {
-      System.out.println(ex);
-      System.out.println("problem");
-      System.out.println(game.toPgn(true, true));
-      System.out.println("problem");
-    }
-
-    model.addAttribute("game", game);
-    model.addAttribute("pgn", game.toPgn(true, true));
-    model.addAttribute("whitePlayer", game.getWhitePlayer().getName());
-    model.addAttribute("blackPlayer", game.getBlackPlayer().getName());
-    model.addAttribute("whiteElo", game.getWhitePlayer().getElo());
-    model.addAttribute("blackElo", game.getBlackPlayer().getElo());
-    System.out.println(game.getProperty());
-
-    model.addAttribute("legalMove",
-        game.getBoard().legalMoves().stream().map(Move::toString).toList());
-    model.addAttribute("legalMoveSan",
-        game.getBoard().legalMoves().stream().map(Move::getSan).toList());
-    model.addAttribute("fen", game.getBoard().getFen());
+    
     return "analysis";
   }
 
