@@ -3,6 +3,7 @@ package org.spring.createa.chessvalenti.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.UserRepository;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class UserService {
 
   UserRepository userRepository;
@@ -89,13 +91,13 @@ public class UserService {
 
   public void patchUserRoleById(int id, String role, Boolean ban) {
     User user = findUserById(id);
-    if (role != null && role.isEmpty()) {
+    if (role != null && !role.isEmpty()) {
       user.setRole(Role.valueOf(role));
     }
     if (ban != null) {
       user.setBanned(ban);
     }
-    System.out.println(ban);
+    log.debug("Patched user {}: role={}, ban={}", id, role, ban);
     userRepository.save(user);
   }
 

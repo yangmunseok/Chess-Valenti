@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.spring.createa.chessvalenti.dto.GameResults;
-import org.spring.createa.chessvalenti.dto.LichessGameResponse;
+import org.spring.createa.chessvalenti.dto.game.GameResults;
+import org.spring.createa.chessvalenti.dto.response.LichessGameResponse;
 import org.spring.createa.chessvalenti.util.ChessBoardUtil;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
 

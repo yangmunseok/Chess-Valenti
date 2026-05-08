@@ -16,7 +16,7 @@ import org.spring.createa.chessvalenti.db.PaymentRepository;
 import org.spring.createa.chessvalenti.db.UserRepository;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
-import org.spring.createa.chessvalenti.dto.PaymentConfirmRequest;
+import org.spring.createa.chessvalenti.dto.request.PaymentConfirmRequest;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
