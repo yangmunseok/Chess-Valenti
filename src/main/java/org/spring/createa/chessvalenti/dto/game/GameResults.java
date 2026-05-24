@@ -1,5 +1,6 @@
 package org.spring.createa.chessvalenti.dto.game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.bhlangonijr.chesslib.Side;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ public class GameResults {
   private final PlayerColor white = new PlayerColor();
   private final PlayerColor black = new PlayerColor();
 
+  @JsonIgnore
   public int getTotal() {
     return white.getWhiteWon() + white.getDrawn() + white.getBlackWon() +
            black.getBlackWon() + black.getDrawn() + black.getWhiteWon();

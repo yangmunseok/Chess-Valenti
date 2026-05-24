@@ -43,6 +43,7 @@ public class MainController {
   private final GameService gameService;
   private final PostService postService;
   private final InquiryService inquiryService;
+  private final org.spring.createa.chessvalenti.db.InsightRepository insightRepository;
 
   @GetMapping("/")
   public String homepage(Model model) {
@@ -183,6 +184,12 @@ public class MainController {
   public String showInsight(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
     model.addAttribute("username", userPrincipal.getUsername());
     model.addAttribute("url", "/insight");
+    insightRepository.findByUser(userPrincipal.getUser()).ifPresent(insight -> {
+      model.addAttribute("savedInsightData", insight.getData());
+      model.addAttribute("savedLichessUsername", insight.getLichessUsername());
+      model.addAttribute("savedPerfType", insight.getPerfType());
+      model.addAttribute("savedSince", insight.getSince());
+    });
     return "insight";
   }
 

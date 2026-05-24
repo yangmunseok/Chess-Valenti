@@ -33,6 +33,9 @@ public class InsightServiceTest {
   @Mock
   private LichessApi lichessApi;
 
+  @Mock
+  private org.spring.createa.chessvalenti.db.InsightRepository insightRepository;
+
   @Spy
   private JobService jobService;
 
@@ -44,28 +47,36 @@ public class InsightServiceTest {
     InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false,
         null);
     LichessGameResponse response = new LichessGameResponse(null, null, null, null, null);
+    org.spring.createa.chessvalenti.domain.User user = new org.spring.createa.chessvalenti.domain.User();
 
     when(lichessApi.loadGames(eq("user"), eq(true), eq("blitz"), eq("123456789")))
         .thenReturn(Flux.just(response));
+    when(insightRepository.findByUser(any())).thenReturn(java.util.Optional.empty());
 
-    insightService.createInsight(request);
+    insightService.createInsight(request, user);
 
     verify(lichessApi).loadGames(anyString(), anyBoolean(), anyString(), anyString());
     verify(lichessService).loadGame(eq(response), eq("user"), anyMap());
     verify(simpMessagingTemplate, atLeastOnce()).convertAndSend(eq("/topic/insight"),
         any(Object.class));
     verify(jobService).work(any(), eq(0L));
+    verify(insightRepository).save(any());
   }
 
   @Test
   void createInsight_WithCancel_ShouldDisposeJob() {
-    InsightRequestMessage request = new InsightRequestMessage("user", null, null, false, 0L);
+    InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false, 0L);
     LichessGameResponse response = new LichessGameResponse(null, null, null, null, null);
+    org.spring.createa.chessvalenti.domain.User user = new org.spring.createa.chessvalenti.domain.User();
+
     when(lichessApi.loadGames(eq("user"), eq(true), eq("blitz"), eq("123456789")))
         .thenReturn(Flux.just(response).delayElements(Duration.ofSeconds(5)));
-    insightService.createInsight(request);
+    
+    insightService.createInsight(request, user);
+    
     InsightRequestMessage request_cancel = new InsightRequestMessage("user", null, null, true, 0L);
-    insightService.createInsight(request_cancel);
+    insightService.createInsight(request_cancel, user);
+    
     verify(jobService).work(any(), eq(0L));
     verify(jobService).dispose(0L);
   }

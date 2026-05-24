@@ -38,23 +38,44 @@ public class LichessService {
 
     String winner = (lichessGame.winner() != null) ? lichessGame.winner() : "";
 
-    MoveList movelist = new MoveList();
-    int startIdx = lichessGame.pgn().indexOf("\n1") + 1;
-    int endIdx = switch (winner) {
-      case "white" -> lichessGame.pgn().lastIndexOf("1-0");
-      case "black" -> lichessGame.pgn().lastIndexOf("0-1");
-      default -> lichessGame.pgn().lastIndexOf("1/2-1/2");
-    };
-
-    if (startIdx <= 0 || endIdx <= startIdx) {
-      log.warn("Invalid PGN format for a game");
+    String pgn = lichessGame.pgn();
+    if (pgn == null || pgn.isBlank()) {
+      log.debug("Skipping game with empty PGN");
       return;
     }
 
+    // PGN 태그 끝부분 찾기 (보통 \n\n 또는 \r\n\r\n 다음에 수순이 시작됨)
+    int moveStart = pgn.indexOf("\n\n");
+    if (moveStart == -1) {
+      moveStart = pgn.indexOf("\r\n\r\n");
+    }
+    
+    // 만약 구분자가 없으면 "1. "을 찾아봄
+    if (moveStart == -1) {
+      moveStart = pgn.indexOf("1. ");
+    } else {
+      moveStart += 2; // \n\n 다음으로 이동
+    }
+
+    if (moveStart == -1) {
+      log.warn("Could not find start of moves in PGN for game");
+      return;
+    }
+
+    // 결과 표시 제거 (마지막 1-0, 0-1, 1/2-1/2 등)
+    String moveText = pgn.substring(moveStart).trim();
+    moveText = moveText.replaceAll("(1-0|0-1|1/2-1/2|\\*)$", "").trim();
+
+    if (moveText.isEmpty()) {
+      log.warn("Empty move text extracted from PGN");
+      return;
+    }
+
+    MoveList movelist = new MoveList();
     try {
-      movelist.loadFromSan(lichessGame.pgn().substring(startIdx, endIdx));
+      movelist.loadFromSan(moveText);
     } catch (MoveConversionException e) {
-      log.error("Failed to load moves from SAN", e);
+      log.error("Failed to load moves from SAN: {}", moveText, e);
       return;
     }
 

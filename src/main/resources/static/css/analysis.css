@@ -1,3 +1,31 @@
+/* --- Board Layout with Evaluation Bar --- */
+.board-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.evaluation-bar {
+  width: 14px;
+  background-color: #262421; /* Black side color */
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse; /* Fill from bottom to top */
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.eval-fill {
+  background-color: #e1e1e1; /* White side color */
+  height: 50%; /* Initial state (0.0) */
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+
 /* --- Analysis Panel Specifics --- */
 .analysis-panel {
   position: relative;

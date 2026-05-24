@@ -239,6 +239,8 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   cursor: grab;
+  transition: transform 0.25s ease-out; /* Smooth movement */
+  z-index: 5;
 }
 
 .piece:active {

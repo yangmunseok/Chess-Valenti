@@ -15,8 +15,9 @@ public class ChessInsightController {
   private final InsightService insightService;
 
   @MessageMapping("/insight")
-  public void createInsight(InsightRequestMessage insightRequestMessage) {
+  public void createInsight(InsightRequestMessage insightRequestMessage, org.springframework.security.core.Authentication authentication) {
     log.info("Received insight request via WebSocket: {}", insightRequestMessage);
-    insightService.createInsight(insightRequestMessage);
+    org.spring.createa.chessvalenti.security.UserPrincipal userPrincipal = (org.spring.createa.chessvalenti.security.UserPrincipal) authentication.getPrincipal();
+    insightService.createInsight(insightRequestMessage, userPrincipal.getUser());
   }
 }

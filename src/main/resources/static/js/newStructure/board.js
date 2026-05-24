@@ -24,18 +24,32 @@ export function initBoard(id = 'chess-board') {
   }
 }
 
-// FEN 기반으로 기물 렌더링
+// FEN 기반으로 기물 렌더링 (애니메이션 지원)
 export function renderBoardFromFen(fen, id = 'chess-board') {
+  const boardEl = document.getElementById(id);
+  if (!boardEl) return;
+
   const piecePlacement = fen.split(' ')[0];
   const rows = piecePlacement.split('/');
 
-  document.querySelectorAll('#' + id + ' .square').forEach(sq => {
-    const piece = sq.querySelector('.piece');
-    if (piece) {
-      piece.remove();
-    }
+  // 1. 기존 기물들의 위치 정보 저장 (FLIP: First)
+  const oldPieces = {}; // { typeKey: [{ el, rect, coord }] }
+  boardEl.querySelectorAll('.piece').forEach(piece => {
+    const coord = piece.parentElement.dataset.coord;
+    const type = [...piece.classList].find(c => !['piece', 'white', 'black'].includes(c));
+    const color = piece.classList.contains('white') ? 'white' : 'black';
+    const key = `${color}-${type}`;
+    
+    if (!oldPieces[key]) oldPieces[key] = [];
+    oldPieces[key].push({
+      el: piece,
+      rect: piece.getBoundingClientRect(),
+      coord: coord
+    });
   });
 
+  // 2. 새 상태를 위한 데이터 준비
+  const newPositions = [];
   rows.forEach((row, rowIndex) => {
     let colIndex = 0;
     const rank = 8 - rowIndex;
@@ -43,21 +57,88 @@ export function renderBoardFromFen(fen, id = 'chess-board') {
       if (isNaN(char)) {
         const file = String.fromCharCode(97 + colIndex);
         const coord = file + rank;
-        const targetSquare = document.querySelector(
-            '#' + id + ` .square[data-coord="${coord}"]`);
-        if (targetSquare) {
-
-          const pieceSpan = document.createElement('span');
-          const color = (char === char.toUpperCase()) ? 'white' : 'black';
-          const pieceType = char.toLowerCase();
-          pieceSpan.classList.add('piece', color, pieceType);
-          targetSquare.appendChild(pieceSpan);
-        }
+        const color = (char === char.toUpperCase()) ? 'white' : 'black';
+        const type = char.toLowerCase();
+        newPositions.push({ coord, color, type, key: `${color}-${type}`, matched: false });
         colIndex++;
       } else {
         colIndex += parseInt(char);
       }
     }
+  });
+
+  const usedOldPieces = new Set();
+  const pieceMatches = []; // [{ el, oldRect }]
+
+  // 3. [Pass 1] 제자리에 있는 기물들 먼저 선점 (Same square match)
+  // 이 단계에서 매칭된 기물은 애니메이션이 발생하지 않음
+  newPositions.forEach(pos => {
+    const matchIndex = oldPieces[pos.key]?.findIndex(p => p.coord === pos.coord && !usedOldPieces.has(p.el));
+    if (matchIndex !== undefined && matchIndex !== -1) {
+      const match = oldPieces[pos.key][matchIndex];
+      const targetSquare = boardEl.querySelector(`.square[data-coord="${pos.coord}"]`);
+      
+      const pieceEl = match.el;
+      usedOldPieces.add(pieceEl);
+      pieceEl.style.transition = 'none';
+      pieceEl.style.transform = 'none';
+      targetSquare.appendChild(pieceEl);
+      
+      pos.matched = true;
+      // 위치가 같으므로 pieceMatches에 넣지 않음 (또는 넣어도 delta가 0)
+    }
+  });
+
+  // 4. [Pass 2] 이동한 기물들 매칭 (Remaining match)
+  newPositions.forEach(pos => {
+    if (pos.matched) return;
+
+    const matchIndex = oldPieces[pos.key]?.findIndex(p => !usedOldPieces.has(p.el));
+    const targetSquare = boardEl.querySelector(`.square[data-coord="${pos.coord}"]`);
+
+    if (matchIndex !== undefined && matchIndex !== -1) {
+      const match = oldPieces[pos.key][matchIndex];
+      const pieceEl = match.el;
+      usedOldPieces.add(pieceEl);
+      
+      pieceEl.style.transition = 'none';
+      pieceEl.style.transform = 'none';
+      targetSquare.appendChild(pieceEl);
+      
+      pieceMatches.push({ el: pieceEl, oldRect: match.rect });
+      pos.matched = true;
+    } else {
+      // 신규 기물 (프로모션 등)
+      const pieceEl = document.createElement('span');
+      pieceEl.classList.add('piece', pos.color, pos.type);
+      targetSquare.appendChild(pieceEl);
+    }
+  });
+
+  // 5. 사용되지 않은 기물 제거 (캡처됨)
+  Object.values(oldPieces).flat().forEach(p => {
+    if (!usedOldPieces.has(p.el)) {
+      p.el.remove();
+    }
+  });
+
+  // 6. 애니메이션 실행 (FLIP: Invert & Play)
+  requestAnimationFrame(() => {
+    pieceMatches.forEach(match => {
+      const newRect = match.el.getBoundingClientRect();
+      const deltaX = match.oldRect.left - newRect.left;
+      const deltaY = match.oldRect.top - newRect.top;
+
+      if (deltaX !== 0 || deltaY !== 0) {
+        match.el.style.transition = 'none';
+        match.el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+        requestAnimationFrame(() => {
+          match.el.style.transition = 'transform 0.25s ease-out';
+          match.el.style.transform = 'none';
+        });
+      }
+    });
   });
 }
 

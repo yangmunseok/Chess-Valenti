@@ -199,16 +199,39 @@
     }
   }
 
+  const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
   const stompClient = new StompJs.Client({
-    brokerURL: 'ws://localhost:8080/valenti-socket'
+    brokerURL: `${protocol}${window.location.host}/valenti-socket`
   });
 
   connect();
 
+  const savedInsightData = /*[[${savedInsightData}]]*/ null;
+  if (savedInsightData) {
+    usernameInput.value = /*[[${savedLichessUsername}]]*/ "";
+    const savedSince = /*[[${savedSince}]]*/ null;
+    if (savedSince) {
+      document.getElementById('start-date').value = new Date(savedSince).toISOString().split('T')[0];
+    }
+    const savedPerfType = /*[[${savedPerfType}]]*/ null;
+    if (savedPerfType) {
+      const perfs = savedPerfType.split(',');
+      const checkboxes = document.getElementsByName("timeControl");
+      checkboxes.forEach(cb => {
+        cb.checked = perfs.includes(cb.value);
+      });
+    }
+    renderResultPage(savedInsightData);
+  }
+
   stompClient.onConnect = (frame) => {
     //console.log('Connected: ' + frame);
     stompClient.subscribe('/topic/insight', (res) => {
-      onServerUpdate(JSON.parse(res.body))
+      const message = JSON.parse(res.body);
+      // 현재 로그인한 사용자의 메시지만 처리 (시스템 아이디 기준)
+      if (message.systemUsername === /*[[${username}]]*/ '') {
+        onServerUpdate(message);
+      }
     });
   };
 
@@ -231,7 +254,6 @@
   }
 
   function sendRequest() {
-    //console.log("send Request")
     const timeControls = document.getElementsByName("timeControl")
     let perfType = ""
     Array.from(timeControls).map((el) => {
@@ -239,8 +261,37 @@
         perfType += "," + el.value;
       }
     })
+    
+    if (!perfType) {
+      alert("최소 하나 이상의 게임 유형을 선택해주세요.");
+      return;
+    }
+    
     perfType = perfType.substring(1);
-    const since = new Date(document.getElementById('start-date').value).getTime();
+    const sinceDate = document.getElementById('start-date').value;
+    if (!sinceDate) {
+      alert("분석 시작일을 선택해주세요.");
+      return;
+    }
+    const since = new Date(sinceDate).getTime().toString();
+    
+    if (!stompClient.connected) {
+      console.warn("STOMP not connected, attempting to reconnect...");
+      stompClient.activate();
+      // 연결될 때까지 잠시 기다렸다가 다시 시도하거나, 사용자에게 알림
+      setTimeout(() => {
+        if (stompClient.connected) {
+          stompClient.publish({
+            destination: "/app/insight",
+            body: JSON.stringify({username: usernameInput.value, perfType, since})
+          });
+        } else {
+          alert("서버와 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.");
+        }
+      }, 500);
+      return;
+    }
+
     stompClient.publish({
       destination: "/app/insight",
       body: JSON.stringify({username: usernameInput.value, perfType, since})
@@ -248,7 +299,7 @@
   }
 
   function sendCancel() {
-    //console.log("send Cancel")
+    if (!stompClient.connected) return;
     stompClient.publish({
       destination: "/app/insight",
       body: JSON.stringify(
@@ -420,6 +471,21 @@
   }
 
   function renderResultPage(map) {
+    if (!map || Object.keys(map).length === 0) {
+      // 결과가 없을 때 처리
+      frequentStructures.innerHTML = '<p class="no-data-msg">조건에 맞는 게임 데이터가 없습니다.</p>';
+      topWinStructures.innerHTML = '<p class="no-data-msg">-</p>';
+      worstWinStructure.innerHTML = '<p class="no-data-msg">-</p>';
+      resultTitle.innerText = "No results for " + usernameInput.value;
+      progressSection.style.display = 'none';
+      resultArea.style.display = 'block';
+      return;
+    }
+
+    frequentStructures.innerHTML = '';
+    topWinStructures.innerHTML = '';
+    worstWinStructure.innerHTML = '';
+    
     resultTitle.innerText = "Analysis for " + usernameInput.value
     const jsonSortedByTotalGames = Object.entries(map).sort(([, v1], [, v2]) => {
       return getTotal(v2) - getTotal(v1);
@@ -449,7 +515,6 @@
 
     progressSection.style.display = 'none';
     resultArea.style.display = 'block';
-    disconnect();
   }
 </script>
 </html>

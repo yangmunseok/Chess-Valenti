@@ -358,33 +358,68 @@ export function initHistoryEvents() {
 
 const toggle = document.querySelector('.toggle');
 const evaluation = document.querySelector('.engine-evaluation');
+const evalFill = document.getElementById('eval-fill');
+
+function updateEvalBar(score, isMate = false) {
+  if (!evalFill) return;
+
+  let percent;
+  if (isMate) {
+    percent = score > 0 ? 100 : 0;
+  } else {
+    // Clamped linear scale: +/- 10.0 -> 100%/0%
+    percent = Math.max(0, Math.min(100, 50 + (score / 10) * 50));
+  }
+
+  evalFill.style.height = percent + '%';
+}
 
 export const renderEvaluataion = async () => {
   if (currentNode.eval !== "") {
     evaluation.textContent = currentNode.eval;
+    // Parse stored eval if available to update bar
+    const storedEval = currentNode.eval;
+    if (storedEval.startsWith('#')) {
+      updateEvalBar(parseInt(storedEval.substring(1)), true);
+    } else if (storedEval !== "Mate!") {
+      updateEvalBar(parseFloat(storedEval));
+    }
     return;
   }
 
   if (currentNode.move.endsWith('#')) {
     evaluation.textContent = 'Mate!';
+    const winnerIsWhite = (currentNode.ply % 2 !== 0);
+    updateEvalBar(winnerIsWhite ? 1 : -1, true);
     return;
   }
 
   if (toggle.checked) {
-    console.log(currentNode);
-    const res = await fetch(
-        `https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(
-            currentNode.fen)}`
-    )
-    const data = await res.json();
-    evaluation.style.display = 'inline-block';
-    // 여기에 엔진에서 계산된 값을 넣는 로직을 추가하세요.
-    if (data.pvs[0].hasOwnProperty("cp")) {
-      const score = data.pvs[0].cp / 100;
-      evaluation.textContent = (score > 0 ? "+" : "") + score.toFixed(2);
-    } else {
-      const mate = data.pvs[0].mate;
-      evaluation.textContent = '#' + mate;
+    try {
+      const res = await fetch(
+          `https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(
+              currentNode.fen)}`
+      )
+      if (!res.ok) throw new Error("Eval not found");
+      
+      const data = await res.json();
+      evaluation.style.display = 'inline-block';
+      
+      if (data.pvs && data.pvs.length > 0) {
+        if (data.pvs[0].hasOwnProperty("cp")) {
+          const score = data.pvs[0].cp / 100;
+          const displayScore = (score > 0 ? "+" : "") + score.toFixed(2);
+          evaluation.textContent = displayScore;
+          updateEvalBar(score);
+        } else if (data.pvs[0].hasOwnProperty("mate")) {
+          const mate = data.pvs[0].mate;
+          evaluation.textContent = '#' + mate;
+          updateEvalBar(mate, true);
+        }
+      }
+    } catch (e) {
+      console.warn("Cloud eval failed:", e);
+      evaluation.style.display = 'none';
     }
   } else {
     evaluation.style.display = 'none';

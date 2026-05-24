@@ -35,8 +35,13 @@
         <div class="player-tag" th:text="${blackElo}"></div>
       </div>
 
-      <div class="board" id="chess-board"
-           th:data-legalmove="${legalMove}" th:data-san="${legalMoveSan}"></div>
+      <div class="board-layout">
+        <div class="evaluation-bar">
+          <div class="eval-fill" id="eval-fill" style="height: 50%;"></div>
+        </div>
+        <div class="board" id="chess-board"
+             th:data-legalmove="${legalMove}" th:data-san="${legalMoveSan}"></div>
+      </div>
 
       <div class="player-info">
         <div class="player-profile">
