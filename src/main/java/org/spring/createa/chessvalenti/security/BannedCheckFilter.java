@@ -20,10 +20,10 @@ public class BannedCheckFilter extends OncePerRequestFilter {
 
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-    if (auth != null && auth.isAuthenticated()) {
+    if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UserPrincipal) {
       UserPrincipal user = (UserPrincipal) auth.getPrincipal();
 
-      if (Objects.requireNonNull(user).isBanned()) {
+      if (user.isBanned()) {
         response.sendError(HttpServletResponse.SC_FORBIDDEN);
         return;
       }

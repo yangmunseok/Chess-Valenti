@@ -4,11 +4,16 @@ import {refreshMoveHistory} from "./history.js";
 /**
  * PGN 문자열을 입력받아 전체 게임 트리를 다시 구축합니다.
  * @param {string} pgnString
+ * @param {string[]} uciMoves - (옵션) 메인 라인의 UCI 수순 배열
  */
-export function importPGN(pgnString) {
+export function importPGN(pgnString, uciMoves = []) {
   let stack = [];
   let current = gameTree;
   let gameResult = ""; // 게임 결과 저장용 변수
+  
+  // 메인 라인 추적을 위한 변수
+  let mainLineDepth = 0;
+  let inVariation = 0;
 
   // 결과 패턴 (1-0, 0-1, 1/2-1/2, *)
   const resultRegex = /^(1-0|0-1|1\/2-1\/2|\*)$/;
@@ -36,8 +41,10 @@ export function importPGN(pgnString) {
     if (token === "(") {
       stack.push(current);
       current = current.parent;
+      inVariation++;
     } else if (token === ")") {
       current = stack.pop();
+      inVariation--;
     } else if (token === "{") {
       let comment = "";
       i++;
@@ -47,7 +54,6 @@ export function importPGN(pgnString) {
       }
       current.comment = comment.trim();
     } else if (resultRegex.test(token)) {
-      // 토큰 흐름 중에 결과를 발견하면 저장
       gameResult = token;
     } else if (/^\d+\./.test(token)) {
       continue;
@@ -55,6 +61,20 @@ export function importPGN(pgnString) {
       const moveMatch = token.match(/^([a-zA-Z0-9+#=/-]+)([\!\?]{1,2})?$/);
       if (moveMatch) {
         const newNode = new ChessNode(moveMatch[1], current.ply + 1, current);
+        
+        // 메인 라인인 경우 UCI 할당
+        if (inVariation === 0 && uciMoves[mainLineDepth]) {
+          newNode.uci = uciMoves[mainLineDepth];
+          mainLineDepth++;
+        }
+        
+        // playPath 누적
+        if (newNode.uci) {
+          newNode.playPath = current.playPath 
+            ? (current.playPath + "," + newNode.uci) 
+            : newNode.uci;
+        }
+
         nodeMap.set(newNode.id, newNode);
         newNode.symbol = moveMatch[2] || "";
         current.children.push(newNode);

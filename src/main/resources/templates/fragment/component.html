@@ -31,8 +31,8 @@
       <span>Analysis</span>
     </a>
 
-    <a href="/#" class="nav-item"
-       th:classappend="${#strings.equals('/study',url) ? 'active':''}" inactive>
+    <a href="/study" class="nav-item"
+       th:classappend="${#strings.equals('/study',url) ? 'active':''}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -84,35 +84,51 @@
     </a>
   </nav>
   <div class="user-section">
-    <form action="/logout" method="post" class="user-profile">
-      <div class="user-avatar">
-        <span th:text="${#strings.toUpperCase(#strings.substring(username,0,1))}">Y</span>
-      </div>
-      <div class="user-info">
-        <span class="user-name"
-              th:text="${username}"></span>
-        <span class="user-status">Online</span>
-      </div>
-      <button class="logout-btn" title="로그아웃" type="submit">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-        </svg>
-      </button>
-    </form>
+    <div sec:authorize="isAuthenticated()">
+      <form action="/logout" method="post" class="user-profile">
+        <div class="user-avatar">
+          <span th:text="${#strings.toUpperCase(#strings.substring(username,0,1))}">Y</span>
+        </div>
+        <div class="user-info">
+          <span class="user-name"
+                th:text="${username}"></span>
+          <span class="user-status">Online</span>
+        </div>
+        <button class="logout-btn" title="로그아웃" type="submit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+    <div sec:authorize="isAnonymous()">
+      <a href="/login" class="user-profile" style="text-decoration: none; color: inherit;">
+        <div class="user-avatar" style="background: var(--border-color);">
+          <span>?</span>
+        </div>
+        <div class="user-info">
+          <span class="user-name">Guest</span>
+          <span class="user-status">Click to Login</span>
+        </div>
+      </a>
+    </div>
   </div>
 </div>
-<nav th:fragment="adminSidebar" class="admin-sidebar">
-  <div class="admin-logo">valenti <span>Admin</span></div>
+<nav th:fragment="adminSidebar(url)" class="admin-sidebar">
+  <div class="admin-logo" onclick="location.href='/'" style="cursor: pointer;">valenti <span>Admin</span></div>
   <ul class="admin-menu">
-    <li class="active"><a href="#dashboard">📊 대시보드 인사이트</a></li>
-    <li><a href="/admin/users">👥 사용자 관리</a></li>
-    <li><a href="/admin/contents">📝 콘텐츠 관리</a></li>
-    <li><a href="/admin/support">✉️ 소통 & 문의</a></li>
-    <li><a href="/admin/finance">💰 결제/금융 관리</a></li>
-    <li><a href="/admin/security">🛡️ 보안 & 권한</a></li>
+    <li><a href="/">🏠 사이트로 돌아가기</a></li>
+    <li th:classappend="${url == '/admin'} ? 'active' : ''"><a href="/admin">📊 대시보드 인사이트</a></li>
+    <li th:classappend="${url == '/admin/users'} ? 'active' : ''"><a href="/admin/users">👥 사용자 관리</a></li>
+    <li th:classappend="${url == '/admin/contents'} ? 'active' : ''"><a href="/admin/contents">📝 콘텐츠 관리</a></li>
+    <li th:classappend="${url == '/admin/support'} ? 'active' : ''"><a href="/admin/support">✉️ 소통 & 문의 관리</a></li>
+    <li th:classappend="${url == '/admin/finance'} ? 'active' : ''"><a href="/admin/finance">💰 결제/금융 관리</a></li>
   </ul>
   <div class="admin-user-bottom">
+    <div style="margin-bottom: 10px;">
+      <a href="/" style="color: var(--accent-purple); text-decoration: none; font-size: 13px; font-weight: 600;">🏠 일반 페이지로 이동</a>
+    </div>
     <p>관리자: <strong>양문석</strong></p>
     <a href="/logout">로그아웃</a>
   </div>

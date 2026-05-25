@@ -16,7 +16,7 @@
   <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
 </head>
 <body class="admin-body">
-<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/support')}"></nav>
 <main class="admin-main">
   <header class="admin-header">
     <h2>소통 및 문의 관리</h2>
@@ -26,23 +26,10 @@
             onclick="window.location='/admin/support?mode=inquiry'">1:1 문의 내역
       <span
           class="badge-count">7</span></button>
-    <button id="tab-notice" class="tab-btn" onclick="window.location='/admin/support?mode=notice'">
-      공지사항 관리
-    </button>
-    <button id="tab-faq" class="tab-btn" onclick="window.location='/admin/support?mode=faq'">FAQ
-      설정
-    </button>
   </div>
   <div id="tab-inquiry-content" class="tab-content">
     <section
         th:replace="~{fragment/content :: inquirySection(inquiries=${inquiries},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
-  </div>
-  <div id="tab-notice-content" class="tab-content">
-    <section
-        th:replace="~{fragment/content :: noticeSection(contents=${notice},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
-  </div>
-  <div id="tab-faq-content" class="tab-content">
-    <section th:replace="~{fragment/content :: faqSection(contents=${faq})}"></section>
   </div>
 </main>
 

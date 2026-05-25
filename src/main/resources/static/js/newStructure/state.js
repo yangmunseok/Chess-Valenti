@@ -19,7 +19,9 @@ export let nodeIdCounter = 0;
 export class ChessNode {
   constructor(move, ply, parent = null) {
     this.id = `node-${nodeIdCounter++}`;
-    this.move = move;
+    this.move = move; // SAN format
+    this.uci = ""; // UCI format (e.g., e2e4)
+    this.playPath = ""; // Cumulative UCI path (e.g., d2d4,d7d5)
     this.ply = ply;
     this.parent = parent;
     this.children = [];

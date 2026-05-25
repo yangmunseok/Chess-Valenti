@@ -1096,7 +1096,102 @@
   width: 6px;
 }
 
-.pgn-content::-webkit-scrollbar-thumb {
-  background: #3f444e;
-  border-radius: 3px;
+/* --- Opening Explorer Specifics --- */
+.explorer-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
 }
+
+.explorer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.explorer-table th {
+  text-align: left;
+  padding: 8px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.explorer-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.explorer-move-san {
+  font-weight: 600;
+  color: var(--accent-blue);
+  cursor: pointer;
+}
+
+.explorer-move-san:hover {
+  text-decoration: underline;
+}
+
+.explorer-games-count {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mini win rate bar for table rows */
+.mini-result-bar {
+  display: flex;
+  width: 80px;
+  height: 14px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mini-result-bar .white { background-color: #f1f5f9; }
+.mini-result-bar .draw { background-color: #64748b; }
+.mini-result-bar .black { background-color: #1e293b; }
+
+.explorer-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.top-games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-game-item {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.top-game-players {
+  display: flex;
+  justify-content: space-between;
+}
+
+.top-game-info {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.winner-white { border-left: 3px solid #f1f5f9; }
+.winner-black { border-left: 3px solid #1e293b; }
+.winner-draw { border-left: 3px solid #64748b; }

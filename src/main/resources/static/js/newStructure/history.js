@@ -7,6 +7,7 @@ import {
   setGameResultState
 } from "./state.js";
 import {generateFullPgn, loadBoardFromNode, updatePGN} from "./game.js";
+import {updateOpeningExplorer} from "./explorer.js";
 
 let selectedMoveElement = null;
 
@@ -198,6 +199,7 @@ export function initHistoryEvents() {
         loadBoardFromNode(targetNode).then(() => {
           setCurrentNode(targetNode);
           renderEvaluataion();
+          updateOpeningExplorer();
           document.querySelectorAll('.clickable-move').forEach(
               el => {
                 if (el.dataset.nodeId === targetNode.id) {
@@ -288,6 +290,41 @@ export function initHistoryEvents() {
         }
       });
 
+  document.querySelector('#btn-first').addEventListener('click', function () {
+    const targetNode = gameTree
+    loadBoardFromNode(targetNode).then(() => {
+      setCurrentNode(targetNode);
+      renderEvaluataion();
+      document.querySelectorAll('.clickable-move').forEach(
+          el => {
+            if (el.dataset.nodeId === targetNode.id) {
+              el.classList.add("selected-node")
+              selectedMoveElement = el
+            } else {
+              el.classList.remove("selected-node")
+            }
+          });
+    })
+  })
+  document.querySelector('#btn-last').addEventListener('click', function () {
+    let targetNode = gameTree
+    while (targetNode.children.length > 0) {
+      targetNode = targetNode.children[0];
+    }
+    loadBoardFromNode(targetNode).then(() => {
+      setCurrentNode(targetNode);
+      renderEvaluataion();
+      document.querySelectorAll('.clickable-move').forEach(
+          el => {
+            if (el.dataset.nodeId === targetNode.id) {
+              el.classList.add("selected-node")
+              selectedMoveElement = el
+            } else {
+              el.classList.remove("selected-node")
+            }
+          });
+    })
+  })
   // 요기까지 일단.
   document.querySelector('#go-back-btn').addEventListener(
       'click', function () {
@@ -325,6 +362,7 @@ export function initHistoryEvents() {
           //refreshMoveHistory();
           setCurrentNode(targetNode);
           renderEvaluataion();
+          updateOpeningExplorer();
           document.querySelectorAll('.clickable-move').forEach(
               el => {
                 if (el.dataset.nodeId === targetNode.id) {
@@ -340,19 +378,36 @@ export function initHistoryEvents() {
       function () {
         const editor = document.getElementById('annotation-editor');
         const menu = document.getElementById('extra-menu');
+        const explorer = document.getElementById('opening-explorer');
 
-        // 두 요소의 active 클래스를 토글
+        // 모든 패널 비활성화 후 에디터/메뉴 토글
         const isMenuVisible = menu.classList.contains('active');
 
+        document.querySelectorAll('.side-pannel .panel').forEach(
+            p => p.classList.remove('active'));
+
         if (isMenuVisible) {
-          menu.classList.remove('active');
           editor.classList.add('active');
-          this.style.color = ''; // 아이콘 색상 원래대로
+          this.style.color = '';
         } else {
-          editor.classList.remove('active');
           menu.classList.add('active');
-          this.style.color = '#3b82f6'; // 메뉴 활성화 시 아이콘 강조
+          this.style.color = '#3b82f6';
         }
+      });
+
+  document.getElementById('opening-explorer-btn')?.addEventListener('click',
+      () => {
+        document.querySelectorAll('.side-pannel .panel').forEach(
+            p => p.classList.remove('active'));
+        document.getElementById('opening-explorer').classList.add('active');
+        updateOpeningExplorer();
+      });
+
+  document.getElementById('explorer-back-btn')?.addEventListener('click',
+      () => {
+        document.querySelectorAll('.side-pannel .panel').forEach(
+            p => p.classList.remove('active'));
+        document.getElementById('extra-menu').classList.add('active');
       });
 }
 
@@ -361,7 +416,9 @@ const evaluation = document.querySelector('.engine-evaluation');
 const evalFill = document.getElementById('eval-fill');
 
 function updateEvalBar(score, isMate = false) {
-  if (!evalFill) return;
+  if (!evalFill) {
+    return;
+  }
 
   let percent;
   if (isMate) {
@@ -400,11 +457,13 @@ export const renderEvaluataion = async () => {
           `https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(
               currentNode.fen)}`
       )
-      if (!res.ok) throw new Error("Eval not found");
-      
+      if (!res.ok) {
+        throw new Error("Eval not found");
+      }
+
       const data = await res.json();
       evaluation.style.display = 'inline-block';
-      
+
       if (data.pvs && data.pvs.length > 0) {
         if (data.pvs[0].hasOwnProperty("cp")) {
           const score = data.pvs[0].cp / 100;

@@ -2,8 +2,12 @@ package org.spring.createa.chessvalenti.service;
 
 import java.util.List;
 import org.spring.createa.chessvalenti.db.PostRepository;
+import org.spring.createa.chessvalenti.domain.Difficulty;
+import org.spring.createa.chessvalenti.domain.FAQ;
+import org.spring.createa.chessvalenti.domain.Notice;
 import org.spring.createa.chessvalenti.domain.Post;
 import org.spring.createa.chessvalenti.domain.PostType;
+import org.spring.createa.chessvalenti.domain.Study;
 import org.spring.createa.chessvalenti.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,19 +20,32 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PostService {
 
-  PostRepository postRepository;
+  private final PostRepository postRepository;
 
   public PostService(PostRepository postRepository) {
     this.postRepository = postRepository;
   }
 
-  public Post savePost(User writer, String title, String content, String videoUrl, PostType postType) {
-    Post post = new Post();
+  public Post savePost(User writer, String title, String content, String videoUrl,
+      PostType postType, Difficulty difficulty, String introduction, String imageUrl) {
+    Post post;
+    switch (postType) {
+      case STUDY -> {
+        Study study = new Study();
+        study.setVideoUrl(videoUrl);
+        study.setDifficulty(difficulty);
+        study.setIntroduction(introduction);
+        study.setImageUrl(imageUrl);
+        post = study;
+      }
+      case FAQ -> post = new FAQ();
+      case NOTICE -> post = new Notice();
+      default -> throw new IllegalArgumentException("Unsupported post type: " + postType);
+    }
+
     post.setWriter(writer);
     post.setTitle(title);
     post.setContent(content);
-    post.setVideoUrl(videoUrl);
-    post.setType(postType);
     return savePost(post);
   }
 
@@ -37,7 +54,8 @@ public class PostService {
   }
 
   @PreAuthorize("@postService.isOwner(#postId, authentication.name)")
-  public Post updatePost(int postId, String title, String content, String videoUrl) {
+  public Post updatePost(int postId, String title, String content, String videoUrl,
+      Difficulty difficulty, String introduction, String imageUrl) {
     Post post = postRepository.findPostsByPostId(postId);
     if (title != null) {
       post.setTitle(title);
@@ -45,9 +63,22 @@ public class PostService {
     if (content != null) {
       post.setContent(content);
     }
-    if (videoUrl != null) {
-      post.setVideoUrl(videoUrl);
+
+    if (post instanceof Study study) {
+      if (videoUrl != null) {
+        study.setVideoUrl(videoUrl);
+      }
+      if (difficulty != null) {
+        study.setDifficulty(difficulty);
+      }
+      if (introduction != null) {
+        study.setIntroduction(introduction);
+      }
+      if (imageUrl != null) {
+        study.setImageUrl(imageUrl);
+      }
     }
+
     return postRepository.save(post);
   }
 
@@ -78,7 +109,3 @@ public class PostService {
     return post.getWriter().getUsername().equals(username);
   }
 }
-
-
-
-

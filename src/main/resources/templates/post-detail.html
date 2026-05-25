@@ -21,8 +21,12 @@
       <article class="post-container">
         <header class="post-header">
           <div class="post-meta-top">
-            <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Post)}"
-                  class="category-tag" th:text="${post.type}"></span>
+            <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Notice)}"
+                  class="category-tag">NOTICE</span>
+            <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.FAQ)}"
+                  class="category-tag">FAQ</span>
+            <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study)}"
+                  class="category-tag">STUDY</span>
 
             <span th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Inquiry)}"
                   class="category-tag" th:text="${#strings.substring(post.category,8)}"></span>
@@ -31,9 +35,12 @@
                   th:text="${@timeUtil.format(post.createdAt,'yyyy-MM-dd HH:mm')}"></span>
           </div>
           <h1 class="post-title" th:text="${post.title}"></h1>
+          <p th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study)}"
+             th:text="${post.introduction}"
+             style="color: var(--accent-blue); margin-top: 10px; font-weight: 500;"></p>
         </header>
 
-        <section th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Post) and post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}"
+        <section th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}"
                  class="post-video-container">
           <div class="video-wrapper">
             <iframe th:src="'https://www.youtube.com/embed/' + ${post.videoUrl}"

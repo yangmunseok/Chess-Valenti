@@ -19,13 +19,24 @@
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-color);
       border-radius: 16px;
-      padding: 24px;
+      padding: 0; /* Changed to handle image */
       transition: transform 0.2s, border-color 0.2s;
       cursor: pointer;
+      overflow: hidden; /* Added for image corners */
     }
     .study-card:hover {
       transform: translateY(-4px);
       border-color: var(--accent-blue);
+    }
+    .study-card .thumbnail {
+      width: 100%;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.05);
+      object-fit: cover;
+      display: block;
+    }
+    .study-card .card-body {
+      padding: 24px;
     }
     .study-card .category {
       font-size: 12px;
@@ -60,9 +71,21 @@
       <div class="study-grid">
         <div th:each="study : ${studies}" class="study-card"
              th:onclick="'location.href=\'/posts/' + ${study.postId} + '\''">
-          <div class="category" th:text="${study.type}">Opening</div>
-          <h3 th:text="${study.title}">루이 로페즈 (Ruy Lopez) 기초</h3>
-          <p th:text="${#strings.abbreviate(study.content, 100)}">백의 가장 강력한 무기 중 하나인 루이 로페즈의 핵심 아이디어와 메인 라인을 학습합니다.</p>
+          <img th:if="${study instanceof T(org.spring.createa.chessvalenti.domain.Study) and !#strings.isEmpty(study.imageUrl)}"
+               th:src="${study.imageUrl}" class="thumbnail" alt="Study Thumbnail">
+          <div th:unless="${study instanceof T(org.spring.createa.chessvalenti.domain.Study) and !#strings.isEmpty(study.imageUrl)}"
+               class="thumbnail" style="display: flex; align-items: center; justify-content: center; font-size: 48px; color: rgba(255,255,255,0.1);">
+            🎓
+          </div>
+          <div class="card-body">
+            <div class="category">
+              <span th:text="${study instanceof T(org.spring.createa.chessvalenti.domain.Study) ? study.difficulty : 'NOTICE'}">Difficulty</span>
+            </div>
+            <h3 th:text="${study.title}">루이 로페즈 (Ruy Lopez) 기초</h3>
+            <p class="introduction" th:if="${study instanceof T(org.spring.createa.chessvalenti.domain.Study)}"
+               th:text="${study.introduction}" style="font-weight: 500; color: var(--accent-blue); margin-bottom: 8px;"></p>
+            <p th:text="${#strings.abbreviate(study.plainTextContent, 100)}">백의 가장 강력한 무기 중 하나인 루이 로페즈의 핵심 아이디어와 메인 라인을 학습합니다.</p>
+          </div>
         </div>
 
         <!-- Static Fallback if no studies exist yet -->

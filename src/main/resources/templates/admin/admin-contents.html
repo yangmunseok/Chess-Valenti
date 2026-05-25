@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+  <title>valenti Admin - Content Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+</head>
+<body class="admin-body">
+<nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/contents')}"></nav>
+<main class="admin-main">
+  <header class="admin-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2>콘텐츠 관리</h2>
+      <button class="btn-valenti-primary" onclick="location.href='/admin/editor'">+ 새 글 작성</button>
+    </div>
+  </header>
+  <div class="admin-tabs" th:data-current="${mode}">
+    <button id="tab-notice" class="tab-btn" onclick="window.location='/admin/contents?mode=notice'">
+      공지사항 관리
+    </button>
+    <button id="tab-faq" class="tab-btn" onclick="window.location='/admin/contents?mode=faq'">
+      FAQ 설정
+    </button>
+    <button id="tab-study" class="tab-btn" onclick="window.location='/admin/contents?mode=study'">
+      스터디 관리
+    </button>
+  </div>
+  <div id="tab-notice-content" class="tab-content">
+    <div class="table-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+      <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=NOTICE'">+새 공지 등록</button>
+    </div>
+    <section
+        th:replace="~{fragment/content :: noticeSection(contents=${notice},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
+  </div>
+  <div id="tab-faq-content" class="tab-content">
+    <section th:replace="~{fragment/content :: faqSection(contents=${faq})}"></section>
+  </div>
+  <div id="tab-study-content" class="tab-content">
+    <div class="table-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+      <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=STUDY'">+새 스터디 등록</button>
+    </div>
+    <section
+        th:replace="~{fragment/content :: studySection(contents=${study},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
+  </div>
+</main>
+
+<script type="module" th:src="@{/js/btnhandler.js}"></script>
+<script type="module" th:src="@{/js/newStructure/pagination.js}"></script>
+</body>
+<script>
+  const mode = document.querySelector('.admin-tabs').dataset.current
+  console.log(mode);
+
+  if (mode === 'notice' || mode === null || mode === '') {
+    document.getElementById('tab-notice').classList.add('active');
+    document.getElementById('tab-notice-content').classList.add('active');
+  } else if (mode === 'faq') {
+    document.getElementById('tab-faq').classList.add('active');
+    document.getElementById('tab-faq-content').classList.add('active');
+  } else if (mode === 'study') {
+    document.getElementById('tab-study').classList.add('active');
+    document.getElementById('tab-study-content').classList.add('active');
+  }
+</script>
+</html>

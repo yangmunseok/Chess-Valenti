@@ -16,7 +16,7 @@
 <body class="valenti-dark">
 
 <div class="dashboard-wrapper">
-  <nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+  <nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/contents')}"></nav>
   <main class="main-content">
     <div class="home-container">
       <header class="home-hero">
@@ -35,18 +35,66 @@
 
         <div class="input-group">
           <label for="post-type">TYPE</label>
-          <select id="post-type" class="valenti-input">
-            <option value="NOTICE" th:selected="${post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).NOTICE}">NOTICE</option>
-            <option value="FAQ" th:selected="${post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).FAQ}">FAQ</option>
-            <option value="STUDY" th:selected="${post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).STUDY}">STUDY</option>
+          <select id="post-type" class="valenti-input" onchange="toggleStudyFields()"
+                  th:disabled="${post != null or param.type != null}">
+            <option value="NOTICE"
+                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).NOTICE) or param.type[0] == 'NOTICE'}">
+              NOTICE
+            </option>
+            <option value="FAQ"
+                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).FAQ) or param.type[0] == 'FAQ'}">
+              FAQ
+            </option>
+            <option value="STUDY"
+                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).STUDY) or param.type[0] == 'STUDY'}">
+              STUDY
+            </option>
           </select>
+          <p th:if="${post != null or param.type != null}" class="hero-desc"
+             style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
+            * 작성 중에는 타입을 변경할 수 없습니다.
+          </p>
         </div>
 
-        <div class="input-group">
-          <label for="video-url">YOUTUBE VIDEO ID (Optional)</label>
-          <input type="text" id="video-url" placeholder="e.g., dQw4w9WgXcQ"
-                 th:value="${post == null? '':post.videoUrl}"
-                 class="valenti-input">
+        <div id="study-only-fields" style="display: none;">
+          <div class="input-group">
+            <label for="difficulty">DIFFICULTY</label>
+            <select id="difficulty" class="valenti-input">
+              <option value="BEGINNER"
+                      th:selected="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.difficulty == T(org.spring.createa.chessvalenti.domain.Difficulty).BEGINNER}">
+                BEGINNER
+              </option>
+              <option value="INTERMEDIATE"
+                      th:selected="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.difficulty == T(org.spring.createa.chessvalenti.domain.Difficulty).INTERMEDIATE}">
+                INTERMEDIATE
+              </option>
+              <option value="ADVANCED"
+                      th:selected="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.difficulty == T(org.spring.createa.chessvalenti.domain.Difficulty).ADVANCED}">
+                ADVANCED
+              </option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="introduction">INTRODUCTION (Short summary for card)</label>
+            <input type="text" id="introduction" placeholder="강의 요약 내용을 입력하세요..."
+                   th:value="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) ? post.introduction : ''}"
+                   class="valenti-input">
+          </div>
+
+          <div class="input-group">
+            <label for="image-url">IMAGE URL</label>
+            <input type="text" id="image-url" placeholder="이미지 URL을 입력하세요..."
+                   th:value="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) ? post.imageUrl : ''}"
+                   class="valenti-input">
+          </div>
+
+          <div class="input-group">
+            <label for="video-url">YOUTUBE VIDEO ID (Optional)</label>
+            <input type="text" id="video-url" placeholder="e.g., dQw4w9WgXcQ"
+                   th:value="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) ? post.videoUrl : ''}"
+                   class="valenti-input">
+          </div>
         </div>
 
         <div class="input-group">
@@ -90,11 +138,27 @@
     theme: 'snow'
   });
 
+  function toggleStudyFields() {
+    const postType = document.getElementById('post-type').value;
+    const studyFields = document.getElementById('study-only-fields');
+    if (postType === 'STUDY') {
+      studyFields.style.display = 'block';
+    } else {
+      studyFields.style.display = 'none';
+    }
+  }
+
+  // 초기 로드 시 실행
+  toggleStudyFields();
+
   // 발행 버튼 클릭 이벤트
   document.getElementById('save-post').addEventListener('click', function () {
     const title = document.getElementById('post-title').value;
     const postType = document.getElementById('post-type').value;
     const videoUrl = document.getElementById('video-url').value;
+    const difficulty = document.getElementById('difficulty').value;
+    const introduction = document.getElementById('introduction').value;
+    const imageUrl = document.getElementById('image-url').value;
     const content = quill.root.innerHTML; // HTML 형태로 내용 가져오기
 
     if (!title) {
@@ -102,7 +166,7 @@
       return;
     }
 
-    const payload = {title, content, postType, videoUrl};
+    const payload = {title, content, postType, videoUrl, difficulty, introduction, imageUrl};
     console.log("발행 데이터:", payload);
 
     if (postId === null) {
@@ -115,7 +179,7 @@
           }).then(
           (res) => {
             alert('글이 성공적으로 기록되었습니다.')
-            location.href = '/admin/support';
+            location.href = '/admin/contents';
           })
       return;
     }
@@ -127,7 +191,7 @@
     }).then(
         (res) => {
           alert('글이 성공적으로 기록되었습니다.')
-          location.href = '/admin/support';
+          location.href = '/admin/contents';
         })
   });
 

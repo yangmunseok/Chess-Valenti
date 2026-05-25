@@ -15,7 +15,7 @@
   <meta name="_csrf" th:content="${_csrf.token}">
 </head>
 <body class="admin-body">
-<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/finance')}"></nav>
 <main class="admin-main">
   <header class="admin-header">
     <h2>결제 및 금융 관리</h2>

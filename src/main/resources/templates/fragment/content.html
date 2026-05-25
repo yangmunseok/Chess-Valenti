@@ -81,8 +81,6 @@
 <section th:fragment="noticeSection(contents,currentPage,totalPages)" class="admin-content">
   <div class="table-actions">
     <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
-    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor'">+새 공지 등록
-    </button>
   </div>
 
   <table class="admin-table">
@@ -122,7 +120,62 @@
       </svg>
     </button>
     <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
-      <a th:text="${page}" th:href="@{/admin/support(page=${page}-1,mode='notice')}" class="btn"
+      <a th:text="${page}" th:href="@{/admin/contents(page=${page}-1,mode='notice')}" class="btn"
+         th:classappend="${currentPage + 1 == page} ? 'active'"></a>
+    </th:block>
+    <button onclick="setCurrentPage(currentPage+10)" class="btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
+</section>
+<section th:fragment="studySection(contents,currentPage,totalPages)" class="admin-content">
+  <div class="table-actions">
+    <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
+  </div>
+
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th><input type="checkbox"></th>
+      <th>제목</th>
+      <th>난이도</th>
+      <th>등록일</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="content: ${contents}">
+      <td><input type="checkbox"></td>
+      <td class="td-title" th:text="${content.title}">루이 로페즈 기초</td>
+      <td><span class="badge badge-standard" th:text="${content.difficulty}">BEGINNER</span></td>
+      <td th:text="${@timeUtil.format(content.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-27</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-icon"
+                  th:onclick="|window.location='@{/admin/posts/{id}(id=${content.postId})}'|">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+            </svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="pagination" th:data-page="${currentPage}">
+    <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
+      <a th:text="${page}" th:href="@{/admin/contents(page=${page}-1,mode='study')}" class="btn"
          th:classappend="${currentPage + 1 == page} ? 'active'"></a>
     </th:block>
     <button onclick="setCurrentPage(currentPage+10)" class="btn">
@@ -134,76 +187,40 @@
   </div>
 </section>
 <section th:fragment="faqSection(contents)" class="admin-content">
-  <div class="faq-setup-container" id="faq-container" th:data-size="${#lists.size(contents)}">
-    <div th:each="content: ${contents}" class="faq-edit-item" th:data-id="${content.postId}">
-      <div class="faq-item-header">
-        <span class="drag-handle">⠿</span>
-        <input type="text" class="admin-input-flat" th:value="${content.title}">
-        <div class="faq-actions">
-          <button class="btn-icon delete-faq-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                 stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path
-                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              <line x1="10" y1="11" x2="10" y2="17"></line>
-              <line x1="14" y1="11" x2="14" y2="17"></line>
-            </svg>
-          </button>
-          <button class="btn-icon save-faq-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                 stroke-linejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="faq-item-body">
-        <textarea class="reply-textarea" style="min-height: 80px;"
-                  th:text="${content.content}"></textarea>
-      </div>
-    </div>
-
-    <button class="btn-add-faq" id="faq-add-btn">+ 새 자주 묻는 질문 추가</button>
+  <div class="table-actions">
+    <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
+    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=FAQ'">+새 FAQ 등록
+    </button>
   </div>
-  <template id="faq-form-template">
-    <div class="faq-edit-item">
-      <div class="faq-item-header">
-        <span class="drag-handle">⠿</span>
-        <input type="text" class="admin-input-flat" placeholder="제목을 입력하세요">
-        <div class="faq-actions">
-          <button class="btn-icon delete-faq-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                 stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path
-                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              <line x1="10" y1="11" x2="10" y2="17"></line>
-              <line x1="14" y1="11" x2="14" y2="17"></line>
-            </svg>
-          </button>
-          <button class="btn-icon save-faq-btn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                 stroke-linejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
+
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th><input type="checkbox"></th>
+      <th>제목</th>
+      <th>등록일</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="content: ${contents}">
+      <td><input type="checkbox"></td>
+      <td class="td-title" th:text="${content.title}">결제는 어떻게 하나요?</td>
+      <td th:text="${@timeUtil.format(content.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-27</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-icon"
+                  th:onclick="|window.location='@{/admin/posts/{id}(id=${content.postId})}'|">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
             </svg>
           </button>
         </div>
-      </div>
-      <div class="faq-item-body">
-        <textarea class="reply-textarea" style="min-height: 80px;"
-                  placeholder="답변을 입력하세요"></textarea>
-      </div>
-    </div>
-  </template>
+      </td>
+    </tr>
+    </tbody>
+  </table>
 </section>
 
 <div th:fragment="financeTable(content)" id="tab-payments" class="tab-content active">

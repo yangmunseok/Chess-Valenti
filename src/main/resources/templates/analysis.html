@@ -133,13 +133,37 @@
               <span class="icon">♟️</span> 폰 구조 탐색
             </button>
 
+            <button class="menu-item-btn" id="opening-explorer-btn">
+              <span class="icon">📊</span> 오프닝 통계
+            </button>
             <button class="menu-item-btn disabled" disabled>
               <span class="icon">🔍</span> 엔진 분석 (준비중)
             </button>
-            <button class="menu-item-btn disabled" disabled>
-              <span class="icon">📊</span> 오프닝 통계 (준비중)
-            </button>
             <div class="menu-placeholder">향후 기능이 추가될 공간입니다...</div>
+          </div>
+        </div>
+        <div id="opening-explorer" class="panel">
+          <div class="filter-header">
+            <button class="back-to-menu" id="explorer-back-btn">← 뒤로가기</button>
+            <h3>Masters Explorer</h3>
+          </div>
+          <div class="explorer-scroll-area">
+            <table class="explorer-table">
+              <thead>
+              <tr>
+                <th>Move</th>
+                <th>Games</th>
+                <th>Result</th>
+              </tr>
+              </thead>
+              <tbody id="explorer-moves-body">
+              <!-- 데이터가 여기에 렌더링됩니다 -->
+              </tbody>
+            </table>
+            <div class="explorer-section-title">Top Games</div>
+            <div id="top-games-body" class="top-games-list">
+              <!-- 상위 게임 리스트 -->
+            </div>
           </div>
         </div>
         <div id="pawn-filter-section" class="panel">
@@ -389,6 +413,7 @@
   const fen = /*[[${fen}]]*/ "start";
   const legalMove = /*[[${legalMove}]]*/ "start";
   const pgn = /*[[${pgn}]]*/ "start";
+  const uciMoves = /*[[${uciMoves}]]*/ [];
   console.log(fen)
   // 1. 체스판 HTML 격자 세팅
   initBoard();
@@ -398,7 +423,7 @@
 
   renderBoardFromFen(fen);
   setPossibleMoves(legalMove);
-  importPGN(pgn);
+  importPGN(pgn, uciMoves);
   updateSquareEvent();
 
   const promoButtons = document.querySelectorAll('.promo-btn');

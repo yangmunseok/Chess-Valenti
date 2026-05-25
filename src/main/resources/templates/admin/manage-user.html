@@ -15,7 +15,7 @@
   <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
 </head>
 <body class="admin-body">
-<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/users')}"></nav>
 <main class="admin-main">
   <header class="admin-header">
     <div class="header-title-group">

@@ -79,29 +79,41 @@ public class AdminController {
   }
 
   @GetMapping("/support")
-  public String supportPage(@RequestParam(required = false) String mode,
+  public String supportPage(@PageableDefault Pageable pageable, Model model) {
+    Page<Inquiry> inquiries = inquiryService.findAll(pageable);
+    model.addAttribute("mode", "inquiry");
+    model.addAttribute("inquiries", inquiries);
+    model.addAttribute("currentPage", pageable.getPageNumber());
+    model.addAttribute("totalPages", inquiries.getTotalPages());
+
+    return "admin/admin-support";
+  }
+
+  @GetMapping("/contents")
+  public String contentPage(@RequestParam(required = false) String mode,
       @PageableDefault Pageable pageable, Model model) {
     model.addAttribute("currentPage", pageable.getPageNumber());
     model.addAttribute("totalPages", 0);
     model.addAttribute("faq", List.of());
-    model.addAttribute("inquiries", List.of());
-    if (mode == null || mode.isBlank() || mode.equals("inquiry")) {
-      Page<Inquiry> inquiries = inquiryService.findAll(pageable);
-      model.addAttribute("mode", "inquiry");
-      model.addAttribute("inquiries", inquiries);
-      model.addAttribute("totalPages", inquiries.getTotalPages());
+    model.addAttribute("notice", List.of());
+    model.addAttribute("study", List.of());
+
+    if (mode == null || mode.isBlank() || mode.equals("notice")) {
+      model.addAttribute("mode", "notice");
+      Page<Post> notices = postService.findAllByPostType(pageable, PostType.NOTICE);
+      model.addAttribute("notice", notices);
+      model.addAttribute("totalPages", notices.getTotalPages());
     } else if (mode.equals("faq")) {
       model.addAttribute("mode", "faq");
       model.addAttribute("faq", postService.findFAQ());
-    } else if (mode.equals("notice")) {
-      model.addAttribute("mode", "notice");
-      Page<Post> notices = postService.findAllByPostType(pageable, PostType.NOTICE);
-
-      model.addAttribute("notice", notices);
-      model.addAttribute("totalPages", notices.getTotalPages());
+    } else if (mode.equals("study")) {
+      model.addAttribute("mode", "study");
+      Page<Post> studies = postService.findAllByPostType(pageable, PostType.STUDY);
+      model.addAttribute("study", studies);
+      model.addAttribute("totalPages", studies.getTotalPages());
     }
 
-    return "admin/admin-support";
+    return "admin/admin-contents";
   }
 
   @GetMapping("/insight")
@@ -133,7 +145,8 @@ public class AdminController {
   public void updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestBody PostCreateRequest body, @PathVariable int id) {
     log.info("Updating post {} by user {}", id, userPrincipal.getUsername());
-    postService.updatePost(id, body.title(), body.content(), body.videoUrl());
+    postService.updatePost(id, body.title(), body.content(), body.videoUrl(), body.difficulty(),
+        body.introduction(), body.imageUrl());
   }
 
   // Recommendation: Move to /api/admin/posts/{id}
@@ -152,7 +165,7 @@ public class AdminController {
       @RequestBody PostCreateRequest body) {
     log.info("Saving post by user {}", userPrincipal.getUsername());
     postService.savePost(userPrincipal.getUser(), body.title(), body.content(), body.videoUrl(),
-        body.postType());
+        body.postType(), body.difficulty(), body.introduction(), body.imageUrl());
   }
 
 

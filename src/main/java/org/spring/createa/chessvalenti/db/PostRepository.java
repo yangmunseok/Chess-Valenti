@@ -1,7 +1,6 @@
 package org.spring.createa.chessvalenti.db;
 
 import java.util.List;
-import org.jspecify.annotations.NullMarked;
 import org.spring.createa.chessvalenti.domain.Post;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.springframework.data.domain.Page;
@@ -10,10 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
 
-  @NullMarked
   Page<Post> findAllByType(Pageable pageable, PostType postType);
 
-  List<Post> findAllByType(PostType type);
+  List<Post> findAllByType(PostType postType);
+
 
   Post findPostsByPostId(int id);
 

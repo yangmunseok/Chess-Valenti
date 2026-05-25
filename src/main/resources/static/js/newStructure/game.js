@@ -97,7 +97,6 @@ export async function executeMove(from, to, promotionPiece = null) {
   let moveNotation = getMoveNotation(from, to, pieceText);
 
   if (moveNotation.endsWith('=')) {
-    console.log(promotionPiece)
     if (promotionPiece === null) {
       document.querySelectorAll(".promotion-options div").forEach(el => {
         if (piece.classList.contains("white")) {
@@ -115,6 +114,9 @@ export async function executeMove(from, to, promotionPiece = null) {
     pendingMove = null;
     moveNotation += promotionPiece.toUpperCase();
   }
+  
+  const uciMove = from + to + (promotionPiece ? promotionPiece.toLowerCase() : "");
+  
   let existingChild = currentNode.children.find(
       child => child.move === moveNotation);
 
@@ -123,6 +125,11 @@ export async function executeMove(from, to, promotionPiece = null) {
   } else {
     const newNode = new ChessNode(moveNotation, currentNode.ply + 1,
         currentNode);
+    newNode.uci = uciMove;
+    newNode.playPath = currentNode.playPath 
+        ? (currentNode.playPath + "," + uciMove) 
+        : uciMove;
+        
     nodeMap.set(newNode.id, newNode);
     currentNode.children.push(newNode);
     setCurrentNode(newNode);
@@ -203,11 +210,34 @@ export async function loadBoardFromNode(node) {
     }
   } else {
     const san = getPathToNodeSAN(node);
-    console.log(san)
     const res = await fetch(`/board?san=${san}`)
     const json = await res.json();
     node.fen = json["fen"];
     node.legalMove = json["legalMove"];
+    
+    // Populate UCI info for the entire path if available
+    if (json["uciMoves"]) {
+      let curr = node;
+      for (let i = json["uciMoves"].length - 1; i >= 0; i--) {
+        if (!curr || curr.ply === 0) break;
+        curr.uci = json["uciMoves"][i];
+        // Re-construct playPath locally based on parent
+        curr = curr.parent;
+      }
+      
+      // Secondary pass to fix playPaths from root down to node
+      let pathNodes = [];
+      let temp = node;
+      while (temp && temp.ply > 0) {
+        pathNodes.unshift(temp);
+        temp = temp.parent;
+      }
+      pathNodes.forEach(n => {
+        const parentPath = n.parent ? n.parent.playPath : "";
+        n.playPath = parentPath ? (parentPath + "," + n.uci) : n.uci;
+      });
+    }
+
     if (json["isMated"] && !node.move.endsWith('#')) {
       node.move += '#';
     } else if (json["isKingAttacked"] && !node.move.endsWith('+')) {

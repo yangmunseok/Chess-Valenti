@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body class="admin-body">
-<nav th:replace="~{/fragment/component :: adminSidebar}"></nav>
+<nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/users')}"></nav>
 <main class="admin-main">
   <header class="admin-header">
     <h2>사용자 관리 <span class="count">전체 1,284명</span></h2>
