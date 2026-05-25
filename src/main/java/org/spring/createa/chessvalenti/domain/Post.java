@@ -28,6 +28,7 @@ public class Post {
 
   String title;
   String content;
+  String videoUrl;
 
   @ManyToOne
   User writer;

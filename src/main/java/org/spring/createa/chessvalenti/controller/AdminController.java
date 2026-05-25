@@ -133,7 +133,7 @@ public class AdminController {
   public void updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestBody PostCreateRequest body, @PathVariable int id) {
     log.info("Updating post {} by user {}", id, userPrincipal.getUsername());
-    postService.updatePost(id, body.title(), body.content());
+    postService.updatePost(id, body.title(), body.content(), body.videoUrl());
   }
 
   // Recommendation: Move to /api/admin/posts/{id}
@@ -151,7 +151,7 @@ public class AdminController {
   public void savePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @RequestBody PostCreateRequest body) {
     log.info("Saving post by user {}", userPrincipal.getUsername());
-    postService.savePost(userPrincipal.getUser(), body.title(), body.content(),
+    postService.savePost(userPrincipal.getUser(), body.title(), body.content(), body.videoUrl(),
         body.postType());
   }
 

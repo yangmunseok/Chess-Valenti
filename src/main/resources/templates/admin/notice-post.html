@@ -34,6 +34,22 @@
         </div>
 
         <div class="input-group">
+          <label for="post-type">TYPE</label>
+          <select id="post-type" class="valenti-input">
+            <option value="NOTICE" th:selected="${post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).NOTICE}">NOTICE</option>
+            <option value="FAQ" th:selected="${post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).FAQ}">FAQ</option>
+            <option value="STUDY" th:selected="${post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).STUDY}">STUDY</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="video-url">YOUTUBE VIDEO ID (Optional)</label>
+          <input type="text" id="video-url" placeholder="e.g., dQw4w9WgXcQ"
+                 th:value="${post == null? '':post.videoUrl}"
+                 class="valenti-input">
+        </div>
+
+        <div class="input-group">
           <label>CONTENT</label>
           <div id="editor-container" th:utext="${post== null? '':post.content}"></div>
         </div>
@@ -77,6 +93,8 @@
   // 발행 버튼 클릭 이벤트
   document.getElementById('save-post').addEventListener('click', function () {
     const title = document.getElementById('post-title').value;
+    const postType = document.getElementById('post-type').value;
+    const videoUrl = document.getElementById('video-url').value;
     const content = quill.root.innerHTML; // HTML 형태로 내용 가져오기
 
     if (!title) {
@@ -84,18 +102,20 @@
       return;
     }
 
-    console.log("발행 데이터:", {title, content});
+    const payload = {title, content, postType, videoUrl};
+    console.log("발행 데이터:", payload);
+
     if (postId === null) {
       fetch("/admin/api/posts",
           {
             method: 'post', headers: {
               "Content-Type": "application/json",
               [csrfHeader]: csrfToken
-            }, body: JSON.stringify({title, content, postType: "NOTICE"})
+            }, body: JSON.stringify(payload)
           }).then(
           (res) => {
             alert('글이 성공적으로 기록되었습니다.')
-            const json = res.json().then((json) => console.log(json))
+            location.href = '/admin/support';
           })
       return;
     }
@@ -103,11 +123,11 @@
       method: 'PATCH', headers: {
         "Content-Type": "application/json",
         [csrfHeader]: csrfToken
-      }, body: JSON.stringify({title, content, postType: "NOTICE"})
+      }, body: JSON.stringify(payload)
     }).then(
         (res) => {
           alert('글이 성공적으로 기록되었습니다.')
-          const json = res.json().then((json) => console.log(json))
+          location.href = '/admin/support';
         })
   });
 

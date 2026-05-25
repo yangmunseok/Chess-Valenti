@@ -33,6 +33,17 @@
           <h1 class="post-title" th:text="${post.title}"></h1>
         </header>
 
+        <section th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Post) and post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}"
+                 class="post-video-container">
+          <div class="video-wrapper">
+            <iframe th:src="'https://www.youtube.com/embed/' + ${post.videoUrl}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+          </div>
+        </section>
+
         <section class="post-content ql-snow">
           <div class="ql-editor" th:utext="${post.content}">
           </div>

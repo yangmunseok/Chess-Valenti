@@ -22,11 +22,12 @@ public class PostService {
     this.postRepository = postRepository;
   }
 
-  public Post savePost(User writer, String title, String content, PostType postType) {
+  public Post savePost(User writer, String title, String content, String videoUrl, PostType postType) {
     Post post = new Post();
     post.setWriter(writer);
     post.setTitle(title);
     post.setContent(content);
+    post.setVideoUrl(videoUrl);
     post.setType(postType);
     return savePost(post);
   }
@@ -36,13 +37,16 @@ public class PostService {
   }
 
   @PreAuthorize("@postService.isOwner(#postId, authentication.name)")
-  public Post updatePost(int postId, String title, String content) {
+  public Post updatePost(int postId, String title, String content, String videoUrl) {
     Post post = postRepository.findPostsByPostId(postId);
     if (title != null) {
       post.setTitle(title);
     }
     if (content != null) {
       post.setContent(content);
+    }
+    if (videoUrl != null) {
+      post.setVideoUrl(videoUrl);
     }
     return postRepository.save(post);
   }

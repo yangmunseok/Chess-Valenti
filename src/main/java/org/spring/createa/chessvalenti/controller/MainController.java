@@ -80,9 +80,9 @@ public class MainController {
   public String analysis(@RequestParam(required = false) Long offset,
       @RequestParam(defaultValue = "0") Integer idx, Model model, @AuthenticationPrincipal
       UserPrincipal userPrincipal) {
-    log.info("Analysis page requested by user: {}, offset: {}", userPrincipal.getUsername(),
-        offset);
-    model.addAttribute("username", userPrincipal.getUsername());
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    log.info("Analysis page requested by user: {}, offset: {}", username, offset);
+    model.addAttribute("username", username);
     model.addAttribute("url", "/analysis");
 
     if (offset != null) {
@@ -114,6 +114,7 @@ public class MainController {
       @RequestParam(required = false) boolean ignoreLegalMove) {
 
     Board board = new Board();
+    java.util.List<String> uciMoves = new java.util.ArrayList<>();
     if (fen != null) {
       board.loadFromFen(fen);
     } else if (san != null) {
@@ -121,13 +122,14 @@ public class MainController {
       list.loadFromSan(san);
       for (Move move : list) {
         board.doMove(move);
+        uciMoves.add(move.toString());
       }
     }
 
     List<String> legalMoves = ignoreLegalMove ? null :
         board.legalMoves().stream().map(Move::toString).toList();
 
-    return new BoardResponse(board.getFen(), legalMoves, board.isKingAttacked(), board.isMated());
+    return new BoardResponse(board.getFen(), legalMoves, board.isKingAttacked(), board.isMated(), uciMoves);
   }
 
   @ResponseBody
@@ -178,19 +180,34 @@ public class MainController {
     model.addAttribute("legalMoveSan",
         game.getBoard().legalMoves().stream().map(Move::getSan).toList());
     model.addAttribute("fen", game.getBoard().getFen());
+    
+    // Include UCI moves for the initial PGN loading
+    model.addAttribute("uciMoves", game.getHalfMoves().stream().map(Move::toString).toList());
   }
 
   @GetMapping("/insight")
   public String showInsight(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
-    model.addAttribute("username", userPrincipal.getUsername());
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    model.addAttribute("username", username);
     model.addAttribute("url", "/insight");
-    insightRepository.findByUser(userPrincipal.getUser()).ifPresent(insight -> {
-      model.addAttribute("savedInsightData", insight.getData());
-      model.addAttribute("savedLichessUsername", insight.getLichessUsername());
-      model.addAttribute("savedPerfType", insight.getPerfType());
-      model.addAttribute("savedSince", insight.getSince());
-    });
+    if (userPrincipal != null) {
+      insightRepository.findByUser(userPrincipal.getUser()).ifPresent(insight -> {
+        model.addAttribute("savedInsightData", insight.getData());
+        model.addAttribute("savedLichessUsername", insight.getLichessUsername());
+        model.addAttribute("savedPerfType", insight.getPerfType());
+        model.addAttribute("savedSince", insight.getSince());
+      });
+    }
     return "insight";
+  }
+
+  @GetMapping("/study")
+  public String studyPage(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    model.addAttribute("username", username);
+    model.addAttribute("url", "/study");
+    model.addAttribute("studies", postService.findAllByPostType(PageRequest.of(0, 20), PostType.STUDY).getContent());
+    return "study";
   }
 
   @GetMapping("/support")
@@ -204,8 +221,9 @@ public class MainController {
   @GetMapping("/posts/{id}")
   public String postDetailPage(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @PathVariable int id, Model model) {
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
     model.addAttribute("post", postService.findPostByPostId(id));
-    model.addAttribute("username", userPrincipal.getUsername());
+    model.addAttribute("username", username);
     return "post-detail";
   }
 
