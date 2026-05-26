@@ -414,6 +414,7 @@ export function initHistoryEvents() {
 const toggle = document.querySelector('.toggle');
 const evaluation = document.querySelector('.engine-evaluation');
 const evalFill = document.getElementById('eval-fill');
+let evaluationStream = null;
 
 function updateEvalBar(score, isMate = false) {
   if (!evalFill) {
@@ -431,7 +432,33 @@ function updateEvalBar(score, isMate = false) {
   evalFill.style.height = percent + '%';
 }
 
+function closeEvaluationStream() {
+  if (evaluationStream) {
+    evaluationStream.close();
+    evaluationStream = null;
+  }
+}
+
+function renderEvaluationData(data) {
+  evaluation.style.display = 'inline-block';
+
+  if (data.pvs && data.pvs.length > 0) {
+    if (data.pvs[0].hasOwnProperty("cp") && data.pvs[0].cp !== null) {
+      const score = data.pvs[0].cp / 100;
+      const displayScore = (score > 0 ? "+" : "") + score.toFixed(2);
+      evaluation.textContent = displayScore;
+      updateEvalBar(score);
+    } else if (data.pvs[0].hasOwnProperty("mate") && data.pvs[0].mate !== null) {
+      const mate = data.pvs[0].mate;
+      evaluation.textContent = '#' + mate;
+      updateEvalBar(mate, true);
+    }
+  }
+}
+
 export const renderEvaluataion = async () => {
+  closeEvaluationStream();
+
   if (currentNode.eval !== "") {
     evaluation.textContent = currentNode.eval;
     // Parse stored eval if available to update bar
@@ -452,34 +479,32 @@ export const renderEvaluataion = async () => {
   }
 
   if (toggle.checked) {
-    try {
-      const res = await fetch(
-          `https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(
-              currentNode.fen)}`
-      )
-      if (!res.ok) {
-        throw new Error("Eval not found");
-      }
+    const streamFen = currentNode.fen;
+    let receivedEvaluation = false;
+    evaluationStream = new EventSource(
+        `/api/evaluation/stream?fen=${encodeURIComponent(streamFen)}`
+    );
 
-      const data = await res.json();
-      evaluation.style.display = 'inline-block';
-
-      if (data.pvs && data.pvs.length > 0) {
-        if (data.pvs[0].hasOwnProperty("cp")) {
-          const score = data.pvs[0].cp / 100;
-          const displayScore = (score > 0 ? "+" : "") + score.toFixed(2);
-          evaluation.textContent = displayScore;
-          updateEvalBar(score);
-        } else if (data.pvs[0].hasOwnProperty("mate")) {
-          const mate = data.pvs[0].mate;
-          evaluation.textContent = '#' + mate;
-          updateEvalBar(mate, true);
-        }
+    evaluationStream.onmessage = (event) => {
+      if (streamFen !== currentNode.fen) {
+        closeEvaluationStream();
+        return;
       }
-    } catch (e) {
-      console.warn("Cloud eval failed:", e);
-      evaluation.style.display = 'none';
-    }
+      receivedEvaluation = true;
+      renderEvaluationData(JSON.parse(event.data));
+    };
+
+    evaluationStream.addEventListener('done', () => {
+      closeEvaluationStream();
+    });
+
+    evaluationStream.onerror = (e) => {
+      console.warn("Stockfish eval failed:", e);
+      closeEvaluationStream();
+      if (!receivedEvaluation) {
+        evaluation.style.display = 'none';
+      }
+    };
   } else {
     evaluation.style.display = 'none';
   }

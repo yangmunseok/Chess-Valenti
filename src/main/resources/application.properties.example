@@ -16,3 +16,9 @@ spring.web.error.include-stacktrace=always
 
 # Toss Payment
 toss.payment.secret-key=YOUR_TOSS_SECRET_KEY
+
+# Local Stockfish engine
+# Use "stockfish" when the executable is available on PATH.
+stockfish.path=stockfish
+stockfish.depth=12
+stockfish.timeout-seconds=8
