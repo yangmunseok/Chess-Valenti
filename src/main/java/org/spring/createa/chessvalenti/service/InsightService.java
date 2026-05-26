@@ -1,9 +1,8 @@
 package org.spring.createa.chessvalenti.service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +10,13 @@ import org.spring.createa.chessvalenti.db.InsightRepository;
 import org.spring.createa.chessvalenti.domain.Insight;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
+import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -25,6 +27,7 @@ public class InsightService {
   private final SimpMessagingTemplate simpMessagingTemplate;
   private final LichessService lichessService;
   private final LichessApi lichessApi;
+  private final ChessComService chessComService;
   private final JobService jobService;
   private final InsightRepository insightRepository;
 
@@ -42,13 +45,13 @@ public class InsightService {
     long id = jobService.getAvailableId();
 
     Mono<Object> mono = Mono.create(sink -> {
-      reactor.core.Disposable innerSubscription = lichessApi.loadGames(request.username(), true, request.perfType(), request.since())
-          .subscribe(response -> {
-            lichessService.loadGame(response, request.username(), result);
+      Disposable innerSubscription = loadInsightGames(request)
+          .subscribe(game -> {
+            lichessService.loadGame(game, request.username(), result);
             int count = cnt.incrementAndGet();
             sendProgress(systemUsername, request.username(), count, "pending", "load", id, null);
           }, error -> {
-            log.error("Error loading games from Lichess", error);
+            log.error("Error loading games from {}", platform(request), error);
             sink.error(error);
           }, () -> {
             int count = cnt.get();
@@ -63,9 +66,10 @@ public class InsightService {
           });
 
       sink.onCancel(() -> {
-        log.info("Analysis job {} cancelled for user {}. Stopping Lichess fetch.", id, request.username());
+        log.info("Analysis job {} cancelled for user {}. Stopping {} fetch.", id,
+            request.username(), platform(request));
         innerSubscription.dispose();
-        
+
         int count = cnt.get();
         sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
         sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
@@ -78,6 +82,34 @@ public class InsightService {
 
     jobService.work(mono, id);
     sendProgress(systemUsername, request.username(), 0, "done", "register", id, null);
+  }
+
+  private Flux<InsightGame> loadInsightGames(InsightRequestMessage request) {
+    if ("chesscom".equals(platform(request))) {
+      return chessComService.loadGames(request.username(), request.perfType(), request.since());
+    }
+
+    return lichessApi.loadGames(request.username(), true, request.perfType(), request.since())
+        .map(response -> {
+          String whiteUsername = null;
+          String blackUsername = null;
+          if (response.players() != null) {
+            if (response.players().white() != null && response.players().white().user() != null) {
+              whiteUsername = response.players().white().user().name();
+            }
+            if (response.players().black() != null && response.players().black().user() != null) {
+              blackUsername = response.players().black().user().name();
+            }
+          }
+          return new InsightGame(response.winner(), response.pgn(), whiteUsername,
+              blackUsername, response.variant());
+        });
+  }
+
+  private String platform(InsightRequestMessage request) {
+    return request.platform() == null || request.platform().isBlank()
+        ? "lichess"
+        : request.platform().toLowerCase(Locale.ROOT);
   }
 
   private void saveInsight(User user, InsightRequestMessage request,
@@ -103,9 +135,11 @@ public class InsightService {
     insightRepository.save(insight);
   }
 
-  private void sendProgress(String systemUsername, String username, int loadedGame, String status, String goal, Long jobId,
+  private void sendProgress(String systemUsername, String username, int loadedGame, String status,
+      String goal, Long jobId,
       Map<String, GameResults> data) {
-    InsightProgressResponse payload = new InsightProgressResponse(systemUsername, username, loadedGame, status,
+    InsightProgressResponse payload = new InsightProgressResponse(systemUsername, username,
+        loadedGame, status,
         goal, jobId, data);
     simpMessagingTemplate.convertAndSend("/topic/insight", payload);
   }

@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
+import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.response.LichessGameResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import reactor.core.publisher.Flux;
@@ -32,6 +33,9 @@ public class InsightServiceTest {
 
   @Mock
   private LichessApi lichessApi;
+
+  @Mock
+  private ChessComService chessComService;
 
   @Mock
   private org.spring.createa.chessvalenti.db.InsightRepository insightRepository;
@@ -56,7 +60,7 @@ public class InsightServiceTest {
     insightService.createInsight(request, user);
 
     verify(lichessApi).loadGames(anyString(), anyBoolean(), anyString(), anyString());
-    verify(lichessService).loadGame(eq(response), eq("user"), anyMap());
+    verify(lichessService).loadGame(any(InsightGame.class), eq("user"), anyMap());
     verify(simpMessagingTemplate, atLeastOnce()).convertAndSend(eq("/topic/insight"),
         any(Object.class));
     verify(jobService).work(any(), eq(0L));
@@ -79,5 +83,25 @@ public class InsightServiceTest {
     
     verify(jobService).work(any(), eq(0L));
     verify(jobService).dispose(0L);
+  }
+
+  @Test
+  void createInsight_WithChessComPlatform_ShouldLoadChessComGames() {
+    InsightRequestMessage request = new InsightRequestMessage("user", "rapid", "123456789", false,
+        null, "chesscom");
+    InsightGame game = new InsightGame("white", "[Event \"?\"]\n\n1. e4 e5 1-0", "user",
+        "opponent", "chess");
+    org.spring.createa.chessvalenti.domain.User user = new org.spring.createa.chessvalenti.domain.User();
+
+    when(chessComService.loadGames(eq("user"), eq("rapid"), eq("123456789")))
+        .thenReturn(Flux.just(game));
+    when(insightRepository.findByUser(any())).thenReturn(java.util.Optional.empty());
+
+    insightService.createInsight(request, user);
+
+    verify(chessComService).loadGames(eq("user"), eq("rapid"), eq("123456789"));
+    verify(lichessService).loadGame(eq(game), eq("user"), anyMap());
+    verify(jobService).work(any(), eq(0L));
+    verify(insightRepository).save(any());
   }
 }

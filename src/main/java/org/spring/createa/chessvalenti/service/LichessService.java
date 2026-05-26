@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
+import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.response.LichessGameResponse;
 import org.spring.createa.chessvalenti.util.ChessBoardUtil;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
@@ -25,20 +27,45 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LichessService {
 
+  private static final Pattern BRACE_COMMENT_PATTERN = Pattern.compile("\\{[^}]*}");
+  private static final Pattern SEMICOLON_COMMENT_PATTERN = Pattern.compile("(?m);.*$");
+  private static final Pattern VARIATION_PATTERN = Pattern.compile("\\([^()]*\\)");
+  private static final Pattern NAG_PATTERN = Pattern.compile("\\$\\d+");
+  private static final Pattern RESULT_PATTERN = Pattern.compile("\\b(1-0|0-1|1/2-1/2|\\*)\\b");
+  private static final Pattern MOVE_NUMBER_PATTERN = Pattern.compile("\\b\\d+\\.(\\.\\.)?");
+
   private final LichessApi lichessApi;
   private final ChessBoardUtil chessBoardUtil;
   private final ChessHashHelper chessHashHelper;
 
   public void loadGame(LichessGameResponse lichessGame, String user,
       Map<String, GameResults> result) {
-    if (!"standard".equals(lichessGame.variant())) {
-      log.debug("Skipping non-standard game variant: {}", lichessGame.variant());
+    String whiteUsername = null;
+    String blackUsername = null;
+    if (lichessGame.players() != null) {
+      if (lichessGame.players().white() != null
+          && lichessGame.players().white().user() != null) {
+        whiteUsername = lichessGame.players().white().user().name();
+      }
+      if (lichessGame.players().black() != null
+          && lichessGame.players().black().user() != null) {
+        blackUsername = lichessGame.players().black().user().name();
+      }
+    }
+
+    loadGame(new InsightGame(lichessGame.winner(), lichessGame.pgn(), whiteUsername,
+        blackUsername, lichessGame.variant()), user, result);
+  }
+
+  public void loadGame(InsightGame game, String user, Map<String, GameResults> result) {
+    if (!"standard".equals(game.variant()) && !"chess".equals(game.variant())) {
+      log.debug("Skipping non-standard game variant: {}", game.variant());
       return;
     }
 
-    String winner = (lichessGame.winner() != null) ? lichessGame.winner() : "";
+    String winner = (game.winner() != null) ? game.winner() : "";
 
-    String pgn = lichessGame.pgn();
+    String pgn = game.pgn();
     if (pgn == null || pgn.isBlank()) {
       log.debug("Skipping game with empty PGN");
       return;
@@ -63,8 +90,7 @@ public class LichessService {
     }
 
     // 결과 표시 제거 (마지막 1-0, 0-1, 1/2-1/2 등)
-    String moveText = pgn.substring(moveStart).trim();
-    moveText = moveText.replaceAll("(1-0|0-1|1/2-1/2|\\*)$", "").trim();
+    String moveText = sanitizeMoveText(pgn.substring(moveStart));
 
     if (moveText.isEmpty()) {
       log.warn("Empty move text extracted from PGN");
@@ -80,8 +106,8 @@ public class LichessService {
     }
 
     Side playerColor = Side.BLACK;
-    if (lichessGame.players().white().user() != null) {
-      playerColor = (lichessGame.players().white().user().name().equalsIgnoreCase(user))
+    if (game.whiteUsername() != null) {
+      playerColor = (game.whiteUsername().equalsIgnoreCase(user))
           ? Side.WHITE : Side.BLACK;
     }
 
@@ -171,5 +197,23 @@ public class LichessService {
     for (String key : removeKey) {
       map.remove(key);
     }
+  }
+
+  private String sanitizeMoveText(String moveText) {
+    String sanitized = moveText;
+    sanitized = BRACE_COMMENT_PATTERN.matcher(sanitized).replaceAll(" ");
+    sanitized = SEMICOLON_COMMENT_PATTERN.matcher(sanitized).replaceAll(" ");
+
+    String previous;
+    do {
+      previous = sanitized;
+      sanitized = VARIATION_PATTERN.matcher(sanitized).replaceAll(" ");
+    } while (!previous.equals(sanitized));
+
+    sanitized = NAG_PATTERN.matcher(sanitized).replaceAll(" ");
+    sanitized = RESULT_PATTERN.matcher(sanitized).replaceAll(" ");
+    sanitized = MOVE_NUMBER_PATTERN.matcher(sanitized).replaceAll(" ");
+    sanitized = sanitized.replaceAll("\\s+", " ").trim();
+    return sanitized;
   }
 }

@@ -25,7 +25,7 @@
       <div class="filter-row">
         <div class="filter-group">
           <label>분석 시작일</label>
-          <input type="date" id="start-date" class="stat-input" value="2026-01-01">
+          <input type="date" id="start-date" class="stat-input">
         </div>
 
         <div class="filter-group">
@@ -46,7 +46,7 @@
       <div class="search-bar-v2">
         <div class="platform-toggle">
           <button class="tgl-btn active" data-platform="lichess">Lichess</button>
-          <button class="tgl-btn" data-platform="chesscom" disabled title="준비 중">Chess.com</button>
+          <button class="tgl-btn" data-platform="chesscom">Chess.com</button>
         </div>
         <div class="input-wrapper">
           <input type="text" id="username-input" placeholder="Lichess 아이디 입력...">
@@ -154,8 +154,10 @@
   const stepFilter = document.getElementById('step-filter');
   const stepDone = document.getElementById('step-done');
   const usernameInput = document.getElementById('username-input');
+  const startDateInput = document.getElementById('start-date');
   const resultArea = document.getElementById("result-area");
   const resultTitle = document.getElementById('result-title');
+  let selectedPlatform = 'lichess';
 
   const frequentStructures = document.getElementById('frequent-structures');
   const topWinStructures = document.getElementById('top-win-structures');
@@ -206,12 +208,16 @@
 
   connect();
 
+  const defaultStartDate = new Date();
+  defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
+  startDateInput.value = defaultStartDate.toISOString().split('T')[0];
+
   const savedInsightData = /*[[${savedInsightData}]]*/ null;
   if (savedInsightData) {
     usernameInput.value = /*[[${savedLichessUsername}]]*/ "";
     const savedSince = /*[[${savedSince}]]*/ null;
     if (savedSince) {
-      document.getElementById('start-date').value = new Date(savedSince).toISOString().split('T')[0];
+      startDateInput.value = new Date(savedSince).toISOString().split('T')[0];
     }
     const savedPerfType = /*[[${savedPerfType}]]*/ null;
     if (savedPerfType) {
@@ -248,6 +254,18 @@
     stompClient.activate();
   }
 
+  document.querySelectorAll('.platform-toggle .tgl-btn').forEach(button => {
+    button.onclick = () => {
+      document.querySelectorAll('.platform-toggle .tgl-btn').forEach(
+          el => el.classList.remove('active'));
+      button.classList.add('active');
+      selectedPlatform = button.dataset.platform;
+      usernameInput.placeholder = selectedPlatform === 'chesscom'
+          ? 'Chess.com 아이디 입력...'
+          : 'Lichess 아이디 입력...';
+    };
+  });
+
   function disconnect() {
     stompClient.deactivate();
     //console.log("Disconnected");
@@ -268,7 +286,7 @@
     }
     
     perfType = perfType.substring(1);
-    const sinceDate = document.getElementById('start-date').value;
+    const sinceDate = startDateInput.value;
     if (!sinceDate) {
       alert("분석 시작일을 선택해주세요.");
       return;
@@ -283,7 +301,7 @@
         if (stompClient.connected) {
           stompClient.publish({
             destination: "/app/insight",
-            body: JSON.stringify({username: usernameInput.value, perfType, since})
+            body: JSON.stringify({username: usernameInput.value, perfType, since, platform: selectedPlatform})
           });
         } else {
           alert("서버와 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.");
@@ -294,7 +312,7 @@
 
     stompClient.publish({
       destination: "/app/insight",
-      body: JSON.stringify({username: usernameInput.value, perfType, since})
+      body: JSON.stringify({username: usernameInput.value, perfType, since, platform: selectedPlatform})
     });
   }
 
@@ -303,7 +321,7 @@
     stompClient.publish({
       destination: "/app/insight",
       body: JSON.stringify(
-          {username: usernameInput.value, cancel: true, id: jobId})
+          {username: usernameInput.value, cancel: true, id: jobId, platform: selectedPlatform})
     });
   }
 
