@@ -1,5 +1,6 @@
 package org.spring.createa.chessvalenti.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -27,6 +28,7 @@ public class Inquiry {
   LocalDateTime updatedAt;
 
   String title;
+  @Column(columnDefinition = "LONGTEXT")
   String content;
 
   @ManyToOne

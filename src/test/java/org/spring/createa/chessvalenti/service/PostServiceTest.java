@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.spring.createa.chessvalenti.db.PostRepository;
+import org.spring.createa.chessvalenti.domain.FAQ;
+import org.spring.createa.chessvalenti.domain.Notice;
 import org.spring.createa.chessvalenti.domain.Post;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.domain.User;
@@ -41,7 +43,7 @@ public class PostServiceTest {
 
   @Test
   void savePost_WithDetails_ShouldSaveAndReturnPost() {
-    Post post = new Post();
+    Post post = new Notice();
     post.setWriter(writer);
     post.setTitle("Title");
     post.setContent("Content");
@@ -49,7 +51,7 @@ public class PostServiceTest {
 
     when(postRepository.save(any(Post.class))).thenReturn(post);
 
-    Post saved = postService.savePost(writer, "Title", "Content", PostType.NOTICE);
+    Post saved = postService.savePost(writer, "Title", "Content", null, PostType.NOTICE, null, null, null);
 
     assertNotNull(saved);
     assertEquals("Title", saved.getTitle());
@@ -59,7 +61,7 @@ public class PostServiceTest {
 
   @Test
   void updatePost_ShouldUpdateFieldsAndSave() {
-    Post post = new Post();
+    Post post = new Notice();
     post.setPostId(1);
     post.setTitle("Old Title");
     post.setContent("Old Content");
@@ -67,7 +69,7 @@ public class PostServiceTest {
     when(postRepository.findPostsByPostId(1)).thenReturn(post);
     when(postRepository.save(any(Post.class))).thenAnswer(i -> i.getArguments()[0]);
 
-    Post updated = postService.updatePost(1, "New Title", "New Content");
+    Post updated = postService.updatePost(1, "New Title", "New Content", null, null, null, null);
 
     assertEquals("New Title", updated.getTitle());
     assertEquals("New Content", updated.getContent());
@@ -83,7 +85,7 @@ public class PostServiceTest {
   @Test
   void findAllByPostType_ShouldReturnPage() {
     Pageable pageable = PageRequest.of(0, 10);
-    Page<Post> page = new PageImpl<>(List.of(new Post()));
+    Page<Post> page = new PageImpl<>(List.of(new Notice()));
     when(postRepository.findAllByType(any(Pageable.class), eq(PostType.NOTICE))).thenReturn(page);
 
     Page<Post> result = postService.findAllByPostType(pageable, PostType.NOTICE);
@@ -94,14 +96,14 @@ public class PostServiceTest {
 
   @Test
   void findFAQ_ShouldReturnList() {
-    when(postRepository.findAllByType(PostType.FAQ)).thenReturn(List.of(new Post()));
+    when(postRepository.findAllByType(PostType.FAQ)).thenReturn(List.of(new FAQ()));
     List<Post> faqs = postService.findFAQ();
     assertFalse(faqs.isEmpty());
   }
 
   @Test
   void isOwner_WhenIsOwner_ShouldReturnTrue() {
-    Post post = new Post();
+    Post post = new Notice();
     post.setWriter(writer);
     when(postRepository.findById(1)).thenReturn(Optional.of(post));
 
@@ -110,7 +112,7 @@ public class PostServiceTest {
 
   @Test
   void isOwner_WhenIsNotOwner_ShouldReturnFalse() {
-    Post post = new Post();
+    Post post = new Notice();
     post.setWriter(writer);
     when(postRepository.findById(1)).thenReturn(Optional.of(post));
 

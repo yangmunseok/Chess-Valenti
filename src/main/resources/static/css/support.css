@@ -154,7 +154,7 @@
   color: var(--accent-purple);
 }
 
-#custom-amount {
+#pay-amount {
   background: transparent;
   border: none;
   color: #fff;
@@ -225,7 +225,8 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 0 45px 0 15px; /* 오른쪽에 버튼 공간 확보 */
-  height: 48px; /* 입력창과 버튼 높이 통일 */
+  height: 52px; /* 조금 더 높게 */
+  min-width: 180px;
   transition: 0.3s;
 }
 
@@ -237,30 +238,37 @@
 .currency-label {
   color: var(--accent-purple);
   font-weight: 800;
-  margin-right: 8px;
+  margin-right: 10px;
+  font-size: 20px;
 }
 
-#custom-amount {
+#pay-amount {
   background: transparent;
   border: none;
   color: #fff;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
-  width: 120px;
+  width: 100%;
   outline: none;
   margin: 0;
+  padding: 0;
+  -moz-appearance: textfield; /* Firefox */
+}
+
+#pay-amount::placeholder {
+  color: rgba(255, 255, 255, 0.2);
 }
 
 /* 우측 내장 버튼 영역 */
 .stepper-btns {
   position: absolute;
-  right: 5px;
-  top: 5px;
-  bottom: 5px;
+  right: 6px;
+  top: 6px;
+  bottom: 6px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 32px;
+  width: 34px;
 }
 
 .stepper-btns button {
@@ -294,7 +302,7 @@
 
 /* 제출 버튼 높이 맞춤 */
 .donate-submit {
-  height: 48px;
+  height: 52px;
   padding: 0 25px;
   white-space: nowrap;
 }

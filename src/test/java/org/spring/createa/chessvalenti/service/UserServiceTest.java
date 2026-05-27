@@ -64,13 +64,14 @@ public class UserServiceTest {
     SessionRegistry sessionRegistry = mock(SessionRegistry.class);
     UserService userService = new UserService(userRepository, sessionRegistry);
     
-    when(userRepository.findAll(any(PageRequest.class))).thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.Collections.emptyList()));
+    when(userRepository.findUsersWithFilters(any(), any(), any(), any(), any(org.springframework.data.domain.Pageable.class)))
+        .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.Collections.emptyList()));
     when(sessionRegistry.getAllPrincipals()).thenReturn(java.util.Collections.emptyList());
     when(userRepository.getMemberShipRatio()).thenReturn(0.0);
 
-    var stats = userService.getAdminUserStats(null, PageRequest.of(0, 10));
+    var stats = userService.getAdminUserStats(null, null, false, null, PageRequest.of(0, 10));
 
     assertNotNull(stats);
-    verify(userRepository).findAll(any(PageRequest.class));
+    verify(userRepository).findUsersWithFilters(any(), any(), any(), any(), any(org.springframework.data.domain.Pageable.class));
   }
 }

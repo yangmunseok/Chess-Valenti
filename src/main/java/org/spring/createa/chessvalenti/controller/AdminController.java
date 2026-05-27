@@ -1,17 +1,20 @@
 package org.spring.createa.chessvalenti.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.spring.createa.chessvalenti.domain.Difficulty;
 import org.spring.createa.chessvalenti.domain.Inquiry;
 import org.spring.createa.chessvalenti.domain.Payment;
 import org.spring.createa.chessvalenti.domain.Post;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.domain.User;
-import org.spring.createa.chessvalenti.dto.request.PostCreateRequest;
 import org.spring.createa.chessvalenti.dto.request.PatchUserRequest;
 import org.spring.createa.chessvalenti.dto.response.AdminUserStatsResponse;
 import org.spring.createa.chessvalenti.security.UserPrincipal;
+import org.spring.createa.chessvalenti.service.FileService;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PaymentService;
 import org.spring.createa.chessvalenti.service.PostService;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @PreAuthorize("hasRole('ADMIN')")
@@ -45,6 +49,7 @@ public class AdminController {
   private final PaymentService paymentService;
   private final UserService userService;
   private final PostService postService;
+  private final FileService fileService;
 
   @GetMapping("")
   public String adminPage() {
@@ -54,8 +59,15 @@ public class AdminController {
   @GetMapping("/users")
   public String userListPage(@PageableDefault Pageable pageable,
       @RequestParam(required = false) String email,
+      @RequestParam(required = false) String username,
+      @RequestParam(required = false, defaultValue = "false") boolean onlineOnly,
+      @RequestParam(required = false) LocalDate startDate,
       Model model) {
-    AdminUserStatsResponse stats = userService.getAdminUserStats(email, pageable);
+
+    LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
+
+    AdminUserStatsResponse stats = userService.getAdminUserStats(username, email, onlineOnly,
+        startDateTime, pageable);
 
     model.addAttribute("users", stats.users());
     model.addAttribute("loginUsers", stats.onlineUsers());
@@ -67,6 +79,12 @@ public class AdminController {
     model.addAttribute("membershipRatio", stats.membershipRatio());
     model.addAttribute("newSupporter", stats.newSupporter());
     model.addAttribute("diffNewSupporter", stats.diffNewSupporter());
+
+    // Pass filters back to UI
+    model.addAttribute("email", email);
+    model.addAttribute("usernameSearch", username);
+    model.addAttribute("onlineOnly", onlineOnly);
+    model.addAttribute("startDate", startDate);
 
     return "admin/user-list";
   }
@@ -143,10 +161,17 @@ public class AdminController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PatchMapping("/api/posts/{id}")
   public void updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
-      @RequestBody PostCreateRequest body, @PathVariable int id) {
+      @RequestParam("title") String title,
+      @RequestParam("content") String content,
+      @RequestParam(value = "videoUrl", required = false) String videoUrl,
+      @RequestParam(value = "difficulty", required = false) Difficulty difficulty,
+      @RequestParam(value = "introduction", required = false) String introduction,
+      @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+      @PathVariable int id) {
     log.info("Updating post {} by user {}", id, userPrincipal.getUsername());
-    postService.updatePost(id, body.title(), body.content(), body.videoUrl(), body.difficulty(),
-        body.introduction(), body.imageUrl());
+    String imageUrl =
+        (imageFile != null && !imageFile.isEmpty()) ? fileService.saveFile(imageFile) : null;
+    postService.updatePost(id, title, content, videoUrl, difficulty, introduction, imageUrl);
   }
 
   // Recommendation: Move to /api/admin/posts/{id}
@@ -162,10 +187,18 @@ public class AdminController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PostMapping("/api/posts")
   public void savePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
-      @RequestBody PostCreateRequest body) {
+      @RequestParam("title") String title,
+      @RequestParam("content") String content,
+      @RequestParam(value = "videoUrl", required = false) String videoUrl,
+      @RequestParam("postType") PostType postType,
+      @RequestParam(value = "difficulty", required = false) Difficulty difficulty,
+      @RequestParam(value = "introduction", required = false) String introduction,
+      @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
     log.info("Saving post by user {}", userPrincipal.getUsername());
-    postService.savePost(userPrincipal.getUser(), body.title(), body.content(), body.videoUrl(),
-        body.postType(), body.difficulty(), body.introduction(), body.imageUrl());
+    String imageUrl =
+        (imageFile != null && !imageFile.isEmpty()) ? fileService.saveFile(imageFile) : null;
+    postService.savePost(userPrincipal.getUser(), title, content, videoUrl,
+        postType, difficulty, introduction, imageUrl);
   }
 
 

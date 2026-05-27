@@ -1,20 +1,14 @@
 package org.spring.createa.chessvalenti.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.spring.createa.chessvalenti.domain.Difficulty;
+import org.spring.createa.chessvalenti.domain.FAQ;
 import org.spring.createa.chessvalenti.domain.Inquiry;
+import org.spring.createa.chessvalenti.domain.Notice;
 import org.spring.createa.chessvalenti.domain.Payment;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
@@ -40,6 +34,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -104,7 +108,7 @@ public class AdminControllerTest {
         Collections.emptyList(),
         0, 0, 0, 0.0, 0, 0
     );
-    when(userService.getAdminUserStats(any(), any())).thenReturn(stats);
+    when(userService.getAdminUserStats(any(), any(), anyBoolean(), any(), any())).thenReturn(stats);
 
     mockMvc.perform(get("/admin/users")
             .with(authentication(adminAuthentication()))
@@ -146,7 +150,7 @@ public class AdminControllerTest {
 
   @Test
   void supportPage_FaqMode_ShouldAddFaqToModel() throws Exception {
-    Post faq = new Post();
+    Post faq = new FAQ();
     faq.setTitle("FAQ");
 
     when(postService.findFAQ()).thenReturn(Collections.singletonList(faq));
@@ -221,7 +225,7 @@ public class AdminControllerTest {
 
   @Test
   void updatePost_ShouldReturnNoContent() throws Exception {
-    PostCreateRequest request = new PostCreateRequest("Title", "Content", PostType.NOTICE);
+    PostCreateRequest request = new PostCreateRequest("Title", "Content", null, PostType.NOTICE, null, null, null);
 
     mockMvc.perform(patch("/admin/api/posts/1")
             .with(authentication(adminAuthentication()))
@@ -230,7 +234,7 @@ public class AdminControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
-    verify(postService).updatePost(1, "Title", "Content");
+    verify(postService).updatePost(1, "Title", "Content", null, null, null, null);
   }
 
   @Test
@@ -245,7 +249,7 @@ public class AdminControllerTest {
 
   @Test
   void savePost_ShouldReturnNoContent() throws Exception {
-    PostCreateRequest request = new PostCreateRequest("Title", "Content", PostType.NOTICE);
+    PostCreateRequest request = new PostCreateRequest("Title", "Content", null, PostType.NOTICE, null, null, null);
 
     mockMvc.perform(post("/admin/api/posts")
             .with(authentication(adminAuthentication()))
@@ -254,7 +258,7 @@ public class AdminControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
-    verify(postService).savePost(adminUser().getUser(), "Title", "Content", PostType.NOTICE);
+    verify(postService).savePost(adminUser().getUser(), "Title", "Content", null, PostType.NOTICE, null, null, null);
   }
 
   @Test
@@ -268,7 +272,7 @@ public class AdminControllerTest {
 
   @Test
   void editPost_ShouldAddPostAndUsernameToModel() throws Exception {
-    Post post = new Post();
+    Post post = new Notice();
     post.setTitle("Notice");
 
     when(postService.findPostByPostId(1)).thenReturn(post);

@@ -142,10 +142,24 @@ public class UserService {
     return userRepository.findAllByEmailContaining(email, pageRequest);
   }
 
+  public List<String> getOnlineUsernames() {
+    return sessionRegistry.getAllPrincipals().stream()
+        .filter(principal -> principal instanceof UserDetails)
+        .map(principal -> ((UserDetails) principal).getUsername())
+        .toList();
+  }
+
   public AdminUserStatsResponse getAdminUserStats(
-      String email, Pageable pageable) {
-    Page<User> users = (email == null || email.isBlank()) ? findAll(pageable)
-        : findAllByEmail(email, pageable);
+      String username, String email, boolean onlineOnly, LocalDateTime startDate, Pageable pageable) {
+
+    List<String> onlineUsernames = onlineOnly ? getOnlineUsernames() : null;
+
+    Sort sort = Sort.by(Sort.Order.desc("donation"));
+    PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+        sort);
+
+    Page<User> users = userRepository.findUsersWithFilters(username, email, onlineUsernames,
+        startDate, pageRequest);
 
     List<User> onlineUsers = users.getContent().stream()
         .filter(user -> isUserOnline(user.getUsername()))

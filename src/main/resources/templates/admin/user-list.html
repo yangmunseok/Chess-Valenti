@@ -15,24 +15,92 @@
 <nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/users')}"></nav>
 <main class="admin-main">
   <header class="admin-header">
-    <h2>사용자 관리 <span class="count">전체 1,284명</span></h2>
+    <h2>사용자 관리 <span class="count" th:text="'전체 ' + ${users.totalElements} + '명'">전체 1,284명</span></h2>
     <div class="header-tools">
-      <form action="/admin/users" method="GET" class="search-form">
-        <div class="search-container">
-          <input type="search" name="email" placeholder="이메일를 입력하세요..." class="search-input">
-
-          <button type="submit" class="search-submit-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+      <form action="/admin/users" method="GET" class="filter-form">
+        <div class="filter-group">
+          <input type="text" name="username" placeholder="닉네임..." th:value="${usernameSearch}" class="filter-input">
+          <input type="text" name="email" placeholder="이메일..." th:value="${email}" class="filter-input">
+          <input type="date" name="startDate" th:value="${startDate}" class="filter-input">
+          <label class="online-filter">
+            <input type="checkbox" name="onlineOnly" th:checked="${onlineOnly}"> Online
+          </label>
+          <button type="submit" class="filter-submit-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"
                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                  stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
+            검색
           </button>
+          <a href="/admin/users" class="filter-reset-btn">초기화</a>
         </div>
       </form>
     </div>
   </header>
+
+  <style>
+    .filter-form {
+      background: var(--card-bg);
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-input:focus {
+      border-color: var(--accent-purple);
+    }
+    .online-filter {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .filter-submit-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-purple);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .filter-submit-btn:hover {
+      opacity: 0.9;
+    }
+    .filter-reset-btn {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px;
+    }
+    .filter-reset-btn:hover {
+      color: #fff;
+    }
+  </style>
 
   <section class="admin-mini-dashboard">
     <div class="mini-card">
@@ -143,7 +211,7 @@
         </svg>
       </button>
       <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
-        <a th:text="${page}" th:href="@{/admin/users(page=${page}-1)}" class="btn"
+        <a th:text="${page}" th:href="@{/admin/users(page=${page}-1, username=${usernameSearch}, email=${email}, onlineOnly=${onlineOnly}, startDate=${startDate})}" class="btn"
            th:classappend="${currentPage + 1 == page} ? 'active'"></a>
       </th:block>
       <button onclick="setCurrentPage(currentPage+10)" class="btn">

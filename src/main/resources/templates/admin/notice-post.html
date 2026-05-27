@@ -6,7 +6,10 @@
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="post_id" th:unless="${post==null}" th:content="${post.postId}"/>
   <title>Valenti - Create Content</title>
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link
+      href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
+      rel="stylesheet"
+  />
   <link rel="stylesheet" href="/css/app.css">
   <link rel="stylesheet" href="/css/admin.css">
   <link rel="stylesheet" href="/css/home.css">
@@ -83,10 +86,13 @@
           </div>
 
           <div class="input-group">
-            <label for="image-url">IMAGE URL</label>
-            <input type="text" id="image-url" placeholder="이미지 URL을 입력하세요..."
-                   th:value="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) ? post.imageUrl : ''}"
-                   class="valenti-input">
+            <label for="image-file">THUMBNAIL IMAGE (Optional)</label>
+            <input type="file" id="image-file" accept="image/*" class="valenti-input">
+            <p th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.imageUrl != null}"
+               class="hero-desc"
+               style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
+              * 현재 이미지: <span th:text="${post.imageUrl}"></span> (새 파일을 선택하면 교체됩니다)
+            </p>
           </div>
 
           <div class="input-group">
@@ -116,7 +122,7 @@
   </main>
 </div>
 
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script>
   const csrfToken = document.querySelector('meta[name="_csrf"]').content;
   const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
@@ -158,7 +164,7 @@
     const videoUrl = document.getElementById('video-url').value;
     const difficulty = document.getElementById('difficulty').value;
     const introduction = document.getElementById('introduction').value;
-    const imageUrl = document.getElementById('image-url').value;
+    const imageFile = document.getElementById('image-file').files[0];
     const content = quill.root.innerHTML; // HTML 형태로 내용 가져오기
 
     if (!title) {
@@ -166,50 +172,55 @@
       return;
     }
 
-    const payload = {title, content, postType, videoUrl, difficulty, introduction, imageUrl};
-    console.log("발행 데이터:", payload);
-
-    if (postId === null) {
-      fetch("/admin/api/posts",
-          {
-            method: 'post', headers: {
-              "Content-Type": "application/json",
-              [csrfHeader]: csrfToken
-            }, body: JSON.stringify(payload)
-          }).then(
-          (res) => {
-            alert('글이 성공적으로 기록되었습니다.')
-            location.href = '/admin/contents';
-          })
-      return;
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('postType', postType);
+    formData.append('videoUrl', videoUrl);
+    formData.append('difficulty', difficulty);
+    formData.append('introduction', introduction);
+    if (imageFile) {
+      formData.append('imageFile', imageFile);
     }
-    fetch(`/admin/api/posts/${postId}`, {
-      method: 'PATCH', headers: {
-        "Content-Type": "application/json",
+
+    const url = postId === null ? "/admin/api/posts" : `/admin/api/posts/${postId}`;
+    const method = postId === null ? 'POST' : 'PATCH';
+
+    fetch(url, {
+      method: method,
+      headers: {
         [csrfHeader]: csrfToken
-      }, body: JSON.stringify(payload)
-    }).then(
-        (res) => {
-          alert('글이 성공적으로 기록되었습니다.')
-          location.href = '/admin/contents';
-        })
+        // Note: Do NOT set Content-Type header for FormData; the browser will set it with the correct boundary
+      },
+      body: formData
+    }).then(res => {
+      if (res.ok) {
+        alert('글이 성공적으로 기록되었습니다.');
+        location.href = '/admin/contents';
+      } else {
+        alert('오류가 발생했습니다.');
+      }
+    });
   });
 
   // 삭제 버튼 클릭 이벤트
-  document.getElementById('delete-post').addEventListener('click', function () {
-    console.log('delete post.')
-    fetch(`/admin/api/posts/${postId}`,
-        {
-          method: 'DELETE', headers: {
-            "Content-Type": "application/json",
-            [csrfHeader]: csrfToken
-          }
-        }).then(
-        (res) => {
-          alert('글이 성공적으로 삭제되었습니다.')
-          const json = res.json().then((json) => console.log(json))
-        })
-  })
+  if (document.getElementById('delete-post') !== null) {
+    document.getElementById('delete-post').addEventListener('click', function () {
+      console.log('delete post.')
+      fetch(`/admin/api/posts/${postId}`,
+          {
+            method: 'DELETE', headers: {
+              "Content-Type": "application/json",
+              [csrfHeader]: csrfToken
+            }
+          }).then(
+          (res) => {
+            alert('글이 성공적으로 삭제되었습니다.')
+            const json = res.json().then((json) => console.log(json))
+          })
+    })
+  }
+
 </script>
 </body>
 </html>

@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Valenti - Post Detail</title>
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <link
+      href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
+      rel="stylesheet"
+  />
   <link th:href="@{/css/app.css}" rel="stylesheet">
   <link th:href="@{/css/home.css}" rel="stylesheet">
   <link th:href="@{/css/post.css}" rel="stylesheet">
@@ -35,13 +38,11 @@
                   th:text="${@timeUtil.format(post.createdAt,'yyyy-MM-dd HH:mm')}"></span>
           </div>
           <h1 class="post-title" th:text="${post.title}"></h1>
-          <p th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study)}"
-             th:text="${post.introduction}"
-             style="color: var(--accent-blue); margin-top: 10px; font-weight: 500;"></p>
         </header>
 
-        <section th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}"
-                 class="post-video-container">
+        <section
+            th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.videoUrl != null and !#strings.isEmpty(post.videoUrl)}"
+            class="post-video-container">
           <div class="video-wrapper">
             <iframe th:src="'https://www.youtube.com/embed/' + ${post.videoUrl}"
                     frameborder="0"

@@ -35,7 +35,7 @@ public abstract class Post {
 
   String title;
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "LONGTEXT")
   String content;
 
   @ManyToOne
