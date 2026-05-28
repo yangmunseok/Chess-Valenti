@@ -10,10 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.domain.Inquiry;
 import org.spring.createa.chessvalenti.domain.PostType;
-import org.spring.createa.chessvalenti.dto.response.BoardResponse;
 import org.spring.createa.chessvalenti.dto.game.GameInfo;
-import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.dto.request.InquiryCreateRequest;
+import org.spring.createa.chessvalenti.dto.response.BoardResponse;
+import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PostService;
@@ -129,7 +129,8 @@ public class MainController {
     List<String> legalMoves = ignoreLegalMove ? null :
         board.legalMoves().stream().map(Move::toString).toList();
 
-    return new BoardResponse(board.getFen(), legalMoves, board.isKingAttacked(), board.isMated(), uciMoves);
+    return new BoardResponse(board.getFen(), legalMoves, board.isKingAttacked(), board.isMated(),
+        uciMoves);
   }
 
   @ResponseBody
@@ -180,7 +181,7 @@ public class MainController {
     model.addAttribute("legalMoveSan",
         game.getBoard().legalMoves().stream().map(Move::getSan).toList());
     model.addAttribute("fen", game.getBoard().getFen());
-    
+
     // Include UCI moves for the initial PGN loading
     model.addAttribute("uciMoves", game.getHalfMoves().stream().map(Move::toString).toList());
   }
@@ -215,7 +216,8 @@ public class MainController {
     String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
     model.addAttribute("username", username);
     model.addAttribute("url", "/study");
-    model.addAttribute("studies", postService.findAllByPostType(PageRequest.of(0, 20), PostType.STUDY).getContent());
+    model.addAttribute("studies",
+        postService.findAllByPostType(PageRequest.of(0, 20), PostType.STUDY).getContent());
     return "study";
   }
 
@@ -225,6 +227,32 @@ public class MainController {
     model.addAttribute("url", "/support");
     model.addAttribute("email", userPrincipal.getUser().getEmail());
     return "support";
+  }
+
+  @GetMapping("/inquiries/{id}")
+  public String inquiryDetailPage(@AuthenticationPrincipal UserPrincipal userPrincipal,
+      @PathVariable int id, Model model) {
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    Inquiry inquiry = inquiryService.findInquiryById(id);
+
+    if (inquiry == null) {
+      return "redirect:/support";
+    }
+
+    // 작성자 본인 또는 관리자만 조회 가능
+    boolean isAdmin = userPrincipal != null && userPrincipal.getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    boolean isOwner =
+        userPrincipal != null && inquiry.getWriter().getUserId() == userPrincipal.getUser()
+            .getUserId();
+
+    if (!isAdmin && !isOwner) {
+      return "redirect:/";
+    }
+
+    model.addAttribute("post", inquiry);
+    model.addAttribute("username", username);
+    return "post-detail";
   }
 
   @GetMapping("/posts/{id}")
@@ -240,6 +268,8 @@ public class MainController {
   public String inquiryPage(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
     model.addAttribute("username", userPrincipal.getUsername());
     model.addAttribute("url", "/inquiry");
+    model.addAttribute("inquiries",
+        inquiryService.findAllByWriter(userPrincipal.getUser(), PageRequest.of(0, 10)));
     return "inquiry";
   }
 

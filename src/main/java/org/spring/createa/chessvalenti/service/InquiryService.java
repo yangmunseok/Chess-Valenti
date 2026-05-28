@@ -1,7 +1,9 @@
 package org.spring.createa.chessvalenti.service;
 
+import java.time.LocalDateTime;
 import org.spring.createa.chessvalenti.db.InquiryRepository;
 import org.spring.createa.chessvalenti.domain.Inquiry;
+import org.spring.createa.chessvalenti.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +31,24 @@ public class InquiryService {
     return inquiryRepository.findInquiryById(id);
   }
 
+  public Page<Inquiry> findAllByWriter(User writer, Pageable pageable) {
+    Sort sort = Sort.by(Sort.Order.desc("createdAt"));
+    PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+        sort);
+    return inquiryRepository.findAllByWriter(writer, pageRequest);
+  }
+
   @Transactional
   public void deleteInquiryById(int id) {
     inquiryRepository.deleteInquiriesById(id);
+  }
+
+  @Transactional
+  public void answerInquiry(int id, String answer) {
+    Inquiry inquiry = inquiryRepository.findInquiryById(id);
+    inquiry.setAnswer(answer);
+    inquiry.setAnsweredAt(LocalDateTime.now());
+    inquiryRepository.save(inquiry);
   }
 
   public void save(Inquiry inquiry) {

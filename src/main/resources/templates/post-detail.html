@@ -10,15 +10,17 @@
   <link th:href="@{/css/app.css}" rel="stylesheet">
   <link th:href="@{/css/home.css}" rel="stylesheet">
   <link th:href="@{/css/post.css}" rel="stylesheet">
-</head>
-<body class="valenti-dark">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  </head>
+  <body class="valenti-dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<div class="dashboard-wrapper">
+  <div class="dashboard-wrapper">
   <div th:replace="~{fragment/component :: sidebar(username=${username}, url='')}"></div>
   <main class="main-content">
     <div class="home-container">
       <nav class="post-nav">
-        <a href="/" class="btn-back">← 목록으로 돌아가기</a>
+        <a href="javascript:history.back()" class="btn-back">← 목록으로 돌아가기</a>
       </nav>
 
       <article class="post-container">
@@ -38,6 +40,10 @@
                   th:text="${@timeUtil.format(post.createdAt,'yyyy-MM-dd HH:mm')}"></span>
           </div>
           <h1 class="post-title" th:text="${post.title}"></h1>
+          <div class="author-meta" style="margin-top: 10px; color: #4b5563; font-size: 14px;" 
+               th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Inquiry)}">
+            작성자: <span th:text="${post.writer.username}"></span>
+          </div>
         </header>
 
         <section
@@ -57,6 +63,30 @@
           </div>
         </section>
 
+        <!-- 답변 영역 -->
+        <section th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Inquiry)}" class="reply-section" style="margin-top: 40px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 30px;">
+          <div th:if="${post.answer != null}" class="answer-box" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 16px; padding: 24px;">
+            <div class="answer-header" style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+              <span style="color: #10B981; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                운영진 답변
+              </span>
+              <span style="color: #4b5563; font-size: 13px;" th:text="${@timeUtil.format(post.answeredAt, 'yyyy-MM-dd HH:mm')}"></span>
+            </div>
+            <div class="answer-content" style="color: #f1f5f9; line-height: 1.6; font-size: 15px;" th:utext="${post.answer}">
+            </div>
+          </div>
+
+          <!-- 답변 작성 폼 (관리자 전용) -->
+          <div sec:authorize="hasRole('ROLE_ADMIN')" class="admin-reply-form" style="margin-top: 30px;">
+            <h3 style="font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 16px;">답변 작성</h3>
+            <div id="reply-editor" style="height: 200px; background: #161b22; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px;"></div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+              <button id="submit-reply" class="btn-publish" style="padding: 10px 24px; font-size: 14px;" th:data-id="${post.id}">답변 등록하기</button>
+            </div>
+          </div>
+        </section>
+
         <!--footer class="post-footer">
           <div class="author-info">
             <div class="avatar">V</div>
@@ -66,7 +96,53 @@
       </article>
     </div>
   </main>
-</div>
+  </div>
 
-</body>
-</html>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+  <script sec:authorize="hasRole('ROLE_ADMIN')">
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+  var quill = new Quill('#reply-editor', {
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        ['link', 'code-block'],
+        [{'list': 'ordered'}, {'list': 'bullet'}]
+      ]
+    },
+    placeholder: '답변 내용을 입력해주세요.',
+    theme: 'snow'
+  });
+
+  document.getElementById('submit-reply').addEventListener('click', function () {
+    const id = this.dataset.id;
+    const answer = quill.root.innerHTML;
+
+    if (quill.getText().trim().length === 0) {
+      alert('답변 내용을 입력해주세요.');
+      return;
+    }
+
+    fetch(`/admin/api/inquiries/${id}/answer`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        [csrfHeader]: csrfToken
+      },
+      body: JSON.stringify({ answer })
+    }).then(res => {
+      if (res.ok) {
+        alert('답변이 등록되었습니다.');
+        location.reload();
+      } else {
+        alert('답변 등록에 실패했습니다.');
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('오류가 발생했습니다.');
+    });
+  });
+  </script>
+  </body>
+  </html>

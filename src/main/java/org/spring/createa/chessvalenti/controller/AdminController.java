@@ -190,6 +190,17 @@ public class AdminController {
     inquiryService.deleteInquiryById(id);
   }
 
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PostMapping("/api/inquiries/{id}/answer")
+  public void answerInquiry(@PathVariable int id, @RequestBody AnswerRequest body) {
+    log.info("Answering inquiry {}", id);
+    inquiryService.answerInquiry(id, body.answer());
+  }
+
+  public record AnswerRequest(String answer) {
+
+  }
+
   // Recommendation: Move to /api/admin/posts
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @PostMapping("/api/posts")

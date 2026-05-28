@@ -45,7 +45,10 @@
       <td class="td-title" th:text="${inquiry.title}">프리미엄 결제 후에도 기능이 활성화되지 않아요.</td>
       <td th:text="${inquiry.writer.username}">양문석</td>
       <td th:text="${@timeUtil.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-      <!--td><span class="status-waiting">답변 대기</span></td-->
+      <td>
+        <span th:if="${inquiry.answer == null}" class="status-waiting">답변 대기</span>
+        <span th:if="${inquiry.answer != null}" class="badge-success" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">답변 완료</span>
+      </td>
       <td>
         <div style="display: flex; gap: 8px;">
           <a class="btn btn-glass btn-outline btn-sm"

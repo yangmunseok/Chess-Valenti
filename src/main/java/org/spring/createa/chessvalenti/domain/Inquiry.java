@@ -37,6 +37,10 @@ public class Inquiry {
   @Enumerated(EnumType.STRING)
   InquiryCategory category;
 
+  @Column(columnDefinition = "LONGTEXT")
+  String answer;
+  LocalDateTime answeredAt;
+
   public Inquiry() {
 
   }
