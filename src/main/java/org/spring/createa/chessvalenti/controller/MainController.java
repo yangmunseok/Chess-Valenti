@@ -8,12 +8,14 @@ import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.spring.createa.chessvalenti.db.InsightRepository;
 import org.spring.createa.chessvalenti.domain.Inquiry;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.dto.game.GameInfo;
 import org.spring.createa.chessvalenti.dto.request.InquiryCreateRequest;
 import org.spring.createa.chessvalenti.dto.response.BoardResponse;
 import org.spring.createa.chessvalenti.security.UserPrincipal;
+import org.spring.createa.chessvalenti.service.CommentService;
 import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PostService;
@@ -26,6 +28,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,7 +46,8 @@ public class MainController {
   private final GameService gameService;
   private final PostService postService;
   private final InquiryService inquiryService;
-  private final org.spring.createa.chessvalenti.db.InsightRepository insightRepository;
+  private final CommentService commentService;
+  private final InsightRepository insightRepository;
 
   @GetMapping("/")
   public String homepage(Model model) {
@@ -259,9 +263,52 @@ public class MainController {
   public String postDetailPage(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @PathVariable int id, Model model) {
     String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
-    model.addAttribute("post", postService.findPostByPostId(id));
+    org.spring.createa.chessvalenti.domain.Post post = postService.findPostByPostId(id);
+    model.addAttribute("post", post);
     model.addAttribute("username", username);
+
+    // FAQ가 아닌 경우에만 댓글 조회
+    if (post.getType() != PostType.FAQ) {
+      model.addAttribute("comments", commentService.findCommentsByPost(post));
+      model.addAttribute("totalCommentCount", commentService.countCommentsByPost(post));
+    }
+
     return "post-detail";
+  }
+
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PostMapping("/api/posts/{id}/comments")
+  public void saveComment(@AuthenticationPrincipal UserPrincipal userPrincipal,
+      @PathVariable int id, @RequestBody CommentRequest body) {
+    log.info("Saving comment for post {} by user {}", id, userPrincipal.getUsername());
+    org.spring.createa.chessvalenti.domain.Post post = postService.findPostByPostId(id);
+    if (post.getType() == PostType.FAQ) {
+      throw new IllegalArgumentException("Cannot comment on FAQ");
+    }
+    commentService.saveComment(body.content(), userPrincipal.getUser(), post, body.parentId());
+  }
+
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @DeleteMapping("/api/comments/{id}")
+  public void deleteComment(@AuthenticationPrincipal UserPrincipal userPrincipal,
+      @PathVariable int id) {
+    log.info("Deleting comment {} by user {}", id, userPrincipal.getUsername());
+    org.spring.createa.chessvalenti.domain.Comment comment = commentService.findById(id);
+
+    boolean isAdmin = userPrincipal.getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    boolean isOwner = comment.getWriter().getUserId() == userPrincipal.getUser().getUserId();
+
+    if (!isAdmin && !isOwner) {
+      throw new org.springframework.security.access.AccessDeniedException(
+          "Not authorized to delete this comment");
+    }
+
+    commentService.deleteComment(id);
+  }
+
+  public record CommentRequest(String content, Integer parentId) {
+
   }
 
   @GetMapping("/inquiry")

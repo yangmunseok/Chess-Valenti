@@ -165,4 +165,29 @@
   justify-content: center;
   font-size: 14px;
   font-weight: 800;
-}
+  }
+
+  /* --- [5] 댓글 등록 버튼 디자인 --- */
+  .btn-comment-submit {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-comment-submit:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  .btn-comment-submit:active {
+    transform: translateY(0);
+  }
