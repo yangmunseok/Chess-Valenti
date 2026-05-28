@@ -25,6 +25,19 @@
       <p>이메일과 비밀번호를 입력해주세요.</p>
     </div>
 
+    <div th:if="${param.resetRequested}" class="alert alert-info" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+      비밀번호 재설정 링크가 이메일로 전송되었습니다.
+    </div>
+    <div th:if="${param.resetSuccess}" class="alert alert-success" style="color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+      비밀번호가 성공적으로 변경되었습니다.
+    </div>
+    <div th:if="${param.error == 'invalidToken'}" class="alert alert-danger" style="color: #f7768e; background: rgba(247, 118, 142, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+      유효하지 않은 토큰입니다.
+    </div>
+    <div th:if="${param.error == 'expired'}" class="alert alert-danger" style="color: #f7768e; background: rgba(247, 118, 142, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+      만료된 토큰입니다.
+    </div>
+
     <form action="/login" method="POST" class="login-form">
       <div class="input-group">
         <label for="email">이메일</label>

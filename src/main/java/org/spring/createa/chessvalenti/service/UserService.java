@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.spring.createa.chessvalenti.db.PasswordResetTokenRepository;
 import org.spring.createa.chessvalenti.db.UserRepository;
+import org.spring.createa.chessvalenti.domain.PasswordResetToken;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.response.AdminUserStatsResponse;
@@ -22,13 +24,66 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
   UserRepository userRepository;
+  PasswordResetTokenRepository tokenRepository;
   BCryptPasswordEncoder bCryptPasswordEncoder;
   SessionRegistry sessionRegistry;
+  MailService mailService;
 
-  public UserService(UserRepository userRepository, SessionRegistry sessionRegistry) {
+  public UserService(UserRepository userRepository,
+      PasswordResetTokenRepository tokenRepository,
+      SessionRegistry sessionRegistry, MailService mailService) {
     this.userRepository = userRepository;
+    this.tokenRepository = tokenRepository;
     this.sessionRegistry = sessionRegistry;
+    this.mailService = mailService;
     this.bCryptPasswordEncoder = new BCryptPasswordEncoder(5);
+  }
+
+  public void createPasswordResetTokenForUser(User user, String token) {
+    PasswordResetToken myToken = new PasswordResetToken(
+        token, user);
+    tokenRepository.save(myToken);
+  }
+
+  public void sendPasswordResetEmail(String userEmail, String contextPath) {
+    User user = userRepository.findUserByEmail(userEmail);
+    if (user == null) {
+      log.warn("Password reset requested for non-existent email: {}", userEmail);
+      return;
+    }
+    String token = java.util.UUID.randomUUID().toString();
+    createPasswordResetTokenForUser(user, token);
+    
+    String url = contextPath + "/reset-password?token=" + token;
+    String message = "비밀번호를 초기화하려면 아래 링크를 클릭하세요:\n" + url;
+    mailService.sendMail(user.getEmail(), "비밀번호 초기화 요청", message);
+  }
+
+  public String validatePasswordResetToken(String token) {
+    PasswordResetToken passToken = tokenRepository.findByToken(
+        token);
+
+    if (passToken == null) {
+      return "invalidToken";
+    }
+    if (passToken.isExpired()) {
+      return "expired";
+    }
+    return null;
+  }
+
+  public void changeUserPassword(User user, String password) {
+    user.setPassword(bCryptPasswordEncoder.encode(password));
+    userRepository.save(user);
+    // Optional: Delete the token after use
+    PasswordResetToken token = tokenRepository.findByUser(user);
+    if (token != null) {
+        tokenRepository.delete(token);
+    }
+  }
+
+  public User getUserByPasswordResetToken(String token) {
+    return tokenRepository.findByToken(token).getUser();
   }
 
   public void register(User user) {
