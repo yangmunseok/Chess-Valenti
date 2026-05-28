@@ -55,8 +55,27 @@ public class UserService {
     createPasswordResetTokenForUser(user, token);
     
     String url = contextPath + "/reset-password?token=" + token;
-    String message = "비밀번호를 초기화하려면 아래 링크를 클릭하세요:\n" + url;
-    mailService.sendMail(user.getEmail(), "비밀번호 초기화 요청", message);
+    
+    String htmlContent = "<div style=\"font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #0A0D14; color: #FFFFFF; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);\">" +
+        "<div style=\"text-align: center; margin-bottom: 30px;\">" +
+        "<div style=\"display: inline-block; width: 12px; height: 12px; background-color: #3b82f6; border-radius: 50%; margin-right: 8px;\"></div>" +
+        "<span style=\"font-size: 24px; font-weight: 800; letter-spacing: -0.5px;\">valenti</span>" +
+        "</div>" +
+        "<h1 style=\"font-size: 20px; font-weight: 700; margin-bottom: 16px; text-align: center;\">비밀번호 재설정 요청</h1>" +
+        "<p style=\"font-size: 15px; color: #94a3b8; line-height: 1.6; text-align: center; margin-bottom: 32px;\">" +
+        "안녕하세요, <b>" + user.getUsername() + "</b>님.<br>" +
+        "비밀번호를 재설정하려면 아래 버튼을 클릭해 주세요.<br>" +
+        "본인이 요청하지 않은 경우 이 메일을 무시하셔도 됩니다." +
+        "</p>" +
+        "<div style=\"text-align: center; margin-bottom: 40px;\">" +
+        "<a href=\"" + url + "\" style=\"display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #FFFFFF; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 15px; transition: all 0.3s;\">비밀번호 재설정하기</a>" +
+        "</div>" +
+        "<div style=\"border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px; text-align: center;\">" +
+        "<p style=\"font-size: 12px; color: #4b5563; margin: 0;\">© 2026 valenti. All rights reserved.</p>" +
+        "</div>" +
+        "</div>";
+
+    mailService.sendHtmlMail(user.getEmail(), "[valenti] 비밀번호 초기화 요청", htmlContent);
   }
 
   public String validatePasswordResetToken(String token) {
