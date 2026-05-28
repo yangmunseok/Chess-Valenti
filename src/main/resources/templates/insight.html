@@ -471,21 +471,26 @@
       initBoard(id);
       renderBoardFromFen(key, id);
 
-      const buttons = card.querySelectorAll('.side-btn');
-      buttons.forEach(btn => {
-        btn.onclick = () => {
-          buttons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          if (btn.dataset.side === "total") {
-            updateCardUI(card, stats, "total");
-          } else {
-            updateCardUI(card, stats[btn.dataset.side], btn.dataset.side);
-          }
-        };
-      });
-      updateCardUI(card, stats, "total");
-      i++;
-    }
+       const boardWrapper = card.querySelector('.mini-board-wrapper');
+       boardWrapper.onclick = () => {
+         location.href = `/pawn-games?fen=${encodeURIComponent(key)}`;
+       };
+
+       const buttons = card.querySelectorAll('.side-btn');
+       buttons.forEach(btn => {
+         btn.onclick = () => {
+           buttons.forEach(b => b.classList.remove('active'));
+           btn.classList.add('active');
+           if (btn.dataset.side === "total") {
+             updateCardUI(card, stats, "total");
+           } else {
+             updateCardUI(card, stats[btn.dataset.side], btn.dataset.side);
+           }
+         };
+       });
+       updateCardUI(card, stats, "total");
+       i++;
+     }
   }
 
   function renderResultPage(map) {

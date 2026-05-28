@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>valenti - Pawn Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/analysis.css}" rel="stylesheet">
+  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+  <style>
+    .pawn-games-header {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 40px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+    .preview-board-wrapper {
+      width: 200px;
+      height: 200px;
+      flex-shrink: 0;
+    }
+    .header-info h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .header-info p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    .results-container {
+      width: 100%;
+      max-width: 1000px;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{/fragment/component :: sidebar(username=${username}, url='/insight')}"></div>
+
+<div class="main-content">
+  <div class="results-container">
+    <div class="pawn-games-header">
+      <div class="preview-board-wrapper">
+        <div id="preview-board" class="board"></div>
+      </div>
+      <div class="header-info">
+        <p class="hero-label">PAWN STRUCTURE EXPLORER</p>
+        <h1>Selected <span class="blue-text">Structure</span> Games</h1>
+        <p>이 폰 구조가 나타나는 마스터들의 실전 대국을 분석해보세요.</p>
+      </div>
+    </div>
+
+    <div id="pawn-structure-analysis" class="analysis-footer" style="display: block;">
+      <div class="stats-header">
+        <div class="stats-item">
+          <span class="stats-label">총 게임 수</span>
+          <span class="stats-value" id="total-games">0</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">승률 통계</span>
+          <div class="win-rate-bar">
+            <div id="win-bar" class="bar white" title="White Win">0%</div>
+            <div id="draw-bar" class="bar draw" title="Draw">0%</div>
+            <div id="loss-bar" class="bar black" title="Black Win">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-list-container">
+        <table class="game-table">
+          <thead>
+          <tr>
+            <th>Event</th>
+            <th>White</th>
+            <th>Black</th>
+            <th>Result</th>
+            <th>Date</th>
+            <th>View</th>
+          </tr>
+          </thead>
+          <tbody id="game-list-body">
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                게임 데이터를 불러오고 있습니다...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-controls">
+        <button id="prev-page" class="page-btn" disabled>이전</button>
+        <span id="page-info">1 / 1</span>
+        <button id="next-page" class="page-btn" disabled>다음</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" th:inline="javascript">
+  import {initBoard, renderBoardFromFen} from "/js/newStructure/board.js";
+
+  const targetFen = /*[[${fen}]]*/ "";
+  let currentPage = 1;
+  const itemsPerPage = 15;
+  let filteredGames = [];
+
+  // Initialize
+  initBoard('preview-board');
+  renderBoardFromFen(targetFen, 'preview-board');
+  loadGameStream(`/api/games?fen=${encodeURIComponent(targetFen)}`);
+
+  async function loadGameStream(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+        document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
+        return;
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let batchCount = 0;
+
+    while (true) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, {stream: true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (line.trim()) {
+          const game = JSON.parse(line);
+          filteredGames.push(game);
+          batchCount++;
+
+          if (batchCount % 50 === 0) {
+            updateUI();
+          }
+        }
+      }
+    }
+
+    if (buffer.trim()) {
+      filteredGames.push(JSON.parse(buffer));
+    }
+    
+    updateUI(true);
+  }
+
+  function updateUI(isFinal = false) {
+    // Sort by Elo (High to Low)
+    filteredGames.sort((a, b) => {
+        const eloA = Math.max(a.whitePlayer.elo, a.blackPlayer.elo);
+        const eloB = Math.max(b.whitePlayer.elo, b.blackPlayer.elo);
+        return eloB - eloA;
+    });
+
+    document.getElementById('total-games').innerText = filteredGames.length;
+    updateStats();
+    renderGamePage(currentPage);
+    
+    if (isFinal && filteredGames.length === 0) {
+        document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
+    }
+  }
+
+  function updateStats() {
+    const total = filteredGames.length;
+    if (total === 0) return;
+
+    const wins = filteredGames.filter(g => g.result === 'WHITE_WON').length;
+    const draws = filteredGames.filter(g => g.result === 'DRAW').length;
+    const losses = total - wins - draws;
+
+    const wPct = ((wins / total) * 100).toFixed(1);
+    const dPct = ((draws / total) * 100).toFixed(1);
+    const lPct = (100 - parseFloat(wPct) - parseFloat(dPct)).toFixed(1);
+
+    const wBar = document.getElementById('win-bar');
+    wBar.style.width = wPct + '%';
+    wBar.innerText = wPct > 10 ? wPct + '%' : '';
+
+    const dBar = document.getElementById('draw-bar');
+    dBar.style.width = dPct + '%';
+    dBar.innerText = dPct > 10 ? dPct + '%' : '';
+
+    const lBar = document.getElementById('loss-bar');
+    lBar.style.width = lPct + '%';
+    lBar.innerText = lPct > 10 ? lPct + '%' : '';
+  }
+
+  function renderGamePage(page) {
+    currentPage = page;
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pagedData = filteredGames.slice(start, end);
+
+    const tbody = document.getElementById('game-list-body');
+    if (filteredGames.length > 0) {
+        tbody.innerHTML = pagedData.map(game => `
+          <tr>
+              <td>${game.event}</td>
+              <td>${game.whitePlayer.name}(${game.whitePlayer.elo})</td>
+              <td>${game.blackPlayer.name}(${game.blackPlayer.elo})</td>
+              <td class="result-cell">${game.result}</td>
+              <td>${game.date}</td>
+              <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}" target="_blank">👁️</a></td>
+          </tr>
+      `).join('');
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filteredGames.length / itemsPerPage));
+    document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
+    document.getElementById('prev-page').disabled = (currentPage === 1);
+    document.getElementById('next-page').disabled = (currentPage === totalPages || filteredGames.length === 0);
+  }
+
+  document.getElementById('prev-page').onclick = () => renderGamePage(currentPage - 1);
+  document.getElementById('next-page').onclick = () => renderGamePage(currentPage + 1);
+
+</script>
+</body>
+</html>

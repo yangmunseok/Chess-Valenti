@@ -185,6 +185,15 @@ public class MainController {
     model.addAttribute("uciMoves", game.getHalfMoves().stream().map(Move::toString).toList());
   }
 
+  @GetMapping("/pawn-games")
+  public String pawnGames(@RequestParam String fen,
+      @AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    model.addAttribute("username", username);
+    model.addAttribute("fen", fen);
+    return "pawn-games";
+  }
+
   @GetMapping("/insight")
   public String showInsight(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
     String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";

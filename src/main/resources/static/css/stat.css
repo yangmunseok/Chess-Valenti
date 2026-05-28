@@ -222,12 +222,25 @@
   width: 100px;
   height: 100px;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mini-board-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* 실제 보드가 그려질 div 스타일 */
 .board {
   width: 100%;
   height: 100%;
+}
+
+.mini-board-wrapper .board {
+  pointer-events: none;
 }
 
 .card-stats-area {
