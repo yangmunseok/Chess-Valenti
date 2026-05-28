@@ -13,6 +13,56 @@
   <link rel="stylesheet" href="/css/btn-refactor.css">
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta name="_csrf" th:content="${_csrf.token}">
+  <style>
+    /* 결제 리포트 추출 버튼 스타일 */
+    .btn-excel {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(122, 162, 247, 0.1);
+      color: var(--accent-purple);
+      border: 1px solid rgba(122, 162, 247, 0.25);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(122, 162, 247, 0.1);
+    }
+    
+    .btn-excel:hover {
+      background: rgba(122, 162, 247, 0.18);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(122, 162, 247, 0.2);
+    }
+    
+    .btn-excel:active {
+      transform: translateY(0);
+    }
+
+    /* 날짜 선택 인풋 스타일 (Month) */
+    .header-tools input[type="month"] {
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s ease;
+      color-scheme: dark;
+      cursor: pointer;
+    }
+    
+    .header-tools input[type="month"]:focus {
+      border-color: var(--accent-purple);
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 8px rgba(122, 162, 247, 0.2);
+    }
+  </style>
 </head>
 <body class="admin-body">
 <nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/finance')}"></nav>

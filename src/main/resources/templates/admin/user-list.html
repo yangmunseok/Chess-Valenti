@@ -41,64 +41,132 @@
   </header>
 
   <style>
+    /* Admin Header Layout */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      gap: 20px;
+      flex-wrap: wrap;
+      width: 100%;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding-bottom: 20px;
+    }
+    
+    .admin-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    
+    .admin-header h2 .count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-purple);
+      background: rgba(122, 162, 247, 0.1);
+      border: 1px solid rgba(122, 162, 247, 0.15);
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-left: 12px;
+      letter-spacing: 0;
+    }
+    
+    .header-tools {
+      flex-shrink: 0;
+    }
+
     .filter-form {
-      background: var(--card-bg);
-      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px 18px;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
     .filter-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .filter-input {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 8px;
       padding: 8px 12px;
       color: #fff;
-      font-size: 14px;
+      font-size: 13px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 140px;
+    }
+    .filter-input[type="date"] {
+      width: 150px;
+      color-scheme: dark;
     }
     .filter-input:focus {
       border-color: var(--accent-purple);
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 8px rgba(122, 162, 247, 0.2);
     }
     .online-filter {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 14px;
-      color: var(--text-muted);
+      font-size: 13px;
+      color: #9499b8;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    .online-filter:hover {
+      color: #fff;
+    }
+    .online-filter input {
+      accent-color: var(--accent-purple);
       cursor: pointer;
     }
     .filter-submit-btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      background: var(--accent-purple);
+      background: linear-gradient(135deg, var(--accent-purple) 0%, #5d83d6 100%);
       color: #fff;
       border: none;
       border-radius: 8px;
       padding: 8px 16px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(122, 162, 247, 0.15);
     }
     .filter-submit-btn:hover {
-      opacity: 0.9;
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(122, 162, 247, 0.25);
+    }
+    .filter-submit-btn:active {
+      transform: translateY(0);
     }
     .filter-reset-btn {
-      color: var(--text-muted);
+      color: #9499b8;
       text-decoration: none;
       font-size: 13px;
-      padding: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
     }
     .filter-reset-btn:hover {
       color: #fff;
+      background: rgba(255, 255, 255, 0.05);
     }
   </style>
 

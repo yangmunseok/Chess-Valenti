@@ -21,7 +21,6 @@
   <header class="admin-header">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <h2>콘텐츠 관리</h2>
-      <button class="btn-valenti-primary" onclick="location.href='/admin/editor'">+ 새 글 작성</button>
     </div>
   </header>
   <div class="admin-tabs" th:data-current="${mode}">
@@ -36,9 +35,6 @@
     </button>
   </div>
   <div id="tab-notice-content" class="tab-content">
-    <div class="table-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
-      <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=NOTICE'">+새 공지 등록</button>
-    </div>
     <section
         th:replace="~{fragment/content :: noticeSection(contents=${notice},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
   </div>
@@ -46,9 +42,6 @@
     <section th:replace="~{fragment/content :: faqSection(contents=${faq})}"></section>
   </div>
   <div id="tab-study-content" class="tab-content">
-    <div class="table-actions" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
-      <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=STUDY'">+새 스터디 등록</button>
-    </div>
     <section
         th:replace="~{fragment/content :: studySection(contents=${study},currentPage=${currentPage}, totalPages=${totalPages})}"></section>
   </div>

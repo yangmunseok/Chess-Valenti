@@ -71,7 +71,7 @@
       <span>Contact</span>
     </a>
 
-    <a th:href="@{/admin}" class="nav-item"
+    <a th:href="@{/admin/users}" class="nav-item"
        th:classappend="${#strings.equals('/admin', url) ? 'active' : ''}"
        sec:authorize="hasRole('ROLE_ADMIN')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -116,21 +116,22 @@
   </div>
 </div>
 <nav th:fragment="adminSidebar(url)" class="admin-sidebar">
-  <div class="admin-logo" onclick="location.href='/'" style="cursor: pointer;">valenti <span>Admin</span></div>
+  <div class="admin-logo" onclick="location.href='/'" style="cursor: pointer;">valenti
+    <span>Admin</span></div>
   <ul class="admin-menu">
-    <li><a href="/">🏠 사이트로 돌아가기</a></li>
-    <li th:classappend="${url == '/admin'} ? 'active' : ''"><a href="/admin">📊 대시보드 인사이트</a></li>
-    <li th:classappend="${url == '/admin/users'} ? 'active' : ''"><a href="/admin/users">👥 사용자 관리</a></li>
-    <li th:classappend="${url == '/admin/contents'} ? 'active' : ''"><a href="/admin/contents">📝 콘텐츠 관리</a></li>
-    <li th:classappend="${url == '/admin/support'} ? 'active' : ''"><a href="/admin/support">✉️ 소통 & 문의 관리</a></li>
-    <li th:classappend="${url == '/admin/finance'} ? 'active' : ''"><a href="/admin/finance">💰 결제/금융 관리</a></li>
+    <li th:classappend="${url == '/admin/users'} ? 'active' : ''"><a href="/admin/users">👥 사용자
+      관리</a></li>
+    <li th:classappend="${url == '/admin/contents'} ? 'active' : ''"><a href="/admin/contents">📝 콘텐츠
+      관리</a></li>
+    <li th:classappend="${url == '/admin/support'} ? 'active' : ''"><a href="/admin/support">✉️ 소통 &
+      문의 관리</a></li>
+    <li th:classappend="${url == '/admin/finance'} ? 'active' : ''"><a href="/admin/finance">💰 결제/금융
+      관리</a></li>
   </ul>
   <div class="admin-user-bottom">
-    <div style="margin-bottom: 10px;">
-      <a href="/" style="color: var(--accent-purple); text-decoration: none; font-size: 13px; font-weight: 600;">🏠 일반 페이지로 이동</a>
-    </div>
-    <p>관리자: <strong>양문석</strong></p>
-    <a href="/logout">로그아웃</a>
+    <a href="/" class="home-link">🏠 일반 페이지로 이동</a>
+    <p>⚙️ 관리자: <strong>양문석</strong></p>
+    <a href="/logout" class="logout-link">로그아웃</a>
   </div>
 </nav>
 
