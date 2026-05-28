@@ -47,15 +47,18 @@
       <td th:text="${@timeUtil.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
       <!--td><span class="status-waiting">답변 대기</span></td-->
       <td>
-        <a class="btn btn-glass btn-outline btn-md"
-           th:href="|/admin/inquiries/${inquiry.id}|">
-          확인하기
-        </a>
-        <a class="btn btn-danger btn-md"
-           onclick="deleteInquiry(this)">
-          삭제하기
-        </a>
+        <div style="display: flex; gap: 8px;">
+          <a class="btn btn-glass btn-outline btn-sm"
+             th:href="|/admin/inquiries/${inquiry.id}|">
+            확인하기
+          </a>
+          <a class="btn btn-danger btn-sm"
+             th:onclick="|deleteInquiry(${inquiry.id})|">
+            삭제하기
+          </a>
+        </div>
       </td>
+
     </tr>
     </tbody>
   </table>
@@ -81,13 +84,14 @@
 <section th:fragment="noticeSection(contents,currentPage,totalPages)" class="admin-content">
   <div class="table-actions">
     <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
-    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=NOTICE'">+새 공지 등록</button>
+    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=NOTICE'">+새
+      공지 등록
+    </button>
   </div>
 
   <table class="admin-table">
     <thead>
     <tr>
-      <th><input type="checkbox"></th>
       <th>제목</th>
       <th>등록일</th>
       <th>관리</th>
@@ -95,7 +99,6 @@
     </thead>
     <tbody>
     <tr th:each="content: ${contents}">
-      <td><input type="checkbox"></td>
       <td class="td-title" th:text="${content.title}">[공지] valenti 서비스 정기 점검 안내 (3/30)</td>
       <td th:text="${@timeUtil.format(content.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-27</td>
       <td>
@@ -105,6 +108,15 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+            </svg>
+          </button>
+          <button class="btn-icon danger" th:onclick="|deletePost(${content.postId})|">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
           </button>
         </div>
@@ -135,13 +147,14 @@
 <section th:fragment="studySection(contents,currentPage,totalPages)" class="admin-content">
   <div class="table-actions">
     <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
-    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=STUDY'">+새 스터디 등록</button>
+    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=STUDY'">+새
+      스터디 등록
+    </button>
   </div>
 
   <table class="admin-table">
     <thead>
     <tr>
-      <th><input type="checkbox"></th>
       <th>제목</th>
       <th>난이도</th>
       <th>등록일</th>
@@ -150,7 +163,6 @@
     </thead>
     <tbody>
     <tr th:each="content: ${contents}">
-      <td><input type="checkbox"></td>
       <td class="td-title" th:text="${content.title}">루이 로페즈 기초</td>
       <td><span class="badge badge-standard" th:text="${content.difficulty}">BEGINNER</span></td>
       <td th:text="${@timeUtil.format(content.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-27</td>
@@ -161,6 +173,15 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+            </svg>
+          </button>
+          <button class="btn-icon danger" th:onclick="|deletePost(${content.postId})|">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
           </button>
         </div>
@@ -191,14 +212,14 @@
 <section th:fragment="faqSection(contents)" class="admin-content">
   <div class="table-actions">
     <button class="btn btn-outline btn-glass btn-md warning">선택 삭제</button>
-    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=FAQ'">+새 FAQ 등록
+    <button class="btn btn-primary btn-md" onclick="window.location='/admin/editor?type=FAQ'">+새 FAQ
+      등록
     </button>
   </div>
 
   <table class="admin-table">
     <thead>
     <tr>
-      <th><input type="checkbox"></th>
       <th>제목</th>
       <th>등록일</th>
       <th>관리</th>
@@ -206,7 +227,6 @@
     </thead>
     <tbody>
     <tr th:each="content: ${contents}">
-      <td><input type="checkbox"></td>
       <td class="td-title" th:text="${content.title}">결제는 어떻게 하나요?</td>
       <td th:text="${@timeUtil.format(content.createdAt, 'yyyy-MM-dd HH:mm')}">2026-03-27</td>
       <td>
@@ -216,6 +236,15 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path>
+            </svg>
+          </button>
+          <button class="btn-icon danger" th:onclick="|deletePost(${content.postId})|">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
             </svg>
           </button>
         </div>
@@ -248,7 +277,7 @@
         <td th:text="${payment.method}"></td>
         <td><span class="badge badge-success">결제 완료</span></td>
         <td>
-          <button class="btn btn-outline btn-glass btn-md"
+          <button class="btn btn-outline btn-glass btn-sm"
                   th:onclick="|requestRefund(${payment.paymentId})|">환불
           </button>
         </td>
@@ -322,7 +351,7 @@
       <td>
         <div class="row-actions">
           <button class="btn-action-stop" onclick="openStopModal(this)">계정 잠금</button>
-          <button class="btn btn-outline btn-glass btn-md">조사 완료</button>
+          <button class="btn btn-outline btn-glass btn-sm">조사 완료</button>
         </div>
       </td>
     </tr>

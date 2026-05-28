@@ -685,6 +685,12 @@
   border-color: var(--accent-purple);
 }
 
+.btn-icon.danger:hover {
+  background: rgba(247, 118, 142, 0.1);
+  color: var(--warning-red);
+  border-color: var(--warning-red);
+}
+
 /* --- 페이지네이션 (Pagination) --- */
 .pagination {
   margin-top: 32px;

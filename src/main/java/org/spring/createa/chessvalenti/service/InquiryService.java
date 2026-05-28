@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class InquiryService {
@@ -28,6 +29,7 @@ public class InquiryService {
     return inquiryRepository.findInquiryById(id);
   }
 
+  @Transactional
   public void deleteInquiryById(int id) {
     inquiryRepository.deleteInquiriesById(id);
   }
