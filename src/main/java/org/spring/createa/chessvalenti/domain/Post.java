@@ -33,6 +33,7 @@ public abstract class Post {
   LocalDateTime createdAt;
   LocalDateTime updatedAt;
 
+  @Column(unique = true)
   String title;
 
   @Column(columnDefinition = "LONGTEXT")

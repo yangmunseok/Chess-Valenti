@@ -1,5 +1,6 @@
 package org.spring.createa.chessvalenti.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -23,7 +24,9 @@ public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   int userId;
+  @Column(unique = true)
   String username;
+  @Column(unique = true)
   String email;
   String password;
   boolean banned = false;

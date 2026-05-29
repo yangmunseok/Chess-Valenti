@@ -1,7 +1,6 @@
 // 가상의 데이터 샘플 및 페이지 상태
 import {currentNode} from "./state.js";
 
-console.log("imported.")
 let currentPage = 1;
 const itemsPerPage = 10;
 let filteredGames = []; // 검색된 게임 데이터 저장소
@@ -32,7 +31,7 @@ async function loadGameStream(url) {
     if (done) {
       break;
     }
-    console.log("hmm...");
+
     buffer += decoder.decode(value, {stream: true});
     const lines = buffer.split('\n');
     buffer = lines.pop();
@@ -53,8 +52,8 @@ async function loadGameStream(url) {
                 < Math.max([game2.whitePlayer.elo, game2.blackPlayer.elo])) {
               return 1;
             }
-            if (game1.whitePlayer.elo, game1.blackPlayer.elo
-            - (game2.whitePlayer.elo, game2.blackPlayer.elo) < 0) {
+            if (game1.whitePlayer.elo + game1.blackPlayer.elo
+                - game2.whitePlayer.elo - game2.blackPlayer.elo < 0) {
               return 1;
             }
             return -1;
