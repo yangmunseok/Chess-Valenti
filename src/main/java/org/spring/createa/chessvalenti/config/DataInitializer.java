@@ -2,15 +2,20 @@ package org.spring.createa.chessvalenti.config;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.game.Player;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.spring.createa.chessvalenti.db.ChessPlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.spring.createa.chessvalenti.db.GameIndexRepository;
+import org.spring.createa.chessvalenti.domain.ChessPlayer;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.dto.game.CustomGame;
 import org.spring.createa.chessvalenti.util.pgn.CustomPgnIterator;
@@ -30,6 +35,8 @@ public class DataInitializer implements CommandLineRunner {
   private final ChessHashHelper chessHashHelper;
   @Autowired
   private final EntityManager em;
+  @Autowired
+  private final ChessPlayerRepository chessPlayerRepository;
 
   private final boolean skip = true;
 
@@ -45,6 +52,7 @@ public class DataInitializer implements CommandLineRunner {
     int batchSize = 3000;
     int cnt = 0;
     List<GameIndex> gameIndexList = new ArrayList<>();
+    Map<String, ChessPlayer> playerCache = new HashMap<>();
 
     for (CustomGame game : games) {
       game.loadMoveText();
@@ -55,8 +63,10 @@ public class DataInitializer implements CommandLineRunner {
       Board board = new Board();
       visited.add(chessHashHelper.hashPawnStructure(board));
 
-      long white_elo = game.getWhitePlayer().getElo();
-      long black_elo = game.getBlackPlayer().getElo();
+      int white_elo = game.getWhitePlayer().getElo();
+      int black_elo = game.getBlackPlayer().getElo();
+      ChessPlayer whitePlayer = savePlayer(game.getWhitePlayer(), playerCache);
+      ChessPlayer blackPlayer = savePlayer(game.getBlackPlayer(), playerCache);
       long game_offset = game.getOffset();
       long move_idx = 0;
       String fen = board.getFen();
@@ -98,7 +108,8 @@ public class DataInitializer implements CommandLineRunner {
 
         cnt++;
         //then 3.25 MB/s
-        GameIndex gameIndex = new GameIndex(key, hashedPieceConfiguration, game_offset, move_idx);
+        GameIndex gameIndex = new GameIndex(key, hashedPieceConfiguration, game_offset, move_idx,
+            whitePlayer, blackPlayer, white_elo, black_elo);
         gameIndexList.add(gameIndex);
         if (cnt % batchSize == 0) {
           gameIndexRepository.saveAll(gameIndexList);
@@ -112,6 +123,22 @@ public class DataInitializer implements CommandLineRunner {
       }
     }
     gameIndexRepository.saveAll(gameIndexList);
+  }
+
+  private ChessPlayer savePlayer(Player player, Map<String, ChessPlayer> playerCache) {
+    String playerId = player.getId();
+    String name = player.getName();
+    String key = "%s|%s".formatted(playerId, name);
+    ChessPlayer cached = playerCache.get(key);
+    if (cached != null) {
+      return cached;
+    }
+
+    ChessPlayer chessPlayer = chessPlayerRepository.findFirstByPlayerIdAndName(playerId, name)
+        .orElseGet(() -> chessPlayerRepository.save(
+            new ChessPlayer(playerId, name, player.getDescription())));
+    playerCache.put(key, chessPlayer);
+    return chessPlayer;
   }
 
 }
