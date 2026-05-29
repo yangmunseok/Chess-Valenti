@@ -19,7 +19,9 @@ import org.spring.createa.chessvalenti.service.CommentService;
 import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PostService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -156,6 +158,30 @@ public class MainController {
           .delayElements(Duration.ofMillis(1));
     }
     return gameService.findGamesByPawnStructure(fen).delayElements(Duration.ofMillis(1));
+  }
+
+  @ResponseBody
+  @GetMapping(value = "/api/games/paginated")
+  public Page<GameInfo> searchGamesByPawnStructurePaginated(@RequestParam String fen,
+      @RequestParam(required = false) Integer whiteQueen,
+      @RequestParam(required = false) Integer whiteRook,
+      @RequestParam(required = false) Integer whiteBishop,
+      @RequestParam(required = false) Integer whiteKnight,
+      @RequestParam(required = false) Integer blackQueen,
+      @RequestParam(required = false) Integer blackRook,
+      @RequestParam(required = false) Integer blackBishop,
+      @RequestParam(required = false) Integer blackKnight,
+      @RequestParam(defaultValue = "false") boolean usePieceFilter,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "15") int size) {
+    log.info("Searching paginated games by pawn structure: {}, page: {}, size: {}", fen, page, size);
+    Pageable pageable = PageRequest.of(page, size);
+    if (usePieceFilter) {
+      return gameService.findGamesByPawnStructureAndPieceConfiguration(fen, whiteQueen,
+          whiteRook, whiteBishop, whiteKnight, blackQueen, blackRook, blackBishop, blackKnight,
+          pageable);
+    }
+    return gameService.findGamesByPawnStructure(fen, pageable);
   }
 
   @GetMapping("/games/{id}")

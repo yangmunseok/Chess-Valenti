@@ -12,14 +12,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.spring.createa.chessvalenti.db.ChessPlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.spring.createa.chessvalenti.db.ChessPlayerRepository;
 import org.spring.createa.chessvalenti.db.GameIndexRepository;
 import org.spring.createa.chessvalenti.domain.ChessPlayer;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.dto.game.CustomGame;
-import org.spring.createa.chessvalenti.util.pgn.CustomPgnIterator;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
+import org.spring.createa.chessvalenti.util.pgn.CustomPgnIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -38,7 +38,7 @@ public class DataInitializer implements CommandLineRunner {
   @Autowired
   private final ChessPlayerRepository chessPlayerRepository;
 
-  private final boolean skip = true;
+  private final boolean skip = false;
 
   public void run(String... args) throws Exception {
 
@@ -126,17 +126,16 @@ public class DataInitializer implements CommandLineRunner {
   }
 
   private ChessPlayer savePlayer(Player player, Map<String, ChessPlayer> playerCache) {
-    String playerId = player.getId();
     String name = player.getName();
-    String key = "%s|%s".formatted(playerId, name);
+    String key = name;
     ChessPlayer cached = playerCache.get(key);
     if (cached != null) {
       return cached;
     }
 
-    ChessPlayer chessPlayer = chessPlayerRepository.findFirstByPlayerIdAndName(playerId, name)
+    ChessPlayer chessPlayer = chessPlayerRepository.findFirstByName(name)
         .orElseGet(() -> chessPlayerRepository.save(
-            new ChessPlayer(playerId, name, player.getDescription())));
+            new ChessPlayer(name)));
     playerCache.put(key, chessPlayer);
     return chessPlayer;
   }

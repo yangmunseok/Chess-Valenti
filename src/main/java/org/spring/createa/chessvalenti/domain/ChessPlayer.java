@@ -14,17 +14,13 @@ public class ChessPlayer {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   long id;
 
-  String playerId;
   String name;
-  String description;
 
   public ChessPlayer() {
 
   }
 
-  public ChessPlayer(String playerId, String name, String description) {
-    this.playerId = playerId;
+  public ChessPlayer(String name) {
     this.name = name;
-    this.description = description;
   }
 }

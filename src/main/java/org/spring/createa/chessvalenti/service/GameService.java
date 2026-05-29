@@ -11,6 +11,8 @@ import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.dto.game.GameInfo;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 
 @Service
@@ -68,11 +70,23 @@ public class GameService {
     return Flux.fromStream(gameIndices.stream().map(this::from));
   }
 
+  public Page<GameInfo> findGamesByPawnStructure(Board board, Pageable pageable) {
+    Page<GameIndex> gameIndices = gameIndexRepository.findByPawnStructure(board, pageable);
+    return gameIndices.map(this::from);
+  }
+
   public Flux<GameInfo> findGamesByPawnStructureAndPieceConfiguration(Board board, int wq, int wr,
       int wb, int wn, int bq, int br, int bb, int bn) {
     List<GameIndex> gameIndices = gameIndexRepository.findAllByPawnStructureAndPieceConfiguration(
         board, wq, wr, wb, wn, bq, br, bb, bn);
     return Flux.fromStream(gameIndices.stream().map(this::from));
+  }
+
+  public Page<GameInfo> findGamesByPawnStructureAndPieceConfiguration(Board board, int wq, int wr,
+      int wb, int wn, int bq, int br, int bb, int bn, Pageable pageable) {
+    Page<GameIndex> gameIndices = gameIndexRepository.findByPawnStructureAndPieceConfiguration(
+        board, wq, wr, wb, wn, bq, br, bb, bn, pageable);
+    return gameIndices.map(this::from);
   }
 
   public Flux<GameInfo> findGamesByPawnStructure(String fen) {
@@ -86,11 +100,30 @@ public class GameService {
     }
   }
 
+  public Page<GameInfo> findGamesByPawnStructure(String fen, Pageable pageable) {
+    try {
+      Board board = new Board();
+      board.loadFromFen(fen);
+      return findGamesByPawnStructure(board, pageable);
+    } catch (Exception ex) {
+      log.error("Error loading board from FEN: {}", fen, ex);
+      return null;
+    }
+  }
+
   public Flux<GameInfo> findGamesByPawnStructureAndPieceConfiguration(String fen, int wq, int wr,
       int wb, int wn, int bq, int br, int bb, int bn) {
     Board board = new Board();
     board.loadFromFen(fen);
     return findGamesByPawnStructureAndPieceConfiguration(
         board, wq, wr, wb, wn, bq, br, bb, bn);
+  }
+
+  public Page<GameInfo> findGamesByPawnStructureAndPieceConfiguration(String fen, int wq, int wr,
+      int wb, int wn, int bq, int br, int bb, int bn, Pageable pageable) {
+    Board board = new Board();
+    board.loadFromFen(fen);
+    return findGamesByPawnStructureAndPieceConfiguration(
+        board, wq, wr, wb, wn, bq, br, bb, bn, pageable);
   }
 }

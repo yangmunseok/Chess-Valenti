@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChessPlayerRepository extends JpaRepository<ChessPlayer, Long> {
 
-  Optional<ChessPlayer> findFirstByPlayerIdAndName(String playerId, String name);
+  Optional<ChessPlayer> findFirstByName(String name);
 }

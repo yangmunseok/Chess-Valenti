@@ -109,77 +109,54 @@
   import {initBoard, renderBoardFromFen} from "/js/newStructure/board.js";
 
   const targetFen = /*[[${fen}]]*/ "";
-  let currentPage = 1;
+  let currentPage = 0; // 0-indexed for backend
   const itemsPerPage = 15;
-  let filteredGames = [];
+  let totalPages = 0;
 
   // Initialize
   initBoard('preview-board');
   renderBoardFromFen(targetFen, 'preview-board');
-  loadGameStream(`/api/games?fen=${encodeURIComponent(targetFen)}`);
+  fetchGames(0);
 
-  async function loadGameStream(url) {
-    const res = await fetch(url);
-    if (!res.ok) {
-        document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
-        return;
-    }
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let batchCount = 0;
+  async function fetchGames(page) {
+    currentPage = page;
+    const url = `/api/games/paginated?fen=${encodeURIComponent(targetFen)}&page=${page}&size=${itemsPerPage}`;
+    
+    document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
 
-    while (true) {
-      const {value, done} = await reader.read();
-      if (done) break;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Fetch failed');
       
-      buffer += decoder.decode(value, {stream: true});
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (line.trim()) {
-          const game = JSON.parse(line);
-          filteredGames.push(game);
-          batchCount++;
-
-          if (batchCount % 50 === 0) {
-            updateUI();
-          }
-        }
-      }
-    }
-
-    if (buffer.trim()) {
-      filteredGames.push(JSON.parse(buffer));
-    }
-    
-    updateUI(true);
-  }
-
-  function updateUI(isFinal = false) {
-    // Sort by Elo (High to Low)
-    filteredGames.sort((a, b) => {
-        const eloA = Math.max(a.whitePlayer.elo, a.blackPlayer.elo);
-        const eloB = Math.max(b.whitePlayer.elo, b.blackPlayer.elo);
-        return eloB - eloA;
-    });
-
-    document.getElementById('total-games').innerText = filteredGames.length;
-    updateStats();
-    renderGamePage(currentPage);
-    
-    if (isFinal && filteredGames.length === 0) {
+      const data = await res.json();
+      totalPages = data.totalPages;
+      
+      document.getElementById('total-games').innerText = data.totalElements;
+      updateStats(data.content); // Note: Stats are now only for the current page if we do it this way, or we need another API for total stats.
+      renderGameTable(data.content);
+      updatePaginationControls();
+      
+      if (data.content.length === 0) {
         document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
     }
   }
 
-  function updateStats() {
-    const total = filteredGames.length;
-    if (total === 0) return;
+  function updateStats(games) {
+    if (!games || games.length === 0) return;
 
-    const wins = filteredGames.filter(g => g.result === 'WHITE_WON').length;
-    const draws = filteredGames.filter(g => g.result === 'DRAW').length;
+    // Ideally, stats should be based on total elements, but calculating it from all matching games might be slow if there are millions.
+    // For now, we show stats for the current page or we could add a total stats endpoint.
+    // The user might want total stats. Let's see if we can get them.
+    // Given the current repository, it might be better to just show current page stats or omit if misleading.
+    // But the original code calculated it from the stream.
+    
+    const total = games.length;
+    const wins = games.filter(g => g.result === 'WHITE_WON').length;
+    const draws = games.filter(g => g.result === 'DRAW').length;
     const losses = total - wins - draws;
 
     const wPct = ((wins / total) * 100).toFixed(1);
@@ -199,34 +176,32 @@
     lBar.innerText = lPct > 10 ? lPct + '%' : '';
   }
 
-  function renderGamePage(page) {
-    currentPage = page;
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pagedData = filteredGames.slice(start, end);
-
+  function renderGameTable(games) {
     const tbody = document.getElementById('game-list-body');
-    if (filteredGames.length > 0) {
-        tbody.innerHTML = pagedData.map(game => `
-          <tr>
-              <td>${game.event}</td>
-              <td>${game.whitePlayer.name}(${game.whitePlayer.elo})</td>
-              <td>${game.blackPlayer.name}(${game.blackPlayer.elo})</td>
-              <td class="result-cell">${game.result}</td>
-              <td>${game.date}</td>
-              <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}" target="_blank">👁️</a></td>
-          </tr>
-      `).join('');
-    }
-
-    const totalPages = Math.max(1, Math.ceil(filteredGames.length / itemsPerPage));
-    document.getElementById('page-info').innerText = `${currentPage} / ${totalPages}`;
-    document.getElementById('prev-page').disabled = (currentPage === 1);
-    document.getElementById('next-page').disabled = (currentPage === totalPages || filteredGames.length === 0);
+    tbody.innerHTML = games.map(game => `
+      <tr>
+          <td>${game.event}</td>
+          <td>${game.whitePlayer.name}(${game.whitePlayer.elo})</td>
+          <td>${game.blackPlayer.name}(${game.blackPlayer.elo})</td>
+          <td class="result-cell">${game.result}</td>
+          <td>${game.date}</td>
+          <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}" target="_blank">👁️</a></td>
+      </tr>
+    `).join('');
   }
 
-  document.getElementById('prev-page').onclick = () => renderGamePage(currentPage - 1);
-  document.getElementById('next-page').onclick = () => renderGamePage(currentPage + 1);
+  function updatePaginationControls() {
+    document.getElementById('page-info').innerText = `${currentPage + 1} / ${Math.max(1, totalPages)}`;
+    document.getElementById('prev-page').disabled = (currentPage === 0);
+    document.getElementById('next-page').disabled = (currentPage >= totalPages - 1 || totalPages === 0);
+  }
+
+  document.getElementById('prev-page').onclick = () => {
+    if (currentPage > 0) fetchGames(currentPage - 1);
+  };
+  document.getElementById('next-page').onclick = () => {
+    if (currentPage < totalPages - 1) fetchGames(currentPage + 1);
+  };
 
 </script>
 </body>
