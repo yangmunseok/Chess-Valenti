@@ -253,10 +253,7 @@ public class MainController {
 
   @GetMapping("/support")
   public String supportPage(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
-    model.addAttribute("username", userPrincipal.getUsername());
-    model.addAttribute("url", "/support");
-    model.addAttribute("email", userPrincipal.getUser().getEmail());
-    return "support";
+    return "redirect:/";
   }
 
   @GetMapping("/inquiries/{id}")
@@ -266,7 +263,7 @@ public class MainController {
     Inquiry inquiry = inquiryService.findInquiryById(id);
 
     if (inquiry == null) {
-      return "redirect:/support";
+      return "redirect:/inquiry";
     }
 
     // 작성자 본인 또는 관리자만 조회 가능

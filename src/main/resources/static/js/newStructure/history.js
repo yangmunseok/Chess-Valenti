@@ -290,7 +290,7 @@ export function initHistoryEvents() {
         }
       });
 
-  document.querySelector('#btn-first').addEventListener('click', function () {
+  function goFirst() {
     const targetNode = gameTree
     loadBoardFromNode(targetNode).then(() => {
       setCurrentNode(targetNode);
@@ -305,8 +305,9 @@ export function initHistoryEvents() {
             }
           });
     })
-  })
-  document.querySelector('#btn-last').addEventListener('click', function () {
+  }
+
+  function goLast() {
     let targetNode = gameTree
     while (targetNode.children.length > 0) {
       targetNode = targetNode.children[0];
@@ -324,56 +325,63 @@ export function initHistoryEvents() {
             }
           });
     })
-  })
+  }
+
+  function goNext() {
+    const targetNode = currentNode.parent;
+    if (targetNode.ply === 0) {
+      return;
+    }
+
+    loadBoardFromNode(targetNode).then(() => {
+      //refreshMoveHistory();
+      setCurrentNode(targetNode);
+      renderEvaluataion();
+      document.querySelectorAll('.clickable-move').forEach(
+          el => {
+            if (el.dataset.nodeId === targetNode.id) {
+              el.classList.add("selected-node")
+              selectedMoveElement = el
+            } else {
+              el.classList.remove("selected-node")
+            }
+          });
+    });
+  }
+
+  function goPrev() {
+    const targetNode = currentNode.children[0];
+    if (!targetNode) {
+      return;
+    }
+
+    loadBoardFromNode(targetNode).then(() => {
+      //refreshMoveHistory();
+      setCurrentNode(targetNode);
+      renderEvaluataion();
+      updateOpeningExplorer();
+      document.querySelectorAll('.clickable-move').forEach(
+          el => {
+            if (el.dataset.nodeId === targetNode.id) {
+              el.classList.add("selected-node")
+              selectedMoveElement = el;
+            } else {
+              el.classList.remove("selected-node")
+            }
+          });
+    });
+  }
+
+  document.querySelector('#btn-first').addEventListener('click', goFirst);
+
+  document.querySelector('#btn-last').addEventListener('click', goLast);
   // 요기까지 일단.
   document.querySelector('#go-back-btn').addEventListener(
-      'click', function () {
-        const targetNode = currentNode.parent;
-        if (targetNode.ply === 0) {
-          return;
-        }
-
-        loadBoardFromNode(targetNode).then(() => {
-          //refreshMoveHistory();
-          setCurrentNode(targetNode);
-          renderEvaluataion();
-          document.querySelectorAll('.clickable-move').forEach(
-              el => {
-                if (el.dataset.nodeId === targetNode.id) {
-                  el.classList.add("selected-node")
-                  selectedMoveElement = el
-                } else {
-                  el.classList.remove("selected-node")
-                }
-              });
-        });
-      })
+      'click', goNext)
 
   // 요기까지 일단.
   document.querySelector('#go-front-btn').addEventListener(
-      'click', function () {
-
-        const targetNode = currentNode.children[0];
-        if (!targetNode) {
-          return;
-        }
-
-        loadBoardFromNode(targetNode).then(() => {
-          //refreshMoveHistory();
-          setCurrentNode(targetNode);
-          renderEvaluataion();
-          updateOpeningExplorer();
-          document.querySelectorAll('.clickable-move').forEach(
-              el => {
-                if (el.dataset.nodeId === targetNode.id) {
-                  el.classList.add("selected-node")
-                  selectedMoveElement = el;
-                } else {
-                  el.classList.remove("selected-node")
-                }
-              });
-        });
-      })
+      'click', goPrev)
   document.getElementById('menu-toggle-btn')?.addEventListener('click',
       function () {
         const editor = document.getElementById('annotation-editor');
@@ -448,7 +456,8 @@ function renderEvaluationData(data) {
       const displayScore = (score > 0 ? "+" : "") + score.toFixed(2);
       evaluation.textContent = displayScore;
       updateEvalBar(score);
-    } else if (data.pvs[0].hasOwnProperty("mate") && data.pvs[0].mate !== null) {
+    } else if (data.pvs[0].hasOwnProperty("mate") && data.pvs[0].mate
+        !== null) {
       const mate = data.pvs[0].mate;
       evaluation.textContent = '#' + mate;
       updateEvalBar(mate, true);
