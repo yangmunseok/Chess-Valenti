@@ -8,6 +8,10 @@ import {refreshMoveHistory} from "./history.js";
  */
 export function importPGN(pgnString, uciMoves = []) {
   let stack = [];
+  gameTree.children = [];
+  nodeMap.clear();
+  nodeMap.set(gameTree.id, gameTree);
+  
   let current = gameTree;
   let gameResult = ""; // 게임 결과 저장용 변수
   

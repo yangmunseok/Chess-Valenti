@@ -327,9 +327,9 @@ export function initHistoryEvents() {
     })
   }
 
-  function goNext() {
+  function goBackward() {
     const targetNode = currentNode.parent;
-    if (targetNode.ply === 0) {
+    if (!targetNode) {
       return;
     }
 
@@ -349,7 +349,7 @@ export function initHistoryEvents() {
     });
   }
 
-  function goPrev() {
+  function goForward() {
     const targetNode = currentNode.children[0];
     if (!targetNode) {
       return;
@@ -375,13 +375,10 @@ export function initHistoryEvents() {
   document.querySelector('#btn-first').addEventListener('click', goFirst);
 
   document.querySelector('#btn-last').addEventListener('click', goLast);
-  // 요기까지 일단.
-  document.querySelector('#go-back-btn').addEventListener(
-      'click', goNext)
 
-  // 요기까지 일단.
-  document.querySelector('#go-front-btn').addEventListener(
-      'click', goPrev)
+  document.querySelector('#go-back-btn').addEventListener('click', goBackward);
+
+  document.querySelector('#go-front-btn').addEventListener('click', goForward);
   document.getElementById('menu-toggle-btn')?.addEventListener('click',
       function () {
         const editor = document.getElementById('annotation-editor');

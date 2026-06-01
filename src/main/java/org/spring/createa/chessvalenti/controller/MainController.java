@@ -192,6 +192,7 @@ public class MainController {
 
     if (game != null) {
       populateAnalysisModel(model, game);
+      model.addAttribute("idx", idx);
     }
 
     return "analysis";

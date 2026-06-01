@@ -34,6 +34,7 @@ export class ChessNode {
 }
 
 export let gameTree = new ChessNode("Root", 0);
+gameTree.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 export let currentNode = gameTree;
 
 export function setCurrentNode(node) {

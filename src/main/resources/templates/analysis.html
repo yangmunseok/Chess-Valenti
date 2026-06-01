@@ -401,9 +401,9 @@
 </div>
 
 <script type="module" th:inline="javascript">
-  import {setPossibleMoves} from "/js/newStructure/state.js";
+  import {setPossibleMoves, gameTree, setCurrentNode} from "/js/newStructure/state.js";
   import {renderBoardFromFen, updateSquareEvent, initBoard} from "/js/newStructure/board.js";
-  import {initHistoryEvents} from "/js/newStructure/history.js";
+  import {initHistoryEvents, refreshMoveHistory} from "/js/newStructure/history.js";
   import {importPGN} from "/js/newStructure/pgnParser.js";
   import {selectPromotion} from "/js/newStructure/game.js";
 
@@ -411,7 +411,8 @@
   const legalMove = /*[[${legalMove}]]*/ "start";
   const pgn = /*[[${pgn}]]*/ "start";
   const uciMoves = /*[[${uciMoves}]]*/ [];
-  console.log(fen)
+  const idx = /*[[${idx}]]*/ 0;
+
   // 1. 체스판 HTML 격자 세팅
   initBoard();
 
@@ -421,6 +422,24 @@
   renderBoardFromFen(fen);
   setPossibleMoves(legalMove);
   importPGN(pgn, uciMoves);
+
+  // Synchronize currentNode with idx
+  let node = gameTree;
+  for (let i = 0; i < idx; i++) {
+    if (node.children.length > 0) {
+      node = node.children[0];
+    } else {
+      break;
+    }
+  }
+  // Initialize the current node's data with what was passed from the controller
+  if (node) {
+    node.fen = fen;
+    node.legalMove = legalMove;
+    setCurrentNode(node);
+    refreshMoveHistory();
+  }
+
   updateSquareEvent();
 
   const promoButtons = document.querySelectorAll('.promo-btn');
