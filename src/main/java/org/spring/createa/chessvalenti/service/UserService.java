@@ -56,7 +56,7 @@ public class UserService {
     
     String url = contextPath + "/reset-password?token=" + token;
     
-    String htmlContent = "<div style=\"font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #0A0D14; color: #FFFFFF; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);\">" +
+    String htmlContent = "<div style=\"font-family: 'Pretendard', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #0A0D14; color: #FFFFFF; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);\">" +
         "<div style=\"text-align: center; margin-bottom: 30px;\">" +
         "<div style=\"display: inline-block; width: 12px; height: 12px; background-color: #3b82f6; border-radius: 50%; margin-right: 8px;\"></div>" +
         "<span style=\"font-size: 24px; font-weight: 800; letter-spacing: -0.5px;\">valenti</span>" +
