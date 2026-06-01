@@ -64,14 +64,6 @@
           <span class="stats-label">총 게임 수</span>
           <span class="stats-value" id="total-games">0</span>
         </div>
-        <div class="stats-item">
-          <span class="stats-label">승률 통계</span>
-          <div class="win-rate-bar">
-            <div id="win-bar" class="bar white" title="White Win">0%</div>
-            <div id="draw-bar" class="bar draw" title="Draw">0%</div>
-            <div id="loss-bar" class="bar black" title="Black Win">0%</div>
-          </div>
-        </div>
       </div>
 
       <div class="game-list-container">
@@ -132,7 +124,6 @@
       totalPages = data.totalPages;
       
       document.getElementById('total-games').innerText = data.totalElements;
-      updateStats(data.content); // Note: Stats are now only for the current page if we do it this way, or we need another API for total stats.
       renderGameTable(data.content);
       updatePaginationControls();
       
@@ -143,37 +134,6 @@
       console.error(err);
       document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
     }
-  }
-
-  function updateStats(games) {
-    if (!games || games.length === 0) return;
-
-    // Ideally, stats should be based on total elements, but calculating it from all matching games might be slow if there are millions.
-    // For now, we show stats for the current page or we could add a total stats endpoint.
-    // The user might want total stats. Let's see if we can get them.
-    // Given the current repository, it might be better to just show current page stats or omit if misleading.
-    // But the original code calculated it from the stream.
-    
-    const total = games.length;
-    const wins = games.filter(g => g.result === 'WHITE_WON').length;
-    const draws = games.filter(g => g.result === 'DRAW').length;
-    const losses = total - wins - draws;
-
-    const wPct = ((wins / total) * 100).toFixed(1);
-    const dPct = ((draws / total) * 100).toFixed(1);
-    const lPct = (100 - parseFloat(wPct) - parseFloat(dPct)).toFixed(1);
-
-    const wBar = document.getElementById('win-bar');
-    wBar.style.width = wPct + '%';
-    wBar.innerText = wPct > 10 ? wPct + '%' : '';
-
-    const dBar = document.getElementById('draw-bar');
-    dBar.style.width = dPct + '%';
-    dBar.innerText = dPct > 10 ? dPct + '%' : '';
-
-    const lBar = document.getElementById('loss-bar');
-    lBar.style.width = lPct + '%';
-    lBar.innerText = lPct > 10 ? lPct + '%' : '';
   }
 
   function renderGameTable(games) {

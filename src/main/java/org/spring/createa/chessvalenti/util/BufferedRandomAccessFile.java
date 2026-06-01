@@ -32,7 +32,7 @@ public class BufferedRandomAccessFile {
   }
 
   private int findFromBuffer(byte input) {
-    for (int i = bufferOffset; i < 8192; i++) {
+    for (int i = bufferOffset; i < bufferLimit; i++) {
       if (buffer[i] == input) {
         return i;
       }
@@ -46,7 +46,7 @@ public class BufferedRandomAccessFile {
     }
 
     int eol = findFromBuffer((byte) '\n');
-    if (eol != -1 && eol <= bufferLimit) {
+    if (eol != -1) {
       String line = new String(buffer, bufferOffset, eol - bufferOffset, StandardCharsets.UTF_8);
 
       virtualFilePointer = realFilePointer - (bufferLimit - eol);
@@ -62,7 +62,7 @@ public class BufferedRandomAccessFile {
       return null;
     }
     if (realFilePointer > 0) {
-      raf.seek(realFilePointer - (8192 - bufferOffset));
+      raf.seek(realFilePointer - (bufferSize - bufferOffset));
     }
     bufferLimit = raf.read(buffer);
     if (bufferLimit < bufferSize) {

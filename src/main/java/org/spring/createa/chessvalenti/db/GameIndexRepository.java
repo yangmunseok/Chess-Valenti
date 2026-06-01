@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface GameIndexRepository extends JpaRepository<GameIndex, Integer>,
+public interface GameIndexRepository extends JpaRepository<GameIndex, Long>,
     GameIndexRepositoryCustom {
 
   List<GameIndex> findAllByPawnStructure(long hashedPawnStructure);
@@ -22,8 +22,8 @@ public interface GameIndexRepository extends JpaRepository<GameIndex, Integer>,
           from GameIndex g
           where g.pawnStructure = :pawnStructure
           order by
-            case when g.whiteElo >= g.blackElo then g.whiteElo else g.blackElo end desc,
-            (g.whiteElo + g.blackElo) desc,
+            g.maxElo desc,
+            g.totalElo desc,
             g.id desc
           """,
       countQuery = """
@@ -42,8 +42,8 @@ public interface GameIndexRepository extends JpaRepository<GameIndex, Integer>,
           where g.pawnStructure = :pawnStructure
             and g.pieceConfiguration = :pieceConfiguration
           order by
-            case when g.whiteElo >= g.blackElo then g.whiteElo else g.blackElo end desc,
-            (g.whiteElo + g.blackElo) desc,
+            g.maxElo desc,
+            g.totalElo desc,
             g.id desc
           """,
       countQuery = """

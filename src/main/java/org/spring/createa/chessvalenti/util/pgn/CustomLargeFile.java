@@ -2,9 +2,11 @@ package org.spring.createa.chessvalenti.util.pgn;
 
 import java.io.RandomAccessFile;
 import java.util.Iterator;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.spring.createa.chessvalenti.util.BufferedRandomAccessFile;
 
+@Slf4j
 public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
 
   long startTime = System.currentTimeMillis();
@@ -25,7 +27,7 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
   }
 
   public CustomLargeFile(String filepath) throws Exception {
-    reader = new BufferedRandomAccessFile(new RandomAccessFile(filepath, "r"));
+    reader = new BufferedRandomAccessFile(new RandomAccessFile(filepath, "r"), 64 * 1024);
     readNextLine();
   }
 
@@ -38,8 +40,8 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
         return;
       }
       nextLine = new CustomString(newLine, offset);
-      // 2초마다 출력
-      if (System.currentTimeMillis() - lastPrint > 2000) {
+      // 1분마다 출력
+      if (System.currentTimeMillis() - lastPrint > 60000) {
         lastPrint = System.currentTimeMillis();
 
         long processedBytes = reader.getFilePointer();
@@ -48,9 +50,12 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
         long elapsed = System.currentTimeMillis() - startTime;
         double speed = processedBytes / (elapsed / 1000.0);
 
-        System.out.printf(
-            "Loading | Progress: %.2f MB/s | Speed: %.2f MB/s\n",
-            progress, speed / (1024 * 1024)
+        log.info(
+            String.format(
+                "Loading | Progress: %.2f MB | Speed: %.2f MB/s",
+                progress,
+                speed / (1024.0 * 1024.0)
+            )
         );
       }
     } catch (Exception ex) {

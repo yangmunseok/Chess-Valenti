@@ -7,6 +7,7 @@ import org.spring.createa.chessvalenti.dto.game.CustomGame;
 public class CustomPgnIterator implements Iterable<CustomGame>, AutoCloseable {
 
   private final Iterator<CustomString> pgnLines;
+  private final AutoCloseable closeable;
   private CustomGame game;
 
   public CustomPgnIterator(String filename) throws Exception {
@@ -15,6 +16,7 @@ public class CustomPgnIterator implements Iterable<CustomGame>, AutoCloseable {
 
   public CustomPgnIterator(CustomLargeFile file) {
     this.pgnLines = file.iterator();
+    this.closeable = file;
     loadNextGame();
   }
 
@@ -27,6 +29,7 @@ public class CustomPgnIterator implements Iterable<CustomGame>, AutoCloseable {
   public CustomPgnIterator(Iterable<CustomString> pgnLines) {
 
     this.pgnLines = pgnLines.iterator();
+    this.closeable = pgnLines instanceof AutoCloseable autoCloseable ? autoCloseable : null;
     loadNextGame();
   }
 
@@ -38,13 +41,14 @@ public class CustomPgnIterator implements Iterable<CustomGame>, AutoCloseable {
   public CustomPgnIterator(Iterator<CustomString> pgnLines) {
 
     this.pgnLines = pgnLines;
+    this.closeable = pgnLines instanceof AutoCloseable autoCloseable ? autoCloseable : null;
     loadNextGame();
   }
 
   @Override
   public void close() throws Exception {
-    if (pgnLines instanceof CustomLargeFile) {
-      ((CustomLargeFile) (pgnLines)).close();
+    if (closeable != null) {
+      closeable.close();
     }
   }
 

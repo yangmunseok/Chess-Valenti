@@ -17,4 +17,10 @@ public interface GameIndexRepositoryCustom {
 
   Page<GameIndex> findByPawnStructureAndPieceConfiguration(Board board, int wq, int wr,
       int wb, int wn, int bq, int br, int bb, int bn, Pageable pageable);
+
+  void prepareForBulkInsert();
+
+  void insertAll(List<GameIndex> gameIndexes);
+
+  void finishBulkInsert();
 }

@@ -14,7 +14,8 @@ import lombok.Data;
 @Entity
 @Data
 @Table(indexes = {
-    @Index(name = "pawn_piece_configuration_idx", columnList = "pawn_structure, piece_configuration")
+    @Index(name = "pawn_sort_idx", columnList = "pawn_structure, max_elo DESC, total_elo DESC, id DESC"),
+    @Index(name = "pawn_piece_sort_idx", columnList = "pawn_structure, piece_configuration, max_elo DESC, total_elo DESC, id DESC")
 })
 public class GameIndex {
 
@@ -32,18 +33,11 @@ public class GameIndex {
   ChessPlayer blackPlayer;
   int whiteElo;
   int blackElo;
+  int maxElo;
+  int totalElo;
 
   public GameIndex() {
 
-  }
-
-  public GameIndex(long pawnStructure, int pieceConfiguration, long gameOffset, long moveIndex) {
-    this(pawnStructure, pieceConfiguration, gameOffset, moveIndex, null, null);
-  }
-
-  public GameIndex(long pawnStructure, int pieceConfiguration, long gameOffset, long moveIndex,
-      ChessPlayer whitePlayer, ChessPlayer blackPlayer) {
-    this(pawnStructure, pieceConfiguration, gameOffset, moveIndex, whitePlayer, blackPlayer, 0, 0);
   }
 
   public GameIndex(long pawnStructure, int pieceConfiguration, long gameOffset, long moveIndex,
@@ -56,6 +50,8 @@ public class GameIndex {
     this.blackPlayer = blackPlayer;
     this.whiteElo = whiteElo;
     this.blackElo = blackElo;
+    this.maxElo = Math.max(whiteElo, blackElo);
+    this.totalElo = whiteElo + blackElo;
   }
 
   long moveIndex;

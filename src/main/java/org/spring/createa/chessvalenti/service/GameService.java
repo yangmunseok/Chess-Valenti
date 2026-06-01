@@ -10,9 +10,9 @@ import org.spring.createa.chessvalenti.db.GameRepository;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.dto.game.GameInfo;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 @Service
@@ -71,7 +71,10 @@ public class GameService {
   }
 
   public Page<GameInfo> findGamesByPawnStructure(Board board, Pageable pageable) {
+    long start = System.nanoTime();
     Page<GameIndex> gameIndices = gameIndexRepository.findByPawnStructure(board, pageable);
+    long end = System.nanoTime();
+    log.info("실행 시간: {} ms", (end - start) / 1_000_000.0);
     return gameIndices.map(this::from);
   }
 
