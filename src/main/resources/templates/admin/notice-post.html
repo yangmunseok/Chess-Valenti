@@ -39,21 +39,21 @@
         <div class="input-group">
           <label for="post-type">TYPE</label>
           <select id="post-type" class="valenti-input" onchange="toggleStudyFields()"
-                  th:disabled="${post != null or param.type != null}">
+                  th:disabled="${post != null or param.containsKey('type')}">
             <option value="NOTICE"
-                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).NOTICE) or param.type[0] == 'NOTICE'}">
+                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).NOTICE) or (param.type != null and param.type[0] == 'NOTICE')}">
               NOTICE
             </option>
             <option value="FAQ"
-                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).FAQ) or param.type[0] == 'FAQ'}">
+                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).FAQ) or (param.type != null and param.type[0] == 'FAQ')}">
               FAQ
             </option>
             <option value="STUDY"
-                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).STUDY) or param.type[0] == 'STUDY'}">
+                    th:selected="${(post != null and post.type == T(org.spring.createa.chessvalenti.domain.PostType).STUDY) or (param.type != null and param.type[0] == 'STUDY')}">
               STUDY
             </option>
           </select>
-          <p th:if="${post != null or param.type != null}" class="hero-desc"
+          <p th:if="${post != null or param.containsKey('type')}" class="hero-desc"
              style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
             * 작성 중에는 타입을 변경할 수 없습니다.
           </p>

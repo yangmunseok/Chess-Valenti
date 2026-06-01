@@ -34,6 +34,7 @@
       <th>제목</th>
       <th>작성자</th>
       <th>등록일</th>
+      <th>상태</th>
       <th>관리</th>
     </tr>
     </thead>
@@ -47,7 +48,8 @@
       <td th:text="${@timeUtil.format(inquiry.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
       <td>
         <span th:if="${inquiry.answer == null}" class="status-waiting">답변 대기</span>
-        <span th:if="${inquiry.answer != null}" class="badge-success" style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">답변 완료</span>
+        <span th:if="${inquiry.answer != null}" class="badge-success"
+              style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">답변 완료</span>
       </td>
       <td>
         <div style="display: flex; gap: 8px;">
