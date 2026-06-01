@@ -36,4 +36,5 @@ build/
 src/main/resources/application.properties
 
 ### Large Files ###
+data/
 src/main/resources/static/pgn/AJ-OTB-PGN-001.pgn

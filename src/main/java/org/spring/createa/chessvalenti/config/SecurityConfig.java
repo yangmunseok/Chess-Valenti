@@ -47,9 +47,9 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.ignoringRequestMatchers("/logout"))
         .authorizeHttpRequests(
             auth -> auth.requestMatchers("/login", "/signup", "/css/**", "/", "/js/**", "/forgot-password", "/reset-password").permitAll()
-                .requestMatchers("/analysis", "/insight", "/board", "/api/games",
+                .requestMatchers("/analysis", "/insight", "/board", "/api/games/**",
                     "/api/evaluation", "/api/evaluation/stream", "/games/**",
-                    "/valenti-socket/**", "/study").permitAll()
+                    "/valenti-socket/**", "/study", "/pawn-games").permitAll()
                 .anyRequest()
                 .authenticated())
         .formLogin(
