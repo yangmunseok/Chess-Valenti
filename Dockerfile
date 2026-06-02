@@ -25,6 +25,9 @@ FROM maven:3.9.15-eclipse-temurin-25 AS build
 
 WORKDIR /workspace
 
+COPY pom.xml .
+RUN mvn dependency:go-offline -Dmaven.test.skip=true
+
 COPY . .
 RUN mvn clean package -Dmaven.test.skip=true
 
