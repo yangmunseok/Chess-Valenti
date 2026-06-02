@@ -52,15 +52,9 @@ public class DataInitializer implements CommandLineRunner {
 
   @Value("${admin.email}")
   private String adminEmail;
-
-  private final boolean skip = true;
-
+  
   public void run(String... args) throws Exception {
     initializeAdminUser();
-
-    if (skip) {
-      return;
-    }
 
     String path = Path.of(pgnPath).toFile().getAbsolutePath();
 
