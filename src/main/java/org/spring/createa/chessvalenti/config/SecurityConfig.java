@@ -64,10 +64,15 @@ public class SecurityConfig {
   }
 
   @Bean
+  public BCryptPasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder(5);
+  }
+
+  @Bean
   AuthenticationProvider authenticationProvider(UserRepository userRepository) {
     DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
     authenticationProvider.setUserDetailsService(userDetailsService);
-    authenticationProvider.setPasswordEncoder(new BCryptPasswordEncoder(5));
+    authenticationProvider.setPasswordEncoder(passwordEncoder());
     return authenticationProvider;
   }
 

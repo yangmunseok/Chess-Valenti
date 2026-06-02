@@ -19,7 +19,7 @@
 
     <div class="login-header">
       <h1>로그인</h1>
-      <p>이메일과 비밀번호를 입력해주세요.</p>
+      <p>이메일 또는 계정 이름을 입력해주세요.</p>
     </div>
 
     <div th:if="${param.resetRequested}" class="alert alert-info" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
@@ -34,11 +34,14 @@
     <div th:if="${param.error == 'expired'}" class="alert alert-danger" style="color: #f7768e; background: rgba(247, 118, 142, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
       만료된 토큰입니다.
     </div>
+    <div th:if="${param.error != null and param.error != 'invalidToken' and param.error != 'expired'}" class="alert alert-danger" style="color: #f7768e; background: rgba(247, 118, 142, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+      이메일/계정 이름 또는 비밀번호가 올바르지 않습니다.
+    </div>
 
     <form action="/login" method="POST" class="login-form">
       <div class="input-group">
-        <label for="email">이메일</label>
-        <input type="email" id="email" name="username" placeholder="name@example.com" required
+        <label for="username">이메일 또는 계정 이름</label>
+        <input type="text" id="username" name="username" placeholder="이메일 또는 계정 이름" required
                autofocus>
       </div>
 

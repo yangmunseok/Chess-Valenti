@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.spring.createa.chessvalenti.dto.game.GameInfo;
+import org.spring.createa.chessvalenti.db.InsightRepository;
+import org.spring.createa.chessvalenti.service.CommentService;
 import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PostService;
@@ -37,6 +39,12 @@ public class MainControllerTest {
 
   @MockBean
   private InquiryService inquiryService;
+
+  @MockBean
+  private CommentService commentService;
+
+  @MockBean
+  private InsightRepository insightRepository;
 
   @Test
   void index_ShouldReturnIndexView() throws Exception {

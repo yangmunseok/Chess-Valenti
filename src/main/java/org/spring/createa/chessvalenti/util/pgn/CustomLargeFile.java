@@ -10,7 +10,8 @@ import org.spring.createa.chessvalenti.util.BufferedRandomAccessFile;
 public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
 
   long startTime = System.currentTimeMillis();
-  long lastPrint = System.currentTimeMillis();
+  long totalBytes;
+  int lastLoggedProgress = 0;
 
   @Override
   public void close() throws Exception {
@@ -27,7 +28,9 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
   }
 
   public CustomLargeFile(String filepath) throws Exception {
-    reader = new BufferedRandomAccessFile(new RandomAccessFile(filepath, "r"), 64 * 1024);
+    RandomAccessFile file = new RandomAccessFile(filepath, "r");
+    totalBytes = file.length();
+    reader = new BufferedRandomAccessFile(file, 64 * 1024);
     readNextLine();
   }
 
@@ -40,19 +43,18 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
         return;
       }
       nextLine = new CustomString(newLine, offset);
-      // 1분마다 출력
-      if (System.currentTimeMillis() - lastPrint > 60000) {
-        lastPrint = System.currentTimeMillis();
 
-        long processedBytes = reader.getFilePointer();
-        double progress = (double) processedBytes / (1024 * 1024);
+      long processedBytes = reader.getFilePointer();
+      int progress = calculateProgress(processedBytes);
+      if (progress > lastLoggedProgress) {
+        lastLoggedProgress = progress;
 
         long elapsed = System.currentTimeMillis() - startTime;
         double speed = processedBytes / (elapsed / 1000.0);
 
         log.info(
             String.format(
-                "Loading | Progress: %.2f MB | Speed: %.2f MB/s",
+                "Loading | Progress: %d%% | Speed: %.2f MB/s",
                 progress,
                 speed / (1024.0 * 1024.0)
             )
@@ -62,6 +64,13 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
       nextLine = null;
       throw new IllegalStateException("Error reading file", ex);
     }
+  }
+
+  private int calculateProgress(long processedBytes) {
+    if (totalBytes <= 0) {
+      return 100;
+    }
+    return (int) Math.min(100, processedBytes * 100 / totalBytes);
   }
 
   private class FileIterator implements Iterator<CustomString> {
@@ -77,8 +86,6 @@ public class CustomLargeFile implements Iterable<CustomString>, AutoCloseable {
       readNextLine();
       return currentLine;
     }
-
-
   }
 
   BufferedRandomAccessFile reader;

@@ -22,6 +22,7 @@ import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PaymentService;
 import org.spring.createa.chessvalenti.service.PostService;
 import org.spring.createa.chessvalenti.service.UserService;
+import org.spring.createa.chessvalenti.service.FileService;
 import org.spring.createa.chessvalenti.util.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -63,6 +64,9 @@ public class AdminControllerTest {
 
   @MockBean
   private PostService postService;
+
+  @MockBean
+  private FileService fileService;
 
   @MockBean(name = "timeUtil")
   private TimeUtil timeUtil;
@@ -155,14 +159,14 @@ public class AdminControllerTest {
 
     when(postService.findFAQ()).thenReturn(Collections.singletonList(faq));
 
-    mockMvc.perform(get("/admin/support")
+    mockMvc.perform(get("/admin/contents")
             .with(authentication(adminAuthentication()))
             .with(csrf())
             .param("mode", "faq"))
         .andExpect(status().isOk())
         .andExpect(model().attribute("mode", "faq"))
         .andExpect(model().attribute("faq", Collections.singletonList(faq)))
-        .andExpect(view().name("admin/admin-support"));
+        .andExpect(view().name("admin/admin-contents"));
   }
 
   @Test
@@ -171,14 +175,14 @@ public class AdminControllerTest {
 
     when(postService.findAllByPostType(any(), eq(PostType.NOTICE))).thenReturn(notices);
 
-    mockMvc.perform(get("/admin/support")
+    mockMvc.perform(get("/admin/contents")
             .with(authentication(adminAuthentication()))
             .with(csrf())
             .param("mode", "notice"))
         .andExpect(status().isOk())
         .andExpect(model().attribute("mode", "notice"))
         .andExpect(model().attribute("notice", notices))
-        .andExpect(view().name("admin/admin-support"));
+        .andExpect(view().name("admin/admin-contents"));
   }
 
   @Test
@@ -230,8 +234,8 @@ public class AdminControllerTest {
     mockMvc.perform(patch("/admin/api/posts/1")
             .with(authentication(adminAuthentication()))
             .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .param("title", request.title())
+            .param("content", request.content()))
         .andExpect(status().isNoContent());
 
     verify(postService).updatePost(1, "Title", "Content", null, null, null, null);
@@ -254,8 +258,9 @@ public class AdminControllerTest {
     mockMvc.perform(post("/admin/api/posts")
             .with(authentication(adminAuthentication()))
             .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .param("title", request.title())
+            .param("content", request.content())
+            .param("postType", request.postType().name()))
         .andExpect(status().isNoContent());
 
     verify(postService).savePost(adminUser().getUser(), "Title", "Content", null, PostType.NOTICE, null, null, null);
@@ -290,6 +295,9 @@ public class AdminControllerTest {
   void readInquiry_ShouldAddInquiryAndUsernameToModel() throws Exception {
     Inquiry inquiry = new Inquiry();
     inquiry.setTitle("Question");
+    User writer = new User();
+    writer.setUsername("writer");
+    inquiry.setWriter(writer);
 
     when(inquiryService.findInquiryById(1)).thenReturn(inquiry);
 

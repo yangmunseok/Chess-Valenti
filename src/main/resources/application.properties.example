@@ -22,3 +22,8 @@ toss.payment.secret-key=YOUR_TOSS_SECRET_KEY
 stockfish.path=stockfish
 stockfish.depth=12
 stockfish.timeout-seconds=8
+
+# Admin Account
+admin.username=admin
+admin.password=admin123
+admin.email=admin@example.com

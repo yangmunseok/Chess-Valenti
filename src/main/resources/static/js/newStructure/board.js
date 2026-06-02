@@ -29,6 +29,9 @@ export function renderBoardFromFen(fen, id = 'chess-board') {
   const boardEl = document.getElementById(id);
   if (!boardEl) return;
 
+  // Clear existing symbols
+  boardEl.querySelectorAll('.square-symbol').forEach(s => s.remove());
+
   const piecePlacement = fen.split(' ')[0];
   const rows = piecePlacement.split('/');
 
@@ -140,6 +143,34 @@ export function renderBoardFromFen(fen, id = 'chess-board') {
       }
     });
   });
+}
+
+export function drawSymbol(coord, symbol, id = 'chess-board') {
+  if (!symbol) return;
+  const boardEl = document.getElementById(id);
+  if (!boardEl) return;
+  
+  // Clear any existing symbol first
+  boardEl.querySelectorAll('.square-symbol').forEach(s => s.remove());
+
+  const targetSquare = boardEl.querySelector(`.square[data-coord="${coord}"]`);
+  if (!targetSquare) return;
+
+  const symbolMap = {
+    '!!': { class: 'symbol-brilliant', text: '!!' },
+    '!': { class: 'symbol-excellent', text: '!' },
+    '?': { class: 'symbol-mistake', text: '?' },
+    '??': { class: 'symbol-blunder', text: '??' },
+    '?!': { class: 'symbol-inaccuracy', text: '?!' }
+  };
+
+  const config = symbolMap[symbol];
+  if (!config) return;
+
+  const symbolEl = document.createElement('div');
+  symbolEl.className = `square-symbol ${config.class}`;
+  symbolEl.innerText = config.text;
+  targetSquare.appendChild(symbolEl);
 }
 
 function getPieceSymbol(char) {

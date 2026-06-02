@@ -7,6 +7,7 @@ import {
   setGameResultState
 } from "./state.js";
 import {generateFullPgn, loadBoardFromNode, updatePGN} from "./game.js";
+import {drawSymbol, renderBoardFromFen, updateSquareEvent} from "./board.js";
 import {updateOpeningExplorer} from "./explorer.js";
 
 let selectedMoveElement = null;
@@ -14,7 +15,10 @@ let selectedMoveElement = null;
 // UI 갱신 (전체 트리 재렌더링)
 export function refreshMoveHistory(gameResult = gameResultState) {
   const pgnInput = document.getElementById(
-      'pgnInput').innerText = generateFullPgn();
+      'pgnInput');
+  if (pgnInput) {
+    pgnInput.value = generateFullPgn();
+  }
   const moveHistory = document.getElementById('move-history');
   moveHistory.innerHTML = `<div class="move-row starting">Starting position</div>`;
 
@@ -245,27 +249,17 @@ export function initHistoryEvents() {
     }
     const selectedNode = findNodeById(selectedMoveElement.dataset.nodeId)
     selectedNode.symbol = symbol;
-    let baseText = selectedMoveElement.innerText.replace(/[!?]+$/, '');
-    const hasSpace = baseText.endsWith(' ');
+    
+    // Refresh PGN and Move History
+    updatePGN();
+    refreshMoveHistory();
 
-    baseText = baseText.trimEnd();
-    selectedMoveElement.innerText = baseText + symbol + (hasSpace ? ' ' : '');
-
-    selectedMoveElement.classList.remove('sig-brilliant', 'sig-excellent',
-        'sig-mistake', 'sig-blunder', 'sig-inaccuracy');
-
-    if (symbol === '!!') {
-      selectedMoveElement.classList.add('sig-brilliant');
-    } else if (symbol === '!') {
-      selectedMoveElement.classList.add('sig-excellent');
-    } else if (symbol === '??') {
-      selectedMoveElement.classList.add('sig-blunder');
-    } else if (symbol === '?') {
-      selectedMoveElement.classList.add('sig-mistake');
-    } else if (symbol === '?!') {
-      selectedMoveElement.classList.add(
-          'sig-inaccuracy');
+    // Draw symbol on board if it's the current node
+    if (selectedNode === currentNode && selectedNode.uci) {
+      const to = selectedNode.uci.substring(2, 4);
+      drawSymbol(to, symbol);
     }
+    
     hideMenu();
   };
 

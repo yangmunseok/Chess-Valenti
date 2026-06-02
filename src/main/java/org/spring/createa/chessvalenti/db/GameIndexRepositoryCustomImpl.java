@@ -66,10 +66,15 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
 
   @Override
   public void prepareForBulkInsert() {
+    truncateTable();
     syncSequenceWithTable();
     dropIndexIfExists(PAWN_SORT_INDEX);
     dropIndexIfExists(PAWN_PIECE_SORT_INDEX);
     dropIndexIfExists(LEGACY_PAWN_PIECE_CONFIGURATION_INDEX);
+  }
+
+  private void truncateTable() {
+    jdbcTemplate.execute("truncate table game_index");
   }
 
   @Override

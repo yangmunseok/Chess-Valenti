@@ -7,7 +7,7 @@ import {
   setCurrentNode,
   setPossibleMoves
 } from "./state.js";
-import {renderBoardFromFen, updateSquareEvent} from "./board.js";
+import {drawSymbol, renderBoardFromFen, updateSquareEvent} from "./board.js";
 import {refreshMoveHistory, renderEvaluataion} from "./history.js";
 
 function getMoveNotation(from, to, pieceText) {
@@ -114,9 +114,10 @@ export async function executeMove(from, to, promotionPiece = null) {
     pendingMove = null;
     moveNotation += promotionPiece.toUpperCase();
   }
-  
-  const uciMove = from + to + (promotionPiece ? promotionPiece.toLowerCase() : "");
-  
+
+  const uciMove = from + to + (promotionPiece ? promotionPiece.toLowerCase()
+      : "");
+
   let existingChild = currentNode.children.find(
       child => child.move === moveNotation);
 
@@ -126,10 +127,10 @@ export async function executeMove(from, to, promotionPiece = null) {
     const newNode = new ChessNode(moveNotation, currentNode.ply + 1,
         currentNode);
     newNode.uci = uciMove;
-    newNode.playPath = currentNode.playPath 
-        ? (currentNode.playPath + "," + uciMove) 
+    newNode.playPath = currentNode.playPath
+        ? (currentNode.playPath + "," + uciMove)
         : uciMove;
-        
+
     nodeMap.set(newNode.id, newNode);
     currentNode.children.push(newNode);
     setCurrentNode(newNode);
@@ -198,7 +199,9 @@ export async function loadBoardFromNode(node) {
   }
 
   if (node.fen) {
-    if (node.legalMove === "") {
+    if (!node.legalMove || node.legalMove.length === 0) {
+      // Only fetch if it's NOT a root node (root should have legal moves initialized or fetched)
+      // Actually, let's fetch if we don't have them, but check if we're at a game end
       const res = await fetch(`/board?fen=${node.fen}`);
       const json = await res.json();
       node.legalMove = json["legalMove"];
@@ -214,18 +217,18 @@ export async function loadBoardFromNode(node) {
     const json = await res.json();
     node.fen = json["fen"];
     node.legalMove = json["legalMove"];
-    
+
     // Populate UCI info for the entire path if available
     if (json["uciMoves"]) {
       let curr = node;
       for (let i = json["uciMoves"].length - 1; i >= 0; i--) {
-        if (!curr || curr.ply === 0) break;
+        if (!curr || curr.ply === 0) {
+          break;
+        }
         curr.uci = json["uciMoves"][i];
-        // Re-construct playPath locally based on parent
         curr = curr.parent;
       }
-      
-      // Secondary pass to fix playPaths from root down to node
+
       let pathNodes = [];
       let temp = node;
       while (temp && temp.ply > 0) {
@@ -246,7 +249,30 @@ export async function loadBoardFromNode(node) {
   }
 
   renderBoardFromFen(node.fen);
-  setPossibleMoves(node.legalMove);
+
+  // Visual symbol feedback
+  try {
+    if (node.symbol) {
+      let targetSquare = null;
+      if (node.uci && node.uci.length >= 4) {
+        targetSquare = node.uci.substring(2, 4);
+      } else if (node.playPath) {
+        const moves = node.playPath.split(',');
+        const lastMove = moves[moves.length - 1];
+        if (lastMove && lastMove.length >= 4) {
+          targetSquare = lastMove.substring(2, 4);
+        }
+      }
+
+      if (targetSquare) {
+        drawSymbol(targetSquare, node.symbol);
+      }
+    }
+  } catch (err) {
+    console.error("Error drawing symbol:", err);
+  }
+
+  setPossibleMoves(node.legalMove || []);
   updateSquareEvent();
 }
 
