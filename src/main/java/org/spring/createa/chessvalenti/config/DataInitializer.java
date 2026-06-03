@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.ChessPlayerRepository;
 import org.spring.createa.chessvalenti.db.GameIndexRepository;
 import org.spring.createa.chessvalenti.db.UserRepository;
@@ -32,6 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataInitializer implements CommandLineRunner {
 
   private static final String DEFAULT_STARTING_FEN =
@@ -152,7 +154,7 @@ public class DataInitializer implements CommandLineRunner {
     } finally {
       gameIndexRepository.finishBulkInsert();
     }
-    System.out.println("Data initialization completed. Total game indexes processed: " + cnt);
+    log.info("Data initialization completed. Total game indexes processed: {}", cnt);
   }
 
   private void flushGameIndexesInTransaction(List<GameIndex> gameIndexList, TransactionTemplate transactionTemplate) {
@@ -184,7 +186,7 @@ public class DataInitializer implements CommandLineRunner {
     if (admin == null) {
       admin = new User(email, username, passwordEncoder.encode(password), Role.ROLE_ADMIN);
       userRepository.save(admin);
-      System.out.println("Admin user created: " + username);
+      log.info("Admin user created: {}", username);
       return;
     }
 
@@ -208,7 +210,7 @@ public class DataInitializer implements CommandLineRunner {
 
     if (changed) {
       userRepository.save(admin);
-      System.out.println("Admin user updated: " + username);
+      log.info("Admin user updated: {}", username);
     }
   }
 
