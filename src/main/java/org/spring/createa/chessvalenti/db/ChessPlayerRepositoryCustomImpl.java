@@ -34,14 +34,13 @@ public class ChessPlayerRepositoryCustomImpl implements ChessPlayerRepositoryCus
     }
 
     List<String> names = new ArrayList<>(missingPlayers.keySet());
-    insertNames(names);
-    fillIds(names, missingPlayers);
-  }
-
-  private void insertNames(List<String> names) {
     for (int start = 0; start < names.size(); start += INSERT_CHUNK_SIZE) {
       int end = Math.min(start + INSERT_CHUNK_SIZE, names.size());
-      StringBuilder sql = new StringBuilder("insert into chess_player (name) values ");
+      
+      // PostgreSQL specific: ON CONFLICT DO UPDATE ... RETURNING id, name
+      // This allows us to get the ID even if the player was already inserted by another process
+      // and eliminates the need for a separate SELECT.
+      StringBuilder sql = new StringBuilder("INSERT INTO chess_player (name) VALUES ");
       List<Object> params = new ArrayList<>(end - start);
       for (int i = start; i < end; i++) {
         if (i > start) {
@@ -50,36 +49,21 @@ public class ChessPlayerRepositoryCustomImpl implements ChessPlayerRepositoryCus
         sql.append("(?)");
         params.add(names.get(i));
       }
-      jdbcTemplate.update(sql.toString(), params.toArray());
-    }
-  }
-
-  private void fillIds(List<String> names, Map<String, ChessPlayer> missingPlayers) {
-    for (int start = 0; start < names.size(); start += SELECT_CHUNK_SIZE) {
-      int end = Math.min(start + SELECT_CHUNK_SIZE, names.size());
-      StringBuilder sql = new StringBuilder(
-          "select id, name from chess_player where name in (");
-      List<Object> params = new ArrayList<>(end - start);
-      for (int i = start; i < end; i++) {
-        if (i > start) {
-          sql.append(", ");
-        }
-        sql.append("?");
-        params.add(names.get(i));
-      }
-      sql.append(")");
+      sql.append(" ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id, name");
 
       jdbcTemplate.query(sql.toString(), rs -> {
-        ChessPlayer chessPlayer = missingPlayers.get(rs.getString("name"));
-        if (chessPlayer != null && chessPlayer.getId() == 0) {
-          chessPlayer.setId(rs.getLong("id"));
+        String name = rs.getString("name");
+        long id = rs.getLong("id");
+        ChessPlayer player = missingPlayers.get(name);
+        if (player != null) {
+          player.setId(id);
         }
       }, params.toArray());
     }
 
     for (ChessPlayer chessPlayer : missingPlayers.values()) {
       if (chessPlayer.getId() == 0) {
-        throw new IllegalStateException("Failed to insert chess player: " + chessPlayer.getName());
+        throw new IllegalStateException("Failed to insert or retrieve ID for chess player: " + chessPlayer.getName());
       }
     }
   }
