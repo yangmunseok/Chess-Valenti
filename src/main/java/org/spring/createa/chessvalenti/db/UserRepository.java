@@ -47,9 +47,8 @@ public interface UserRepository extends JpaRepository<User, Integer>, UserReposi
 
   @Query(
       value =
-          "SELECT IF(COUNT(*) = 0, 0, SUM(CASE WHEN membership_level != 'FREE' THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) "
-              +
-              "FROM user",
+          "SELECT CASE WHEN COUNT(*) = 0 THEN 0 ELSE SUM(CASE WHEN membership_level != 'FREE' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) END "
+              + "FROM app_user",
       nativeQuery = true
   )
   Double getMemberShipRatio();
