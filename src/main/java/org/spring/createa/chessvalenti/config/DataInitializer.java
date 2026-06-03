@@ -2,7 +2,6 @@ package org.spring.createa.chessvalenti.config;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
-import com.github.bhlangonijr.chesslib.game.Player;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
 import java.nio.file.Path;
@@ -27,6 +26,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 @RequiredArgsConstructor
@@ -40,6 +42,7 @@ public class DataInitializer implements CommandLineRunner {
   private final ChessPlayerRepository chessPlayerRepository;
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
+  private final PlatformTransactionManager transactionManager;
 
   @Value("${chess.pgn.path}")
   private String pgnPath;
@@ -52,13 +55,17 @@ public class DataInitializer implements CommandLineRunner {
 
   @Value("${admin.email}")
   private String adminEmail;
-  
+
   public void run(String... args) throws Exception {
-    initializeAdminUser();
+    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+    transactionTemplate.execute(status -> {
+      initializeAdminUser();
+      return null;
+    });
 
     String path = Path.of(pgnPath).toFile().getAbsolutePath();
 
-    int batchSize = 20000;
+    int batchSize = 10000; // Reduced batch size for more frequent commits
     int cnt = 0;
     int maxGame = 200;
     int engineRating = 2900;
@@ -66,6 +73,7 @@ public class DataInitializer implements CommandLineRunner {
     List<GameIndex> gameIndexList = new ArrayList<>(batchSize);
     Map<String, ChessPlayer> playerCache = loadPlayerCache();
     Map<Long, Integer> pawnStructureCnt = new HashMap<>();
+
     gameIndexRepository.prepareForBulkInsert();
     try {
       try (CustomPgnIterator games = new CustomPgnIterator(path)) {
@@ -73,7 +81,6 @@ public class DataInitializer implements CommandLineRunner {
           int whiteElo = game.getWhitePlayer().getElo();
           int blackElo = game.getBlackPlayer().getElo();
 
-          //filter game
           if (Math.max(whiteElo, blackElo) > engineRating
               || Math.max(whiteElo, blackElo) < gmRating) {
             continue;
@@ -84,7 +91,6 @@ public class DataInitializer implements CommandLineRunner {
             continue;
           }
           MoveList moves = game.getHalfMoves();
-          //then 4 MB/s
 
           Set<Long> visited = new HashSet<>(128);
           Board board = new Board();
@@ -101,12 +107,10 @@ public class DataInitializer implements CommandLineRunner {
             try {
               board.doMove(move);
             } catch (Exception e) {
-              System.out.println("invalid pgn");
               gameIndexRepository.removeGameIndexByGameOffset(game_offset);
               gameIndexList.removeIf((gameIndex -> gameIndex.getGameOffset() == game_offset));
               break;
             }
-            //then 3.5 MB
 
             move_idx++;
             long key = chessHashHelper.hashPawnStructure(board);
@@ -133,26 +137,31 @@ public class DataInitializer implements CommandLineRunner {
             int hashedPieceConfiguration = chessHashHelper.hashPieceConfiguration(wq, wr, wb, wn,
                 bq, br, bb, bn);
             cnt++;
-            //then 3.25 MB/s
 
             GameIndex gameIndex = new GameIndex(key, hashedPieceConfiguration, game_offset,
                 move_idx, whitePlayer, blackPlayer, white_elo, black_elo);
             gameIndexList.add(gameIndex);
-            if (cnt % batchSize == 0) {
 
-              flushGameIndexes(gameIndexList);
+            if (gameIndexList.size() >= batchSize) {
+              flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
             }
-
-            //then 1.5 MB/s
           }
-
-
         }
       }
-      flushGameIndexes(gameIndexList);
+      flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
     } finally {
       gameIndexRepository.finishBulkInsert();
     }
+  }
+
+  private void flushGameIndexesInTransaction(List<GameIndex> gameIndexList, TransactionTemplate transactionTemplate) {
+    if (gameIndexList.isEmpty()) {
+      return;
+    }
+    transactionTemplate.execute(status -> {
+      flushGameIndexes(gameIndexList);
+      return null;
+    });
   }
 
   private void initializeAdminUser() {
@@ -168,7 +177,7 @@ public class DataInitializer implements CommandLineRunner {
       admin = userRepository.findUserByUsername(adminUsername);
     }
     if (admin == null && !email.equals(adminEmail)) {
-      admin = userRepository.findUserByEmail(adminEmail);
+      admin = userRepository.findUserByEmail(email);
     }
 
     if (admin == null) {
@@ -218,7 +227,7 @@ public class DataInitializer implements CommandLineRunner {
     return playerCache;
   }
 
-  private ChessPlayer savePlayer(Player player, Map<String, ChessPlayer> playerCache) {
+  private ChessPlayer savePlayer(com.github.bhlangonijr.chesslib.game.Player player, Map<String, ChessPlayer> playerCache) {
     String name = player.getName();
     String key = name;
     ChessPlayer cached = playerCache.get(key);
