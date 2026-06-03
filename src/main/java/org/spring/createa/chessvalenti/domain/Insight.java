@@ -32,7 +32,7 @@ public class Insight {
   private Long since;
 
   @Convert(converter = org.spring.createa.chessvalenti.util.InsightDataConverter.class)
-  @Column(columnDefinition = "LONGTEXT")
+  @Column(columnDefinition = "TEXT")
   private Map<String, GameResults> data;
 
   private LocalDateTime createdAt = LocalDateTime.now();

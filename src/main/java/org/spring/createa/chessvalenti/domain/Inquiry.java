@@ -28,7 +28,7 @@ public class Inquiry {
   LocalDateTime updatedAt;
 
   String title;
-  @Column(columnDefinition = "LONGTEXT")
+  @Column(columnDefinition = "TEXT")
   String content;
 
   @ManyToOne
@@ -37,7 +37,7 @@ public class Inquiry {
   @Enumerated(EnumType.STRING)
   InquiryCategory category;
 
-  @Column(columnDefinition = "LONGTEXT")
+  @Column(columnDefinition = "TEXT")
   String answer;
   LocalDateTime answeredAt;
 
