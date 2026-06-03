@@ -152,6 +152,7 @@ public class DataInitializer implements CommandLineRunner {
     } finally {
       gameIndexRepository.finishBulkInsert();
     }
+    System.out.println("Data initialization completed. Total game indexes processed: " + cnt);
   }
 
   private void flushGameIndexesInTransaction(List<GameIndex> gameIndexList, TransactionTemplate transactionTemplate) {
