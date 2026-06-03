@@ -67,14 +67,13 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   @Override
   public void prepareForBulkInsert() {
     truncateTable();
-    syncSequenceWithTable();
     dropIndexIfExists(PAWN_SORT_INDEX);
     dropIndexIfExists(PAWN_PIECE_SORT_INDEX);
     dropIndexIfExists(LEGACY_PAWN_PIECE_CONFIGURATION_INDEX);
   }
 
   private void truncateTable() {
-    jdbcTemplate.execute("truncate table game_index");
+    jdbcTemplate.execute("truncate table game_index restart identity cascade");
   }
 
   @Override
@@ -107,35 +106,23 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
           id desc
         )
         """);
+    syncSequenceWithTable();
   }
 
   private void dropIndexIfExists(String indexName) {
-    try {
-      jdbcTemplate.execute("alter table game_index drop index " + indexName);
-    } catch (DataAccessException e) {
-      if (indexExists(indexName)) {
-        throw e;
-      }
-    }
+    jdbcTemplate.execute("drop index if exists " + indexName);
   }
 
   private void createIndexIfMissing(String indexName, String sql) {
-    try {
-      jdbcTemplate.execute(sql);
-    } catch (DataAccessException e) {
-      if (!indexExists(indexName)) {
-        throw e;
-      }
-    }
+    jdbcTemplate.execute(sql);
   }
 
   private boolean indexExists(String indexName) {
     Integer count = jdbcTemplate.queryForObject("""
             select count(*)
-            from information_schema.statistics
-            where table_schema = database()
-              and table_name = 'game_index'
-              and index_name = ?
+            from pg_indexes
+            where tablename = 'game_index'
+              and indexname = ?
             """,
         Integer.class,
         indexName);
@@ -181,23 +168,26 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   }
 
   private void syncSequenceWithTable() {
-    jdbcTemplate.update("""
-        update game_index_seq
-        set next_val = greatest(
-          next_val,
-          coalesce((select max_id from (select max(id) + 1 as max_id from game_index) ids), 1)
-        )
+    jdbcTemplate.execute("""
+        select setval('game_index_seq', (select coalesce(max(id), 0) + 1 from game_index), false)
         """);
   }
 
   private long reserveIds(int count) {
-    Long firstId = jdbcTemplate.queryForObject(
-        "select next_val from game_index_seq for update",
+    // Reserve 'count' IDs by incrementing the sequence
+    Long lastId = jdbcTemplate.queryForObject(
+        "select nextval('game_index_seq')",
         Long.class);
-    if (firstId == null) {
-      throw new IllegalStateException("game_index_seq.next_val is null");
+    if (lastId == null) {
+      throw new IllegalStateException("Could not get nextval from game_index_seq");
     }
-    jdbcTemplate.update("update game_index_seq set next_val = ?", firstId + count);
-    return firstId;
+    
+    // The range we reserved is [lastId, lastId + count - 1]
+    // We increment the sequence by count-1 more to reserve the whole block
+    if (count > 1) {
+      jdbcTemplate.execute("select setval('game_index_seq', " + (lastId + count - 1) + ", true)");
+    }
+    
+    return lastId;
   }
 }
