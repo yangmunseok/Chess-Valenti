@@ -1,6 +1,8 @@
 package org.spring.createa.chessvalenti.db;
 
 import com.github.bhlangonijr.chesslib.Board;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import org.spring.createa.chessvalenti.domain.GameIndex;
@@ -32,6 +34,18 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
 
   @Autowired
   JdbcTemplate jdbcTemplate;
+
+  private String getDatabaseProductName() {
+    try {
+      return jdbcTemplate.getDataSource().getConnection().getMetaData().getDatabaseProductName();
+    } catch (SQLException e) {
+      throw new RuntimeException("Could not determine database product name", e);
+    }
+  }
+
+  private boolean isPostgreSQL() {
+    return getDatabaseProductName().equalsIgnoreCase("PostgreSQL");
+  }
 
   public List<GameIndex> findAllByPawnStructure(Board board) {
     System.out.println("hashed pawn");
@@ -73,7 +87,11 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   }
 
   private void truncateTable() {
-    jdbcTemplate.execute("truncate table game_index restart identity cascade");
+    if (isPostgreSQL()) {
+      jdbcTemplate.execute("truncate table game_index restart identity cascade");
+    } else {
+      jdbcTemplate.execute("truncate table game_index");
+    }
   }
 
   @Override
@@ -110,23 +128,52 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   }
 
   private void dropIndexIfExists(String indexName) {
-    jdbcTemplate.execute("drop index if exists " + indexName);
+    if (isPostgreSQL()) {
+      jdbcTemplate.execute("drop index if exists " + indexName);
+    } else {
+      try {
+        jdbcTemplate.execute("alter table game_index drop index " + indexName);
+      } catch (DataAccessException e) {
+        if (indexExists(indexName)) {
+          throw e;
+        }
+      }
+    }
   }
 
   private void createIndexIfMissing(String indexName, String sql) {
-    jdbcTemplate.execute(sql);
+    try {
+      jdbcTemplate.execute(sql);
+    } catch (DataAccessException e) {
+      if (!indexExists(indexName)) {
+        throw e;
+      }
+    }
   }
 
   private boolean indexExists(String indexName) {
-    Integer count = jdbcTemplate.queryForObject("""
-            select count(*)
-            from pg_indexes
-            where tablename = 'game_index'
-              and indexname = ?
-            """,
-        Integer.class,
-        indexName);
-    return count != null && count > 0;
+    if (isPostgreSQL()) {
+      Integer count = jdbcTemplate.queryForObject("""
+              select count(*)
+              from pg_indexes
+              where tablename = 'game_index'
+                and indexname = ?
+              """,
+          Integer.class,
+          indexName);
+      return count != null && count > 0;
+    } else {
+      Integer count = jdbcTemplate.queryForObject("""
+              select count(*)
+              from information_schema.statistics
+              where table_schema = database()
+                and table_name = 'game_index'
+                and index_name = ?
+              """,
+          Integer.class,
+          indexName);
+      return count != null && count > 0;
+    }
   }
 
   private void insertChunk(List<GameIndex> gameIndexes, long firstId, int start, int end) {
@@ -168,26 +215,42 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   }
 
   private void syncSequenceWithTable() {
-    jdbcTemplate.execute("""
-        select setval('game_index_seq', (select coalesce(max(id), 0) + 1 from game_index), false)
-        """);
+    if (isPostgreSQL()) {
+      jdbcTemplate.execute("""
+          select setval('game_index_seq', (select coalesce(max(id), 0) + 1 from game_index), false)
+          """);
+    } else {
+      jdbcTemplate.update("""
+          update game_index_seq
+          set next_val = greatest(
+            next_val,
+            coalesce((select max_id from (select max(id) + 1 as max_id from game_index) ids), 1)
+          )
+          """);
+    }
   }
 
   private long reserveIds(int count) {
-    // Reserve 'count' IDs by incrementing the sequence
-    Long lastId = jdbcTemplate.queryForObject(
-        "select nextval('game_index_seq')",
-        Long.class);
-    if (lastId == null) {
-      throw new IllegalStateException("Could not get nextval from game_index_seq");
+    if (isPostgreSQL()) {
+      Long lastId = jdbcTemplate.queryForObject(
+          "select nextval('game_index_seq')",
+          Long.class);
+      if (lastId == null) {
+        throw new IllegalStateException("Could not get nextval from game_index_seq");
+      }
+      if (count > 1) {
+        jdbcTemplate.execute("select setval('game_index_seq', " + (lastId + count - 1) + ", true)");
+      }
+      return lastId;
+    } else {
+      Long firstId = jdbcTemplate.queryForObject(
+          "select next_val from game_index_seq for update",
+          Long.class);
+      if (firstId == null) {
+        throw new IllegalStateException("game_index_seq.next_val is null");
+      }
+      jdbcTemplate.update("update game_index_seq set next_val = ?", firstId + count);
+      return firstId;
     }
-    
-    // The range we reserved is [lastId, lastId + count - 1]
-    // We increment the sequence by count-1 more to reserve the whole block
-    if (count > 1) {
-      jdbcTemplate.execute("select setval('game_index_seq', " + (lastId + count - 1) + ", true)");
-    }
-    
-    return lastId;
   }
 }
