@@ -35,12 +35,17 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   @Autowired
   JdbcTemplate jdbcTemplate;
 
+  private String cachedDatabaseProductName;
+
   private String getDatabaseProductName() {
-    try {
-      return jdbcTemplate.getDataSource().getConnection().getMetaData().getDatabaseProductName();
-    } catch (SQLException e) {
-      throw new RuntimeException("Could not determine database product name", e);
+    if (cachedDatabaseProductName == null) {
+      try (java.sql.Connection conn = jdbcTemplate.getDataSource().getConnection()) {
+        cachedDatabaseProductName = conn.getMetaData().getDatabaseProductName();
+      } catch (SQLException e) {
+        throw new RuntimeException("Could not determine database product name", e);
+      }
     }
+    return cachedDatabaseProductName;
   }
 
   private boolean isPostgreSQL() {
