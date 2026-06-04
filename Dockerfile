@@ -12,6 +12,8 @@ RUN mkdir -p /app/data \
     && pgn_file="$(find /app/data -type f -iname '*.pgn' | head -n 1)" \
     && test -n "$pgn_file" \
     && if [ "$pgn_file" != "/app/data/AJ-OTB-PGN-001.pgn" ]; then cp "$pgn_file" /app/data/AJ-OTB-PGN-001.pgn; fi \
+    && curl -fL "https://drive.google.com/uc?export=download&id=1_kzmrgFpkLboDf0rOdbheYwa2InDEQ5b" -o csv_data.7z \
+    && 7z x csv_data.7z -o/app/data -y \
     && curl -fL --output stockfish.tar https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-ubuntu-x86-64-avx2.tar \
     && mkdir -p /tmp/stockfish \
     && tar -xf stockfish.tar -C /tmp/stockfish \
@@ -38,6 +40,7 @@ COPY --from=assets /app/data ./data
 
 ENV CHESS_PGN_PATH=/app/data/AJ-OTB-PGN-001.pgn
 ENV STOCKFISH_PATH=/app/data/stockfish
+ENV CHESS_DATA_INIT_MODE=CSV_TO_DB
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080

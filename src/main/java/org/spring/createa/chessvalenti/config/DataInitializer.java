@@ -4,6 +4,10 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +62,27 @@ public class DataInitializer implements CommandLineRunner {
   @Value("${admin.email}")
   private String adminEmail;
 
+  @Value("${chess.data-init.mode:PGN_TO_DB}")
+  private String initMode;
+
+  @Value("${chess.data-init.csv-dir:data/csv}")
+  private String csvDir;
+
+  public enum DataInitMode {
+    PGN_TO_DB,
+    PGN_TO_CSV,
+    CSV_TO_DB,
+    OFF;
+
+    public static DataInitMode from(String value) {
+      try {
+        return DataInitMode.valueOf(value.toUpperCase());
+      } catch (Exception e) {
+        return PGN_TO_DB;
+      }
+    }
+  }
+
   public void run(String... args) throws Exception {
     TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
     transactionTemplate.execute(status -> {
@@ -65,18 +90,49 @@ public class DataInitializer implements CommandLineRunner {
       return null;
     });
 
+    DataInitMode mode = DataInitMode.from(initMode);
+    if (mode == DataInitMode.OFF) {
+      log.info("Data initialization is OFF.");
+      return;
+    }
+
+    if (mode == DataInitMode.CSV_TO_DB) {
+      importFromCsv(transactionTemplate);
+      return;
+    }
+
+    processPgn(mode, transactionTemplate);
+  }
+
+  private void processPgn(DataInitMode mode, TransactionTemplate transactionTemplate)
+      throws Exception {
+    boolean toDb = mode == DataInitMode.PGN_TO_DB;
     String path = Path.of(pgnPath).toFile().getAbsolutePath();
 
-    int batchSize = 10000; // Reduced batch size for more frequent commits
+    int batchSize = 10000;
     int cnt = 0;
     int maxGame = 200;
     int engineRating = 2900;
     int gmRating = 2500;
     List<GameIndex> gameIndexList = new ArrayList<>(batchSize);
-    Map<String, ChessPlayer> playerCache = loadPlayerCache();
+    Map<String, ChessPlayer> playerCache = toDb ? loadPlayerCache() : new HashMap<>();
     Map<Long, Integer> pawnStructureCnt = new HashMap<>();
 
-    gameIndexRepository.prepareForBulkInsert();
+    PrintWriter playerWriter = null;
+    PrintWriter gameIndexWriter = null;
+    long nextPlayerId = 1;
+    long nextGameIndexId = 1;
+
+    if (!toDb) {
+      Files.createDirectories(Path.of(csvDir));
+      playerWriter = new PrintWriter(Files.newBufferedWriter(Path.of(csvDir, "players.csv")));
+      gameIndexWriter = new PrintWriter(
+          Files.newBufferedWriter(Path.of(csvDir, "game_indexes.csv")));
+      log.info("Exporting PGN to CSV in: {}", csvDir);
+    } else {
+      gameIndexRepository.prepareForBulkInsert();
+    }
+
     try {
       try (CustomPgnIterator games = new CustomPgnIterator(path)) {
         for (CustomGame game : games) {
@@ -100,8 +156,26 @@ public class DataInitializer implements CommandLineRunner {
 
           int white_elo = game.getWhitePlayer().getElo();
           int black_elo = game.getBlackPlayer().getElo();
-          ChessPlayer whitePlayer = savePlayer(game.getWhitePlayer(), playerCache);
-          ChessPlayer blackPlayer = savePlayer(game.getBlackPlayer(), playerCache);
+
+          ChessPlayer whitePlayer;
+          ChessPlayer blackPlayer;
+
+          if (toDb) {
+            whitePlayer = savePlayer(game.getWhitePlayer(), playerCache);
+            blackPlayer = savePlayer(game.getBlackPlayer(), playerCache);
+          } else {
+            whitePlayer = getOrAssignPlayer(game.getWhitePlayer().getName(), playerCache,
+                playerWriter, new long[]{nextPlayerId});
+            if (whitePlayer.getId() == nextPlayerId) {
+              nextPlayerId++;
+            }
+            blackPlayer = getOrAssignPlayer(game.getBlackPlayer().getName(), playerCache,
+                playerWriter, new long[]{nextPlayerId});
+            if (blackPlayer.getId() == nextPlayerId) {
+              nextPlayerId++;
+            }
+          }
+
           long game_offset = game.getOffset();
           long move_idx = 0;
 
@@ -109,8 +183,10 @@ public class DataInitializer implements CommandLineRunner {
             try {
               board.doMove(move);
             } catch (Exception e) {
-              gameIndexRepository.removeGameIndexByGameOffset(game_offset);
-              gameIndexList.removeIf((gameIndex -> gameIndex.getGameOffset() == game_offset));
+              if (toDb) {
+                gameIndexRepository.removeGameIndexByGameOffset(game_offset);
+                gameIndexList.removeIf((gameIndex -> gameIndex.getGameOffset() == game_offset));
+              }
               break;
             }
 
@@ -142,22 +218,151 @@ public class DataInitializer implements CommandLineRunner {
 
             GameIndex gameIndex = new GameIndex(key, hashedPieceConfiguration, game_offset,
                 move_idx, whitePlayer, blackPlayer, white_elo, black_elo);
-            gameIndexList.add(gameIndex);
 
-            if (gameIndexList.size() >= batchSize) {
-              flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
+            if (toDb) {
+              gameIndexList.add(gameIndex);
+              if (gameIndexList.size() >= batchSize) {
+                flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
+              }
+            } else {
+              gameIndex.setId(nextGameIndexId++);
+              writeGameIndexToCsv(gameIndex, gameIndexWriter);
             }
           }
         }
       }
-      flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
+      if (toDb) {
+        flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
+      }
+    } finally {
+      if (toDb) {
+        gameIndexRepository.finishBulkInsert();
+      } else {
+        if (playerWriter != null) {
+          playerWriter.close();
+        }
+        if (gameIndexWriter != null) {
+          gameIndexWriter.close();
+        }
+      }
+    }
+    log.info("Data processing completed. Total game indexes: {}", cnt);
+  }
+
+  private ChessPlayer getOrAssignPlayer(String name, Map<String, ChessPlayer> playerCache,
+      PrintWriter writer, long[] nextId) {
+    ChessPlayer player = playerCache.get(name);
+    if (player == null) {
+      player = new ChessPlayer(name);
+      player.setId(nextId[0]);
+      playerCache.put(name, player);
+      writer.println(player.getId() + ",\"" + name.replace("\"", "\"\"") + "\"");
+    }
+    return player;
+  }
+
+  private void writeGameIndexToCsv(GameIndex gi, PrintWriter writer) {
+    writer.println(gi.getPawnStructure() + "," + gi.getPieceConfiguration() + "," +
+        gi.getGameOffset() + "," + gi.getMoveIndex() + "," +
+        gi.getWhitePlayer().getId() + "," + gi.getBlackPlayer().getId() + "," +
+        gi.getWhiteElo() + "," + gi.getBlackElo() + "," + gi.getId());
+  }
+
+  private void importFromCsv(TransactionTemplate transactionTemplate) throws Exception {
+    log.info("Importing data from CSV files in: {}", csvDir);
+    Path playerCsv = Path.of(csvDir, "players.csv");
+    Path gameIndexCsv = Path.of(csvDir, "game_indexes.csv");
+
+    if (!playerCsv.toFile().exists() || !gameIndexCsv.toFile().exists()) {
+      log.error("CSV files not found in {}. Skipping import.", csvDir);
+      return;
+    }
+
+    gameIndexRepository.prepareForBulkInsert();
+    try {
+      // Import players
+      List<ChessPlayer> players = new ArrayList<>();
+      try (BufferedReader reader = Files.newBufferedReader(playerCsv)) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          String[] parts = parseCsvLine(line);
+          if (parts.length < 2) {
+            continue;
+          }
+          ChessPlayer player = new ChessPlayer(parts[1]);
+          player.setId(Long.parseLong(parts[0]));
+          players.add(player);
+          if (players.size() >= 1000) {
+            chessPlayerRepository.insertAll(players);
+            players.clear();
+          }
+        }
+        chessPlayerRepository.insertAll(players);
+      }
+
+      // Import game indexes
+      List<GameIndex> gameIndexes = new ArrayList<>();
+      Map<Long, ChessPlayer> playerMap = loadPlayerCacheById();
+      try (BufferedReader reader = Files.newBufferedReader(gameIndexCsv)) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          String[] parts = line.split(",");
+          if (parts.length < 9) {
+            continue;
+          }
+          GameIndex gi = new GameIndex();
+          gi.setPawnStructure(Long.parseLong(parts[0]));
+          gi.setPieceConfiguration(Integer.parseInt(parts[1]));
+          gi.setGameOffset(Long.parseLong(parts[2]));
+          gi.setMoveIndex(Long.parseLong(parts[3]));
+          gi.setWhitePlayer(playerMap.get(Long.parseLong(parts[4])));
+          gi.setBlackPlayer(playerMap.get(Long.parseLong(parts[5])));
+          gi.setWhiteElo(Integer.parseInt(parts[6]));
+          gi.setBlackElo(Integer.parseInt(parts[7]));
+          gi.setMaxElo(Math.max(gi.getWhiteElo(), gi.getBlackElo()));
+          gi.setTotalElo(gi.getWhiteElo() + gi.getBlackElo());
+          gi.setId(Long.parseLong(parts[8]));
+
+          gameIndexes.add(gi);
+          if (gameIndexes.size() >= 10000) {
+            flushGameIndexesInTransaction(gameIndexes, transactionTemplate);
+          }
+        }
+        flushGameIndexesInTransaction(gameIndexes, transactionTemplate);
+      }
     } finally {
       gameIndexRepository.finishBulkInsert();
     }
-    log.info("Data initialization completed. Total game indexes processed: {}", cnt);
   }
 
-  private void flushGameIndexesInTransaction(List<GameIndex> gameIndexList, TransactionTemplate transactionTemplate) {
+  private String[] parseCsvLine(String line) {
+    List<String> result = new ArrayList<>();
+    boolean inQuotes = false;
+    StringBuilder sb = new StringBuilder();
+    for (char c : line.toCharArray()) {
+      if (c == '\"') {
+        inQuotes = !inQuotes;
+      } else if (c == ',' && !inQuotes) {
+        result.add(sb.toString());
+        sb.setLength(0);
+      } else {
+        sb.append(c);
+      }
+    }
+    result.add(sb.toString());
+    return result.toArray(new String[0]);
+  }
+
+  private Map<Long, ChessPlayer> loadPlayerCacheById() {
+    Map<Long, ChessPlayer> playerCache = new HashMap<>();
+    for (ChessPlayer chessPlayer : chessPlayerRepository.findAll()) {
+      playerCache.put(chessPlayer.getId(), chessPlayer);
+    }
+    return playerCache;
+  }
+
+  private void flushGameIndexesInTransaction(List<GameIndex> gameIndexList,
+      TransactionTemplate transactionTemplate) {
     if (gameIndexList.isEmpty()) {
       return;
     }
