@@ -1,6 +1,7 @@
 package org.spring.createa.chessvalenti.db;
 
 import com.github.bhlangonijr.chesslib.Board;
+import java.nio.file.Path;
 import java.util.List;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,8 @@ public interface GameIndexRepositoryCustom {
   void prepareForBulkInsert();
 
   void insertAll(List<GameIndex> gameIndexes);
+
+  void importFromCsv(Path path);
 
   void finishBulkInsert();
 }

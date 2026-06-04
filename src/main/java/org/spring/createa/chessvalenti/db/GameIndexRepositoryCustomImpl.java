@@ -1,18 +1,24 @@
 package org.spring.createa.chessvalenti.db;
 
+import static java.nio.file.Files.newInputStream;
+
 import com.github.bhlangonijr.chesslib.Board;
-import java.sql.DatabaseMetaData;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import org.postgresql.PGConnection;
+import org.postgresql.copy.CopyManager;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,6 +118,54 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
       insertChunk(gameIndexes, firstId, start, end);
     }
   }
+
+  @Override
+  public void importFromCsv(Path path) {
+    if (isPostgreSQL()) {
+      importFromCsvPostgreSQL(path);
+    } else {
+      importFromCsvMySQL(path);
+    }
+  }
+
+  private void importFromCsvPostgreSQL(Path path) {
+    jdbcTemplate.execute((Connection conn) -> {
+      PGConnection pgConn = conn.unwrap(PGConnection.class);
+      CopyManager copyManager = pgConn.getCopyAPI();
+      try (InputStream in = newInputStream(path)) {
+        copyManager.copyIn("""
+            COPY game_index (
+              id,
+              pawn_structure,
+              piece_configuration,
+              game_offset,
+              move_index,
+              white_player_id,
+              black_player_id,
+              white_elo,
+              black_elo,
+              max_elo,
+              total_elo
+            ) FROM STDIN WITH (FORMAT csv, QUOTE '\"', ESCAPE '\"')
+            """, in);
+      } catch (java.io.IOException e) {
+        throw new SQLException("Error during PostgreSQL COPY", e);
+      }
+      return null;
+    });
+  }
+
+  private void importFromCsvMySQL(java.nio.file.Path path) {
+    String absolutePath = path.toAbsolutePath().toString().replace("\\", "/");
+    String sql = "LOAD DATA LOCAL INFILE '" + absolutePath + "' " +
+        "INTO TABLE game_index " +
+        "FIELDS TERMINATED BY ',' " +
+        "OPTIONALLY ENCLOSED BY '\"' " +
+        "(id, pawn_structure, piece_configuration, game_offset, move_index, " +
+        "white_player_id, black_player_id, white_elo, black_elo, max_elo, total_elo)";
+    jdbcTemplate.execute(sql);
+  }
+
 
   @Override
   public void finishBulkInsert() {

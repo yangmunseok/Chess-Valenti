@@ -1,11 +1,18 @@
 package org.spring.createa.chessvalenti.db;
 
+import static java.nio.file.Files.newInputStream;
+
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.postgresql.PGConnection;
+import org.postgresql.copy.CopyManager;
 import org.spring.createa.chessvalenti.domain.ChessPlayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -105,6 +112,53 @@ public class ChessPlayerRepositoryCustomImpl implements ChessPlayerRepositoryCus
     jdbcTemplate.update(sql.toString(), params.toArray());
   }
 
+  @Override
+  public void truncateTable() {
+    if (isPostgreSQL()) {
+      jdbcTemplate.execute("TRUNCATE TABLE chess_player RESTART IDENTITY CASCADE");
+    } else {
+      jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+      jdbcTemplate.execute("TRUNCATE TABLE chess_player");
+      jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
+    }
+  }
+
+  @Override
+  public void importFromCsv(java.nio.file.Path path) {
+    if (isPostgreSQL()) {
+      importFromCsvPostgreSQL(path);
+    } else {
+      importFromCsvMySQL(path);
+    }
+    syncSequenceWithTable();
+  }
+
+  private void importFromCsvPostgreSQL(Path path) {
+    jdbcTemplate.execute((Connection conn) -> {
+      PGConnection pgConn = conn.unwrap(PGConnection.class);
+      CopyManager copyManager = pgConn.getCopyAPI();
+      try (InputStream in = newInputStream(path)) {
+        copyManager.copyIn(
+            "COPY chess_player (id, name) FROM STDIN WITH (FORMAT csv, QUOTE '\"', ESCAPE '\"')",
+            in);
+      } catch (java.io.IOException e) {
+        throw new SQLException("Error during PostgreSQL COPY", e);
+      }
+      return null;
+    });
+  }
+
+  private void importFromCsvMySQL(java.nio.file.Path path) {
+    String absolutePath = path.toAbsolutePath().toString().replace("\\", "/");
+    String sql = "LOAD DATA LOCAL INFILE '" + absolutePath + "' " +
+        "INTO TABLE chess_player " +
+        "FIELDS TERMINATED BY ',' " +
+        "OPTIONALLY ENCLOSED BY '\"' " +
+        "(id, name)";
+    jdbcTemplate.execute(sql);
+  }
+
+
   private void syncSequenceWithTable() {
     if (isPostgreSQL()) {
       jdbcTemplate.execute("""
@@ -156,7 +210,8 @@ public class ChessPlayerRepositoryCustomImpl implements ChessPlayerRepositoryCus
     jdbcTemplate.update(sql.toString(), params.toArray());
 
     // For MySQL, we need a separate SELECT to get the IDs
-    StringBuilder selectSql = new StringBuilder("SELECT id, name FROM chess_player WHERE name IN (");
+    StringBuilder selectSql = new StringBuilder(
+        "SELECT id, name FROM chess_player WHERE name IN (");
     for (int i = 0; i < names.size(); i++) {
       if (i > 0) {
         selectSql.append(", ");

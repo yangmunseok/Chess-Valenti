@@ -256,20 +256,30 @@ public class DataInitializer implements CommandLineRunner {
       player = new ChessPlayer(name);
       player.setId(nextId[0]);
       playerCache.put(name, player);
-      writer.println(player.getId() + ",\"" + name.replace("\"", "\"\"") + "\"");
+      writer.print(player.getId() + ",\"" + name.replace("\"", "\"\"") + "\"\n");
     }
     return player;
   }
 
   private void writeGameIndexToCsv(GameIndex gi, PrintWriter writer) {
-    writer.println(gi.getPawnStructure() + "," + gi.getPieceConfiguration() + "," +
-        gi.getGameOffset() + "," + gi.getMoveIndex() + "," +
-        gi.getWhitePlayer().getId() + "," + gi.getBlackPlayer().getId() + "," +
-        gi.getWhiteElo() + "," + gi.getBlackElo() + "," + gi.getId());
+    // Column order: id, pawn_structure, piece_configuration, game_offset, move_index, 
+    // white_player_id, black_player_id, white_elo, black_elo, max_elo, total_elo
+    writer.print(gi.getId() + "," +
+        gi.getPawnStructure() + "," +
+        gi.getPieceConfiguration() + "," +
+        gi.getGameOffset() + "," +
+        gi.getMoveIndex() + "," +
+        gi.getWhitePlayer().getId() + "," +
+        gi.getBlackPlayer().getId() + "," +
+        gi.getWhiteElo() + "," +
+        gi.getBlackElo() + "," +
+        gi.getMaxElo() + "," +
+        gi.getTotalElo() + "\n");
   }
 
   private void importFromCsv(TransactionTemplate transactionTemplate) throws Exception {
-    log.info("Importing data from CSV files in: {}", csvDir);
+    long startTime = System.currentTimeMillis();
+    log.info("Importing data from CSV files in: {} using native DB commands", csvDir);
     Path playerCsv = Path.of(csvDir, "players.csv");
     Path gameIndexCsv = Path.of(csvDir, "game_indexes.csv");
 
@@ -278,61 +288,27 @@ public class DataInitializer implements CommandLineRunner {
       return;
     }
 
+    log.info("Truncating chess_player table...");
+    chessPlayerRepository.truncateTable();
+    log.info("Importing players from CSV...");
+    chessPlayerRepository.importFromCsv(playerCsv);
+    log.info("Chess players imported.");
+
+    log.info("Preparing game_index for bulk insert (truncating and dropping indexes)...");
     gameIndexRepository.prepareForBulkInsert();
+    
     try {
-      // Import players
-      List<ChessPlayer> players = new ArrayList<>();
-      try (BufferedReader reader = Files.newBufferedReader(playerCsv)) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-          String[] parts = parseCsvLine(line);
-          if (parts.length < 2) {
-            continue;
-          }
-          ChessPlayer player = new ChessPlayer(parts[1]);
-          player.setId(Long.parseLong(parts[0]));
-          players.add(player);
-          if (players.size() >= 1000) {
-            chessPlayerRepository.insertAll(players);
-            players.clear();
-          }
-        }
-        chessPlayerRepository.insertAll(players);
-      }
-
-      // Import game indexes
-      List<GameIndex> gameIndexes = new ArrayList<>();
-      Map<Long, ChessPlayer> playerMap = loadPlayerCacheById();
-      try (BufferedReader reader = Files.newBufferedReader(gameIndexCsv)) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-          String[] parts = line.split(",");
-          if (parts.length < 9) {
-            continue;
-          }
-          GameIndex gi = new GameIndex();
-          gi.setPawnStructure(Long.parseLong(parts[0]));
-          gi.setPieceConfiguration(Integer.parseInt(parts[1]));
-          gi.setGameOffset(Long.parseLong(parts[2]));
-          gi.setMoveIndex(Long.parseLong(parts[3]));
-          gi.setWhitePlayer(playerMap.get(Long.parseLong(parts[4])));
-          gi.setBlackPlayer(playerMap.get(Long.parseLong(parts[5])));
-          gi.setWhiteElo(Integer.parseInt(parts[6]));
-          gi.setBlackElo(Integer.parseInt(parts[7]));
-          gi.setMaxElo(Math.max(gi.getWhiteElo(), gi.getBlackElo()));
-          gi.setTotalElo(gi.getWhiteElo() + gi.getBlackElo());
-          gi.setId(Long.parseLong(parts[8]));
-
-          gameIndexes.add(gi);
-          if (gameIndexes.size() >= 10000) {
-            flushGameIndexesInTransaction(gameIndexes, transactionTemplate);
-          }
-        }
-        flushGameIndexesInTransaction(gameIndexes, transactionTemplate);
-      }
+      log.info("Importing game indexes from CSV (this may take a minute)...");
+      long loadStartTime = System.currentTimeMillis();
+      gameIndexRepository.importFromCsv(gameIndexCsv);
+      log.info("Game indexes raw data imported in {} ms.", System.currentTimeMillis() - loadStartTime);
     } finally {
+      log.info("Finishing bulk insert (recreating indexes and syncing sequences)...");
+      long indexStartTime = System.currentTimeMillis();
       gameIndexRepository.finishBulkInsert();
+      log.info("Indexes recreated and sequences synced in {} ms.", System.currentTimeMillis() - indexStartTime);
     }
+    log.info("Total CSV import completed in {} ms.", System.currentTimeMillis() - startTime);
   }
 
   private String[] parseCsvLine(String line) {

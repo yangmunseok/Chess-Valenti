@@ -104,7 +104,6 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
@@ -152,7 +151,8 @@
         <jdk>[24,)</jdk>
       </activation>
       <properties>
-        <surefire.argLine>-XX:+EnableDynamicAgentLoading --sun-misc-unsafe-memory-access=allow</surefire.argLine>
+        <surefire.argLine>-XX:+EnableDynamicAgentLoading --sun-misc-unsafe-memory-access=allow
+        </surefire.argLine>
       </properties>
     </profile>
   </profiles>

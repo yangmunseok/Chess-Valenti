@@ -9,4 +9,8 @@ public interface ChessPlayerRepositoryCustom {
   void insertMissingAndFillIds(Collection<ChessPlayer> chessPlayers);
 
   void insertAll(List<ChessPlayer> players);
+
+  void importFromCsv(java.nio.file.Path path);
+
+  void truncateTable();
 }
