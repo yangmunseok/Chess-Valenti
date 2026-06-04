@@ -7,7 +7,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app/data \
-    && curl -fL --output ajotb.7z https://l--l.top/ajotb-pgn-001 \
+    && curl -fL --output ajotb.7z https://l--l.top/AJ-OTB-PGN-001 \
     && 7z x ajotb.7z -o/app/data -y \
     && pgn_file="$(find /app/data -type f -iname '*.pgn' | head -n 1)" \
     && test -n "$pgn_file" \
