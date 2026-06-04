@@ -4,8 +4,6 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +30,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
@@ -111,7 +108,7 @@ public class DataInitializer implements CommandLineRunner {
 
     int batchSize = 10000;
     int cnt = 0;
-    int maxGame = 200;
+    int maxGame = 99;
     int engineRating = 2900;
     int gmRating = 2500;
     List<GameIndex> gameIndexList = new ArrayList<>(batchSize);
@@ -296,17 +293,19 @@ public class DataInitializer implements CommandLineRunner {
 
     log.info("Preparing game_index for bulk insert (truncating and dropping indexes)...");
     gameIndexRepository.prepareForBulkInsert();
-    
+
     try {
       log.info("Importing game indexes from CSV (this may take a minute)...");
       long loadStartTime = System.currentTimeMillis();
       gameIndexRepository.importFromCsv(gameIndexCsv);
-      log.info("Game indexes raw data imported in {} ms.", System.currentTimeMillis() - loadStartTime);
+      log.info("Game indexes raw data imported in {} ms.",
+          System.currentTimeMillis() - loadStartTime);
     } finally {
       log.info("Finishing bulk insert (recreating indexes and syncing sequences)...");
       long indexStartTime = System.currentTimeMillis();
       gameIndexRepository.finishBulkInsert();
-      log.info("Indexes recreated and sequences synced in {} ms.", System.currentTimeMillis() - indexStartTime);
+      log.info("Indexes recreated and sequences synced in {} ms.",
+          System.currentTimeMillis() - indexStartTime);
     }
     log.info("Total CSV import completed in {} ms.", System.currentTimeMillis() - startTime);
   }
@@ -411,7 +410,8 @@ public class DataInitializer implements CommandLineRunner {
     return playerCache;
   }
 
-  private ChessPlayer savePlayer(com.github.bhlangonijr.chesslib.game.Player player, Map<String, ChessPlayer> playerCache) {
+  private ChessPlayer savePlayer(com.github.bhlangonijr.chesslib.game.Player player,
+      Map<String, ChessPlayer> playerCache) {
     String name = player.getName();
     String key = name;
     ChessPlayer cached = playerCache.get(key);

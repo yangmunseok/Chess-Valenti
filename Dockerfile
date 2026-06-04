@@ -40,7 +40,6 @@ COPY --from=assets /app/data ./data
 
 ENV CHESS_PGN_PATH=/app/data/AJ-OTB-PGN-001.pgn
 ENV STOCKFISH_PATH=/app/data/stockfish
-ENV CHESS_DATA_INIT_MODE=CSV_TO_DB
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
