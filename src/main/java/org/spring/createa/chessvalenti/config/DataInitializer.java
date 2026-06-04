@@ -23,6 +23,7 @@ import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.game.CustomGame;
+import org.spring.createa.chessvalenti.util.ChessBoardUtil;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
 import org.spring.createa.chessvalenti.util.pgn.CustomPgnIterator;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +47,7 @@ public class DataInitializer implements CommandLineRunner {
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
   private final PlatformTransactionManager transactionManager;
+  private final ChessBoardUtil chessBoardUtil;
 
   @Value("${chess.pgn.path}")
   private String pgnPath;
@@ -108,7 +110,7 @@ public class DataInitializer implements CommandLineRunner {
 
     int batchSize = 10000;
     int cnt = 0;
-    int maxGame = 99;
+    int maxGame = 50;
     int engineRating = 2900;
     int gmRating = 2500;
     List<GameIndex> gameIndexList = new ArrayList<>(batchSize);
@@ -133,6 +135,7 @@ public class DataInitializer implements CommandLineRunner {
     try {
       try (CustomPgnIterator games = new CustomPgnIterator(path)) {
         for (CustomGame game : games) {
+          int pawnMoveCnt = 0;
           int whiteElo = game.getWhitePlayer().getElo();
           int blackElo = game.getBlackPlayer().getElo();
 
@@ -145,6 +148,7 @@ public class DataInitializer implements CommandLineRunner {
           if (initialFen != null && !initialFen.equals(DEFAULT_STARTING_FEN)) {
             continue;
           }
+
           MoveList moves = game.getHalfMoves();
 
           Set<Long> visited = new HashSet<>(128);
@@ -178,7 +182,18 @@ public class DataInitializer implements CommandLineRunner {
 
           for (Move move : moves) {
             try {
+              Piece piece = board.getPiece(move.getFrom());
+
+              if (piece == Piece.BLACK_PAWN || piece == Piece.WHITE_PAWN) {
+                pawnMoveCnt++;
+              }
+
               board.doMove(move);
+
+              if (pawnMoveCnt < 6 || !chessBoardUtil.isMaterialEven(board)
+                  || chessBoardUtil.countCenterPawns(board) < 4) {
+                continue;
+              }
             } catch (Exception e) {
               if (toDb) {
                 gameIndexRepository.removeGameIndexByGameOffset(game_offset);
@@ -194,7 +209,7 @@ public class DataInitializer implements CommandLineRunner {
             }
             int game_num = pawnStructureCnt.getOrDefault(key, 0);
 
-            if (game_num > maxGame) {
+            if (game_num >= maxGame) {
               continue;
             }
 

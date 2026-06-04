@@ -12,7 +12,7 @@ RUN mkdir -p /app/data \
     && pgn_file="$(find /app/data -type f -iname '*.pgn' | head -n 1)" \
     && test -n "$pgn_file" \
     && if [ "$pgn_file" != "/app/data/AJ-OTB-PGN-001.pgn" ]; then cp "$pgn_file" /app/data/AJ-OTB-PGN-001.pgn; fi \
-    && curl -fL "https://drive.google.com/uc?export=download&id=1SOAd7pQ4Gu3PYWSm_ZHMkNWP9-Y7u_40" -o csv_data.7z \
+    && curl -fL "https://drive.google.com/uc?export=download&id=1gKLQvtT1aI9-k3bUC1DIDwbwSV6aVp7N" -o csv_data.7z \
     && 7z x csv_data.7z -o/app/data -y \
     && curl -fL --output stockfish.tar https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-ubuntu-x86-64-avx2.tar \
     && mkdir -p /tmp/stockfish \
