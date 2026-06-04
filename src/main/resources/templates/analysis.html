@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-DBMLJY2F5L');
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>valenti - Chess</title>
@@ -33,7 +42,7 @@
       </div>
 
       <div class="board-layout">
-        <div class="evaluation-bar">
+        <div class="evaluation-bar" style="display: none;">
           <div class="eval-fill" id="eval-fill" style="height: 50%;"></div>
         </div>
         <div class="board" id="chess-board"
@@ -59,7 +68,7 @@
     </div>
     <div class="analysis-panel">
 
-      <div class="engine-header">
+      <div class="engine-header" style="display: none;">
         <div class="engine-info">
           <label class="toggle-container">
             <input type="checkbox" class="toggle">

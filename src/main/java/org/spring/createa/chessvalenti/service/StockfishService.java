@@ -37,88 +37,26 @@ public class StockfishService {
   private long timeoutSeconds;
 
   public StockfishEvaluationResponse evaluate(String fen) {
+    // Disabled due to memory issues in deployment
+    throw new UnsupportedOperationException("Stockfish evaluation is currently disabled.");
+    /*
     validateFen(fen);
 
     Process process = null;
-    try {
-      process = new ProcessBuilder(stockfishPath).redirectErrorStream(true).start();
-
-      try (BufferedWriter writer = new BufferedWriter(
-          new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8));
-          BufferedReader reader = new BufferedReader(
-              new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-
-        send(writer, "uci");
-        waitFor(reader, "uciok", Duration.ofSeconds(timeoutSeconds));
-        send(writer, "isready");
-        waitFor(reader, "readyok", Duration.ofSeconds(timeoutSeconds));
-        send(writer, "ucinewgame");
-        send(writer, "position fen " + fen);
-        send(writer, "go depth " + depth);
-
-        PrincipalVariation evaluation = toWhitePerspective(
-            readEvaluation(reader, Duration.ofSeconds(timeoutSeconds)), fen);
-        send(writer, "quit");
-        return new StockfishEvaluationResponse(List.of(evaluation));
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException("Stockfish executable not found or failed to start: "
-          + stockfishPath, e);
-    } finally {
-      if (process != null && process.isAlive()) {
-        process.destroy();
-        try {
-          if (!process.waitFor(1, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          process.destroyForcibly();
-        }
-      }
-    }
+    ...
+    */
   }
 
   public void streamEvaluation(String fen, Consumer<StockfishEvaluationResponse> evaluationConsumer,
       BooleanSupplier shouldContinue) {
+    // Disabled due to memory issues in deployment
+    throw new UnsupportedOperationException("Stockfish evaluation is currently disabled.");
+    /*
     validateFen(fen);
 
     Process process = null;
-    try {
-      process = new ProcessBuilder(stockfishPath).redirectErrorStream(true).start();
-
-      try (BufferedWriter writer = new BufferedWriter(
-          new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8));
-          BufferedReader reader = new BufferedReader(
-              new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-
-        send(writer, "uci");
-        waitFor(reader, "uciok", Duration.ofSeconds(timeoutSeconds));
-        send(writer, "isready");
-        waitFor(reader, "readyok", Duration.ofSeconds(timeoutSeconds));
-        send(writer, "ucinewgame");
-        send(writer, "position fen " + fen);
-        send(writer, "go depth " + depth);
-
-        readEvaluations(reader, fen, evaluationConsumer, shouldContinue);
-        send(writer, "quit");
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException("Stockfish executable not found or failed to start: "
-          + stockfishPath, e);
-    } finally {
-      if (process != null && process.isAlive()) {
-        process.destroy();
-        try {
-          if (!process.waitFor(1, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          process.destroyForcibly();
-        }
-      }
-    }
+    ...
+    */
   }
 
   private void validateFen(String fen) {
