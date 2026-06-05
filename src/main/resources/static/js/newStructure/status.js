@@ -125,11 +125,15 @@ function renderGamePage(page) {
   const tbody = document.getElementById('game-list-body');
   tbody.innerHTML = pagedData.map(game => `
         <tr>
-            <td>${game.event}</td>
-            <td>${game.whitePlayer.name}(${game.whitePlayer.elo})</td>
-            <td>${game.blackPlayer.name}(${game.blackPlayer.elo})</td>
+            <td class="hide-mobile">${game.event}</td>
+            <td>
+              <div class="mobile-stack">
+                <span>${game.whitePlayer.name} <small class="player-sub">(${game.whitePlayer.elo})</small></span>
+                <span>${game.blackPlayer.name} <small class="player-sub">(${game.blackPlayer.elo})</small></span>
+              </div>
+            </td>
             <td class="result-cell">${game.result}</td>
-            <td>${game.date}</td>
+            <td class="hide-mobile">${game.date}</td>
             <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}">👁️</a></td>
         </tr>
     `).join('');

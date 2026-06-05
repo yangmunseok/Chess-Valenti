@@ -11,6 +11,7 @@
     gtag('config', 'G-DBMLJY2F5L');
   </script>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <title>Valenti - Support</title>
@@ -19,10 +20,10 @@
       href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
       rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/app.css">
-  <link rel="stylesheet" href="/css/home.css">
-  <link rel="stylesheet" href="/css/editor.css">
-  <link rel="stylesheet" href="/css/inquiry.css">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+  <link th:href="@{/css/home.css}" rel="stylesheet">
+  <link th:href="@{/css/editor.css}" rel="stylesheet">
+  <link th:href="@{/css/inquiry.css}" rel="stylesheet">
 </head>
 <body class="valenti-dark">
 
@@ -65,38 +66,38 @@
         </div>
       </section>
 
-      <section class="inquiry-list-section" style="margin-top: 50px;">
-        <div class="section-header" style="margin-bottom: 24px;">
-          <h2 style="font-size: 20px; font-weight: 600; color: #fff;">나의 문의 내역</h2>
+      <section class="inquiry-list-section">
+        <div class="section-header">
+          <h2>나의 문의 내역</h2>
         </div>
         
-        <div class="inquiry-table-wrapper" style="background: #161b22; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden;">
-          <table style="width: 100%; border-collapse: collapse;">
+        <div class="inquiry-table-wrapper">
+          <table class="valenti-table">
             <thead>
-              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255, 255, 255, 0.02);">
-                <th style="padding: 16px; text-align: left; font-size: 12px; color: #4b5563; font-weight: 600; text-transform: uppercase;">Category</th>
-                <th style="padding: 16px; text-align: left; font-size: 12px; color: #4b5563; font-weight: 600; text-transform: uppercase;">Subject</th>
-                <th style="padding: 16px; text-align: left; font-size: 12px; color: #4b5563; font-weight: 600; text-transform: uppercase;">Date</th>
-                <th style="padding: 16px; text-align: left; font-size: 12px; color: #4b5563; font-weight: 600; text-transform: uppercase;">Status</th>
+              <tr>
+                <th>Category</th>
+                <th>Subject</th>
+                <th class="hide-mobile">Date</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              <tr th:each="inq : ${inquiries}" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.02)'" onmouseout="this.style.background='transparent'">
-                <td style="padding: 16px;">
-                  <span style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;" 
-                        th:text="${#strings.substring(inq.category,8)}"></span>
+              <tr th:each="inq : ${inquiries}">
+                <td class="col-category">
+                  <span class="category-badge" th:text="${#strings.substring(inq.category,8)}"></span>
                 </td>
-                <td style="padding: 16px;">
-                  <a th:href="@{/inquiries/{id}(id=${inq.id})}" style="color: #f1f5f9; text-decoration: none; font-weight: 500;" th:text="${inq.title}"></a>
+                <td class="col-subject">
+                  <a th:href="@{/inquiries/{id}(id=${inq.id})}" th:text="${inq.title}"></a>
+                  <div class="mobile-date show-mobile" th:text="${@timeUtil.format(inq.createdAt, 'yyyy-MM-dd')}"></div>
                 </td>
-                <td style="padding: 16px; color: #4b5563; font-size: 13px;" th:text="${@timeUtil.format(inq.createdAt, 'yyyy-MM-dd')}"></td>
-                <td style="padding: 16px;">
-                  <span th:if="${inq.answer == null}" style="font-size: 11px; font-weight: 600; color: #f7768e;">답변 대기</span>
-                  <span th:if="${inq.answer != null}" style="font-size: 11px; font-weight: 600; color: #10B981;">답변 완료</span>
+                <td class="col-date hide-mobile" th:text="${@timeUtil.format(inq.createdAt, 'yyyy-MM-dd')}"></td>
+                <td class="col-status">
+                  <span th:if="${inq.answer == null}" class="status-waiting">답변 대기</span>
+                  <span th:if="${inq.answer != null}" class="status-complete">답변 완료</span>
                 </td>
               </tr>
               <tr th:if="${#lists.isEmpty(inquiries.content)}">
-                <td colspan="4" style="padding: 40px; text-align: center; color: #4b5563; font-size: 14px;">문의 내역이 없습니다.</td>
+                <td colspan="4" class="no-data">문의 내역이 없습니다.</td>
               </tr>
             </tbody>
           </table>

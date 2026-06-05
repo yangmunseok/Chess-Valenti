@@ -62,6 +62,10 @@ body {
   font-family: 'Pretendard', sans-serif;
 }
 
+.mobile-header, .mobile-nav {
+  display: none;
+}
+
 .main-content {
   flex: 1;
   display: flex;
@@ -674,3 +678,118 @@ body {
 }
 
 /* 기물 아이콘은 기존에 사용하던 SVG나 이미지를 class로 매핑 */
+
+/* --- Media Queries --- */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 40px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+    padding-bottom: 70px; /* Space for mobile nav */
+    padding-top: 60px; /* Space for mobile header */
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 60px;
+    background: rgba(17, 21, 32, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .mobile-logo {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+  }
+
+  .user-avatar-sm {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, #1e40af 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+
+  .mobile-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 70px;
+    background: rgba(17, 21, 32, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-color);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    flex: 1;
+    padding: 10px 0;
+  }
+
+  .mobile-nav-item svg {
+    width: 22px;
+    height: 22px;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--accent-blue);
+  }
+
+  .mobile-nav-item.active svg {
+    stroke: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+
+  .main-content {
+    padding: 24px 16px;
+  }
+}

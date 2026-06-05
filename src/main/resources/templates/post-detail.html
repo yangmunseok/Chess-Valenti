@@ -11,6 +11,7 @@
     gtag('config', 'G-DBMLJY2F5L');
   </script>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Valenti - Post Detail</title>
   <link
       href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
@@ -26,7 +27,7 @@
   <body class="valenti-dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
   <div class="dashboard-wrapper">
-  <div th:replace="~{fragment/component :: sidebar(username=${username}, url='')}"></div>
+  <div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
   <main class="main-content">
     <div class="home-container">
       <nav class="post-nav">
@@ -119,9 +120,9 @@
                       <span style="color: #4b5563; font-size: 12px;" th:text="${@timeUtil.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
                     </div>
                     <div class="comment-actions" style="display: flex; gap: 12px;">
-                      <button class="btn-reply" style="background: none; border: none; color: #4b5563; font-size: 12px; cursor: pointer; padding: 0;" 
+                      <button class="btn-reply auth-required" style="background: none; border: none; color: #4b5563; font-size: 12px; cursor: pointer; padding: 0;" 
                               th:onclick="|toggleReplyForm(${comment.id})|">답글</button>
-                      <button th:if="${#authentication.name == comment.writer.username or #authorization.expression('hasRole(''ADMIN'')')}" 
+                      <button th:if="${isLoggedIn and (#authentication.name == comment.writer.username or #authorization.expression('hasRole(''ADMIN'')'))}" 
                               class="btn-delete-comment" style="background: none; border: none; color: #f7768e; font-size: 12px; cursor: pointer; padding: 0;"
                               th:onclick="|deleteComment(${comment.id})|">삭제</button>
                     </div>
@@ -169,9 +170,11 @@
 
           <!-- 댓글 작성 폼 -->
           <div class="comment-form-box" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px;">
-            <textarea id="comment-input" placeholder="댓글을 입력하세요..." style="width: 100%; min-height: 80px; background: transparent; border: none; color: #fff; font-size: 14px; outline: none; resize: vertical; margin-bottom: 12px;"></textarea>
+            <textarea id="comment-input" th:placeholder="${isLoggedIn ? '댓글을 입력하세요...' : '로그인 후 댓글을 작성할 수 있습니다.'}" 
+                      style="width: 100%; min-height: 80px; background: transparent; border: none; color: #fff; font-size: 14px; outline: none; resize: vertical; margin-bottom: 12px;"
+                      th:readonly="${!isLoggedIn}"></textarea>
             <div style="display: flex; justify-content: flex-end;">
-              <button id="submit-comment" class="btn-comment-submit" th:data-id="${post.postId}">
+              <button id="submit-comment" class="btn-comment-submit auth-required" th:data-id="${post.postId}">
                 댓글 등록
               </button>
             </div>
@@ -240,7 +243,12 @@
     document.addEventListener('DOMContentLoaded', function() {
       const submitBtn = document.getElementById('submit-comment');
       if (submitBtn) {
-        submitBtn.addEventListener('click', function() {
+        submitBtn.addEventListener('click', function(e) {
+          if (!isLoggedIn) {
+            e.preventDefault();
+            document.getElementById('login-confirm-modal').style.display = 'flex';
+            return;
+          }
           const postId = this.dataset.id;
           const content = document.getElementById('comment-input').value;
           const csrfToken = document.querySelector('meta[name="_csrf"]').content;
@@ -276,6 +284,10 @@
     });
 
     function toggleReplyForm(commentId) {
+      if (!isLoggedIn) {
+        document.getElementById('login-confirm-modal').style.display = 'flex';
+        return;
+      }
       const form = document.getElementById(`reply-form-${commentId}`);
       if (form.style.display === 'none') {
         form.style.display = 'block';

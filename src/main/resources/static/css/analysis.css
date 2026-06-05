@@ -102,26 +102,6 @@
   flex-direction: column;
 }
 
-/*
-.move-entry {
-  display: flex;
-  padding: 6px 16px;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-}
-*/
-/*
-.annotation-block {
-  background: var(--bg-hover);
-  padding: 12px 16px 12px 24px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-*/
 .variation-line {
   border-left: 2px solid var(--border-highlight);
   padding-left: 12px;
@@ -142,12 +122,9 @@
   color: #4ADE80;
 }
 
-/* 좋은 수 초록색 하이라이트 */
 .highlight-inacc {
   color: #60A5FA;
 }
-
-/* 실수 파란색 하이라이트 */
 
 /* Playback Controls */
 .playback-controls {
@@ -243,28 +220,22 @@
   font-weight: 700;
 }
 
-/* !! 하늘색 */
 .sig-excellent {
   color: #4ADE80 !important;
 }
 
-/* ! 초록색 */
 .sig-mistake {
   color: #FB923C !important;
 }
 
-/* ? 주황색 */
 .sig-blunder {
   color: #F87171 !important;
   font-weight: 700;
 }
 
-/* ?? 빨간색 */
 .sig-inaccuracy {
   color: #60A5FA !important;
 }
-
-/* ?! 파란색 */
 
 .annotation-block.new-save {
   border-left: 3px solid var(--accent-blue);
@@ -324,13 +295,14 @@
 
 /* 주석 블록 스타일 */
 .annotation-block {
-  background-color: #262421; /* 이미지와 유사한 어두운 배경 */
-  color: #bababa;
-  padding: 12px;
-  margin: 4px 0;
-  font-size: 0.9em;
-  line-height: 1.5;
+  background-color: #2b2b2b; /* 깔끔한 회색 */
+  color: #d1d1d1;
+  padding: 12px 16px;
+  margin: 6px 0 12px 0;
+  font-size: 0.95em;
   border-radius: 4px;
+  line-height: 1.5;
+  border-left: 3px solid #555;
   grid-column: 1 / span 3; /* 행 전체를 차지 */
 }
 
@@ -361,18 +333,6 @@
 .inline-comment {
   font-style: italic;
   margin: 0 4px;
-}
-
-/* 메인 주석 블록 (중괄호 제거 버전) */
-.annotation-block {
-  background-color: #2b2b2b; /* 깔끔한 회색 */
-  color: #d1d1d1;
-  padding: 12px 16px;
-  margin: 6px 0 12px 0;
-  font-size: 0.95em;
-  border-radius: 4px;
-  line-height: 1.5;
-  border-left: 3px solid #555;
 }
 
 /* 서브 바리에이션 컨테이너 */
@@ -1054,19 +1014,16 @@
 
 /* 1. 전체 컨테이너: 위쪽 콘텐츠와 너비를 맞춥니다. */
 .pgn-card {
-  /* [핵심 수정] 위쪽 체스보드+분석창 합친 너비에 맞춰서 설정 (예: 960px) */
-  /* 사용하시는 메인 레이아웃의 너비가 있다면 그 값으로 고정해주세요. */
   max-width: 960px;
-  width: calc(100% - 40px); /* 화면이 작아질 때를 위한 여백 */
-  margin: 20px auto; /* 중앙 정렬 */
-
-  background-color: #1e2126; /* [톤 다운] 좀 더 어두운 배경으로 변경 */
-  border-radius: 8px; /* 곡률을 위쪽 창들과 비슷하게 줄임 */
-  border: 1px solid #2d3038; /* 테두리 선명도를 줄임 */
+  width: calc(100% - 40px);
+  margin: 20px auto;
+  background-color: #1e2126;
+  border-radius: 8px;
+  border: 1px solid #2d3038;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: none; /* [수정] 붕 떠보이는 그림자 제거 */
+  box-shadow: none;
 }
 
 /* 2. 헤더: 좀 더 플랫하게 디자인 */
@@ -1074,13 +1031,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px; /* 여백 줄임 */
-  background-color: #2a2d35; /* 헤더 배경을 살짝만 밝게 */
+  padding: 8px 16px;
+  background-color: #2a2d35;
   border-bottom: 1px solid #2d3038;
 }
 
 .pgn-card-title {
-  color: #bababa; /* [수정] 텍스트 색상을 무채색으로 톤 다운 */
+  color: #bababa;
   font-size: 13px;
   font-weight: 500;
   font-family: sans-serif;
@@ -1091,9 +1048,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #383c44; /* [톤 다운] 무채색 배경 */
-  color: #d1d5db; /* 텍스트 색상 무채색 */
-  border: 1px solid #454a54; /* 약한 테두리 추가 */
+  background-color: #383c44;
+  color: #d1d5db;
+  border: 1px solid #454a54;
   padding: 5px 12px;
   border-radius: 4px;
   cursor: pointer;
@@ -1102,19 +1059,10 @@
   transition: all 0.15s ease;
 }
 
-.pgn-copy-button:hover {
-  background-color: #454a54; /* 호버 시에만 살짝 밝게 */
-  transform: none; /* [수정] 움직이는 효과 제거 (더 플랫하게) */
-}
-
-.pgn-copy-button:active {
-  background-color: #2f333a; /* 클릭 시 더 어둡게 */
-}
-
 /* 4. Textarea 본문: 가독성 유지 */
 .pgn-content {
   width: 100%;
-  height: 120px; /* [수정] 높이를 조금 줄여서 컴팩트하게 */
+  height: 120px;
   padding: 16px;
   background-color: transparent;
   border: none;
@@ -1125,11 +1073,6 @@
   outline: none;
   font-family: 'Pretendard', sans-serif;
   box-sizing: border-box;
-}
-
-/* 스크롤바 디자인 */
-.pgn-content::-webkit-scrollbar {
-  width: 6px;
 }
 
 /* --- Opening Explorer Specifics --- */
@@ -1231,3 +1174,100 @@
 .winner-white { border-left: 3px solid #f1f5f9; }
 .winner-black { border-left: 3px solid #1e293b; }
 .winner-draw { border-left: 3px solid #64748b; }
+
+/* --- [Responsive Design] --- */
+@media (max-width: 1024px) {
+  .analysis-panel {
+    width: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .board-layout {
+    gap: 8px;
+  }
+  
+  .evaluation-bar {
+    width: 8px;
+  }
+
+  .analysis-panel {
+    width: 100%;
+    height: auto;
+    min-height: 300px;
+    max-height: 50vh;
+    margin-bottom: 60px; /* Space for fixed controls */
+  }
+
+  .upper-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .playback-controls {
+    position: fixed;
+    bottom: 70px; /* Height of mobile-nav */
+    left: 0;
+    right: 0;
+    z-index: 90;
+    padding: 12px 20px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .playback-controls .btn-ghost.btn-md {
+    padding: 10px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .win-rate-bar {
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .stats-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .game-table {
+    font-size: 13px;
+  }
+  
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .player-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .analysis-footer {
+    padding: 15px;
+    margin-bottom: 140px; /* Space for fixed nav + fixed playback controls */
+  }
+
+  .pgn-card {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .pgn-copy-button span {
+    display: none;
+  }
+}

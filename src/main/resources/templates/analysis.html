@@ -21,10 +21,10 @@
   <script type="module" th:src="@{/js/newStructure/status.js}"></script>
 </head>
 <body>
+<div class="dashboard-wrapper">
+  <div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
 
-<div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
-
-<div class="main-content">
+  <div class="main-content">
   <div class="upper-section">
     <div class="board-container">
       <div class="player-info">
@@ -139,12 +139,13 @@
               <span class="icon">♟️</span> 폰 구조 탐색
             </button>
 
-            <button class="menu-item-btn" id="opening-explorer-btn">
-              <span class="icon">📊</span> 오프닝 통계
+            <button class="menu-item-btn disabled" id="opening-explorer-btn" disabled>
+              <span class="icon">📊</span> 오프닝 통계 (준비중)
             </button>
             <button class="menu-item-btn disabled" disabled>
               <span class="icon">🔍</span> 엔진 분석 (준비중)
             </button>
+
             <div class="menu-placeholder">향후 기능이 추가될 공간입니다...</div>
           </div>
         </div>
@@ -365,22 +366,21 @@
       </div>
     </div>
 
-    <div class="game-list-container">
-      <table class="game-table">
-        <thead>
-        <tr>
-          <th>Event</th>
-          <th>White</th>
-          <th>Black</th>
-          <th>Result</th>
-          <th>Date</th>
-          <th>View</th>
-        </tr>
-        </thead>
-        <tbody id="game-list-body">
-        </tbody>
-      </table>
-    </div>
+      <div class="game-list-container">
+        <table class="game-table">
+          <thead>
+          <tr>
+            <th class="hide-mobile">Event</th>
+            <th>Players</th>
+            <th>Result</th>
+            <th class="hide-mobile">Date</th>
+            <th>View</th>
+          </tr>
+          </thead>
+          <tbody id="game-list-body">
+          </tbody>
+        </table>
+      </div>
 
     <div class="pagination-controls">
       <button id="prev-page" class="page-btn">이전</button>
@@ -407,6 +407,7 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <script type="module" th:inline="javascript">

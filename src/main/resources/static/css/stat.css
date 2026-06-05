@@ -1124,3 +1124,65 @@
   font-size: 13px;
   color: #565f89;
 }
+
+/* --- [Responsive Design] --- */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .insight-filters {
+    padding: 20px;
+    margin: 20px 0;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .input-wrapper {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  #username-input {
+    min-width: 100%;
+  }
+  
+  .stat-btn-primary, #analyze-btn {
+    padding: 16px 20px;
+    height: auto;
+    min-height: 52px;
+    width: 100%;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .live-status-board {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .stat-divider {
+    width: 60%;
+    height: 1px;
+    margin: 0 auto;
+  }
+  
+  .stepper-container {
+    padding: 0;
+  }
+  
+  .step-item span {
+    font-size: 11px;
+  }
+  
+  .friendly-progress {
+    padding: 30px 15px;
+  }
+}

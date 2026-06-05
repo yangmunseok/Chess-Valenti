@@ -18,6 +18,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -39,10 +40,17 @@ public class UserService {
     this.bCryptPasswordEncoder = new BCryptPasswordEncoder(5);
   }
 
+  @Transactional
   public void createPasswordResetTokenForUser(User user, String token) {
-    PasswordResetToken myToken = new PasswordResetToken(
-        token, user);
-    tokenRepository.save(myToken);
+    PasswordResetToken existingToken = tokenRepository.findByUser(user);
+    if (existingToken != null) {
+      existingToken.setToken(token);
+      existingToken.setExpiryDate(LocalDateTime.now().plusMinutes(60 * 24));
+      tokenRepository.save(existingToken);
+    } else {
+      PasswordResetToken myToken = new PasswordResetToken(token, user);
+      tokenRepository.save(myToken);
+    }
   }
 
   public void sendPasswordResetEmail(String userEmail, String contextPath) {

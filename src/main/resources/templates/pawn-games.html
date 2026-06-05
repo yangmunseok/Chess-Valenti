@@ -45,62 +45,95 @@
       width: 100%;
       max-width: 1000px;
     }
+
+    @media (max-width: 768px) {
+      .pawn-games-header {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .preview-board-wrapper {
+        width: 150px;
+        height: 150px;
+      }
+      .header-info h1 {
+        font-size: 20px;
+      }
+      .hide-mobile {
+        display: none;
+      }
+      .game-table th, .game-table td {
+        padding: 12px 8px;
+        font-size: 13px;
+      }
+      .mobile-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .player-sub {
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+    }
   </style>
 </head>
 <body>
+<div class="dashboard-wrapper">
+  <div th:replace="~{fragment/component :: sidebar(username=${username}, url='/insight')}"></div>
 
-<div th:replace="~{fragment/component :: sidebar(username=${username}, url='/insight')}"></div>
-
-<div class="main-content">
-  <div class="results-container">
-    <div class="pawn-games-header">
-      <div class="preview-board-wrapper">
-        <div id="preview-board" class="board"></div>
-      </div>
-      <div class="header-info">
-        <p class="hero-label">PAWN STRUCTURE EXPLORER</p>
-        <h1>Selected <span class="blue-text">Structure</span> Games</h1>
-        <p>이 폰 구조가 나타나는 마스터들의 실전 대국을 분석해보세요.</p>
-      </div>
-    </div>
-
-    <div id="pawn-structure-analysis" class="analysis-footer" style="display: block;">
-      <div class="stats-header">
-        <div class="stats-item">
-          <span class="stats-label">총 게임 수</span>
-          <span class="stats-value" id="total-games">0</span>
+  <main class="main-content">
+    <div class="results-container">
+      <div class="pawn-games-header">
+        <div class="preview-board-wrapper">
+          <div id="preview-board" class="board"></div>
+        </div>
+        <div class="header-info">
+          <p class="hero-label">PAWN STRUCTURE EXPLORER</p>
+          <h1>Selected <span class="blue-text">Structure</span> Games</h1>
+          <p>이 폰 구조가 나타나는 마스터들의 실전 대국을 분석해보세요.</p>
         </div>
       </div>
 
-      <div class="game-list-container">
-        <table class="game-table">
-          <thead>
-          <tr>
-            <th>Event</th>
-            <th>White</th>
-            <th>Black</th>
-            <th>Result</th>
-            <th>Date</th>
-            <th>View</th>
-          </tr>
-          </thead>
-          <tbody id="game-list-body">
-            <tr>
-              <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                게임 데이터를 불러오고 있습니다...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div id="pawn-structure-analysis" class="analysis-footer" style="display: block;">
+        <div class="stats-header">
+          <div class="stats-item">
+            <span class="stats-label">총 게임 수</span>
+            <span class="stats-value" id="total-games">0</span>
+          </div>
+        </div>
 
-      <div class="pagination-controls">
-        <button id="prev-page" class="page-btn" disabled>이전</button>
-        <span id="page-info">1 / 1</span>
-        <button id="next-page" class="page-btn" disabled>다음</button>
+        <div class="game-list-container">
+          <table class="game-table">
+            <thead>
+            <tr>
+              <th class="hide-mobile">Event</th>
+              <th>Players</th>
+              <th>Result</th>
+              <th class="hide-mobile">Date</th>
+              <th>View</th>
+            </tr>
+            </thead>
+            <tbody id="game-list-body">
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                  게임 데이터를 불러오고 있습니다...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-controls">
+          <button id="prev-page" class="page-btn" disabled>이전</button>
+          <span id="page-info">1 / 1</span>
+          <button id="next-page" class="page-btn" disabled>다음</button>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>
 
 <script type="module" th:inline="javascript">
@@ -120,7 +153,7 @@
     currentPage = page;
     const url = `/api/games/paginated?fen=${encodeURIComponent(targetFen)}&page=${page}&size=${itemsPerPage}`;
     
-    document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
+    document.getElementById('game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
 
     try {
       const res = await fetch(url);
@@ -134,23 +167,29 @@
       updatePaginationControls();
       
       if (data.content.length === 0) {
-        document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
+        document.getElementById('game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
       }
     } catch (err) {
       console.error(err);
-      document.getElementById('game-list-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
+      document.getElementById('game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
     }
   }
 
   function renderGameTable(games) {
     const tbody = document.getElementById('game-list-body');
+    const isMobile = window.innerWidth <= 768;
+
     tbody.innerHTML = games.map(game => `
       <tr>
-          <td>${game.event}</td>
-          <td>${game.whitePlayer.name}(${game.whitePlayer.elo})</td>
-          <td>${game.blackPlayer.name}(${game.blackPlayer.elo})</td>
+          <td class="hide-mobile">${game.event}</td>
+          <td>
+            <div class="mobile-stack">
+              <span>${game.whitePlayer.name} <small class="player-sub">(${game.whitePlayer.elo})</small></span>
+              <span>${game.blackPlayer.name} <small class="player-sub">(${game.blackPlayer.elo})</small></span>
+            </div>
+          </td>
           <td class="result-cell">${game.result}</td>
-          <td>${game.date}</td>
+          <td class="hide-mobile">${game.date}</td>
           <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}" target="_blank">👁️</a></td>
       </tr>
     `).join('');

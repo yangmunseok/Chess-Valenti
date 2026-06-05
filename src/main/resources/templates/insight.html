@@ -11,6 +11,7 @@
     gtag('config', 'G-DBMLJY2F5L');
   </script>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Title</title>
   <link th:href="@{/css/app.css}" rel="stylesheet">
   <link th:href="@{/css/stat.css}" rel="stylesheet">
@@ -19,132 +20,136 @@
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 </head>
 <body>
-<div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
-<div class="container">
-  <section class="stats-hero">
-    <div class="hero-content">
-      <h1>Chess Insights</h1>
-      <p>Lichess 데이터를 기반으로 정밀한 폰 구조 통계를 확인하세요.</p>
-    </div>
-
-    <div class="insight-filters">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>분석 시작일</label>
-          <input type="date" id="start-date" class="stat-input">
+<div class="dashboard-wrapper">
+  <div th:replace="~{fragment/component :: sidebar(username=${username}, url=${url})}"></div>
+  <main class="main-content">
+    <div class="container">
+      <section class="stats-hero">
+        <div class="hero-content">
+          <h1>Chess Insights</h1>
+          <p>Lichess 데이터를 기반으로 정밀한 폰 구조 통계를 확인하세요.</p>
         </div>
 
-        <div class="filter-group">
-          <label>게임 유형 (복수 선택)</label>
-          <div class="type-selector">
-            <label class="chip"><input type="checkbox" name="timeControl" value="bullet">
-              Bullet</label>
-            <label class="chip"><input type="checkbox" name="timeControl" value="blitz" checked>
-              Blitz</label>
-            <label class="chip"><input type="checkbox" name="timeControl" value="rapid" checked>
-              Rapid</label>
-            <label class="chip"><input type="checkbox" name="timeControl" value="classical">
-              Classical</label>
+        <div class="insight-filters">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>분석 시작일</label>
+              <input type="date" id="start-date" class="stat-input">
+            </div>
+
+            <div class="filter-group">
+              <label>게임 유형 (복수 선택)</label>
+              <div class="type-selector">
+                <label class="chip"><input type="checkbox" name="timeControl" value="bullet">
+                  Bullet</label>
+                <label class="chip"><input type="checkbox" name="timeControl" value="blitz" checked>
+                  Blitz</label>
+                <label class="chip"><input type="checkbox" name="timeControl" value="rapid" checked>
+                  Rapid</label>
+                <label class="chip"><input type="checkbox" name="timeControl" value="classical">
+                  Classical</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="search-bar-v2">
+            <div class="platform-toggle">
+              <button class="tgl-btn active" data-platform="lichess">Lichess</button>
+              <button class="tgl-btn" data-platform="chesscom">Chess.com</button>
+            </div>
+            <div class="input-wrapper">
+              <input type="text" id="username-input" placeholder="Lichess 아이디 입력...">
+              <button id="analyze-btn" class="btn btn-primary btn-md">
+                <span>분석 시작</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="progress-section" class="friendly-progress" style="display: none;">
+        <div class="stepper-container">
+          <div class="step-item active" id="step-load">
+            <div class="step-icon">1</div>
+            <span>게임 수집</span>
+          </div>
+          <div class="step-connector">
+            <div class="connector-fill" id="fill-1"></div>
+          </div>
+          <div class="step-item" id="step-filter">
+            <div class="step-icon">2</div>
+            <span>구조 필터링</span>
+          </div>
+          <div class="step-connector">
+            <div class="connector-fill" id="fill-2"></div>
+          </div>
+          <div class="step-item" id="step-done">
+            <div class="step-icon">3</div>
+            <span>분석 완료</span>
+          </div>
+        </div>
+
+        <div class="main-visual">
+          <div class="analysis-orb">
+            <div class="pulse-ring"></div>
+            <div class="chess-icon">♟</div>
+          </div>
+
+          <div class="status-header">
+            <h2 id="friendly-status">기록을 읽어오고 있어요</h2>
+            <p id="friendly-sub">데이터가 쌓일수록 분석 결과가 정교해집니다.</p>
+          </div>
+
+          <div class="live-status-board">
+            <div class="stat-item">
+              <span class="stat-label">찾은 게임</span>
+              <span id="load-count" class="stat-value">0</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-label">추출된 구조</span>
+              <span id="filter-count" class="stat-value highlight">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-footer">
+          <div class="button-group">
+            <button id="partial-analyze-btn" class="stat-btn-primary secondary">
+              <span>여기까지 데이터로 분석 시작</span>
+            </button>
+          </div>
+          <p class="footer-tip">💡 100게임 이상 모이면 꽤 정확한 통계가 나옵니다.</p>
+        </div>
+      </section>
+      <div id="result-area" class="stats-dashboard" style="display: none;">
+        <div class="dashboard-header">
+          <h2 id="result-title">Analysis for MagnusCarlsen</h2>
+          <button class="re-search btn-ghost" onclick="location.reload()">새로 검색</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="card-label">가장 빈번한 폰 구조</div>
+            <div id="frequent-structures" class="structure-list">
+            </div>
+          </div>
+
+          <div class="stat-card highlight-green">
+            <div class="card-label">최고 승률 구조</div>
+            <div id="top-win-structures" class="structure-list">
+            </div>
+          </div>
+
+          <div class="stat-card highlight-red">
+            <div class="card-label">취약한 폰 구조</div>
+            <div id="worst-win-structures" class="structure-list">
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="search-bar-v2">
-        <div class="platform-toggle">
-          <button class="tgl-btn active" data-platform="lichess">Lichess</button>
-          <button class="tgl-btn" data-platform="chesscom">Chess.com</button>
-        </div>
-        <div class="input-wrapper">
-          <input type="text" id="username-input" placeholder="Lichess 아이디 입력...">
-          <button id="analyze-btn" class="btn btn-primary btn-md">
-            <span>분석 시작</span>
-          </button>
-        </div>
-      </div>
     </div>
-  </section>
-  <section id="progress-section" class="friendly-progress" style="display: none;">
-    <div class="stepper-container">
-      <div class="step-item active" id="step-load">
-        <div class="step-icon">1</div>
-        <span>게임 수집</span>
-      </div>
-      <div class="step-connector">
-        <div class="connector-fill" id="fill-1"></div>
-      </div>
-      <div class="step-item" id="step-filter">
-        <div class="step-icon">2</div>
-        <span>구조 필터링</span>
-      </div>
-      <div class="step-connector">
-        <div class="connector-fill" id="fill-2"></div>
-      </div>
-      <div class="step-item" id="step-done">
-        <div class="step-icon">3</div>
-        <span>분석 완료</span>
-      </div>
-    </div>
-
-    <div class="main-visual">
-      <div class="analysis-orb">
-        <div class="pulse-ring"></div>
-        <div class="chess-icon">♟</div>
-      </div>
-
-      <div class="status-header">
-        <h2 id="friendly-status">기록을 읽어오고 있어요</h2>
-        <p id="friendly-sub">데이터가 쌓일수록 분석 결과가 정교해집니다.</p>
-      </div>
-
-      <div class="live-status-board">
-        <div class="stat-item">
-          <span class="stat-label">찾은 게임</span>
-          <span id="load-count" class="stat-value">0</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-label">추출된 구조</span>
-          <span id="filter-count" class="stat-value highlight">0</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="action-footer">
-      <div class="button-group">
-        <button id="partial-analyze-btn" class="stat-btn-primary secondary">
-          <span>여기까지 데이터로 분석 시작</span>
-        </button>
-      </div>
-      <p class="footer-tip">💡 100게임 이상 모이면 꽤 정확한 통계가 나옵니다.</p>
-    </div>
-  </section>
-  <div id="result-area" class="stats-dashboard" style="display: none;">
-    <div class="dashboard-header">
-      <h2 id="result-title">Analysis for MagnusCarlsen</h2>
-      <button class="re-search btn-ghost" onclick="location.reload()">새로 검색</button>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="card-label">가장 빈번한 폰 구조</div>
-        <div id="frequent-structures" class="structure-list">
-        </div>
-      </div>
-
-      <div class="stat-card highlight-green">
-        <div class="card-label">최고 승률 구조</div>
-        <div id="top-win-structures" class="structure-list">
-        </div>
-      </div>
-
-      <div class="stat-card highlight-red">
-        <div class="card-label">취약한 폰 구조</div>
-        <div id="worst-win-structures" class="structure-list">
-        </div>
-      </div>
-    </div>
-  </div>
-
+  </main>
 </div>
 </body>
 <script type="module" th:inline="javascript">

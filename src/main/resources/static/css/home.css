@@ -253,3 +253,63 @@
     transform: translateY(0);
   }
 }
+
+/* --- [Responsive Design] --- */
+@media (max-width: 1024px) {
+  .home-hero h1 {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-hero h1 {
+    font-size: 28px;
+  }
+
+  .banner-group {
+    flex-direction: column;
+    gap: 12px !important;
+  }
+
+  .hero-desc {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .action-banner {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .action-text h3 {
+    font-size: 18px !important;
+  }
+
+  .action-text p {
+    font-size: 13px !important;
+  }
+
+  .action-arrow {
+    font-size: 24px !important;
+  }
+
+  .col-meta {
+    width: 80px;
+    font-size: 11px;
+  }
+
+  .col-main {
+    font-size: 14px;
+  }
+
+  .faq-content {
+    padding-left: 15px;
+  }
+
+  .home-footer-promo {
+    padding: 24px 20px;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+}

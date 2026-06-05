@@ -54,15 +54,29 @@ public class MainController {
   @GetMapping("/")
   public String homepage(Model model) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String username = "Guest";
+    boolean isLoggedIn = false;
     if (auth != null && auth.isAuthenticated() &&
         !(auth instanceof AnonymousAuthenticationToken)) {
-      model.addAttribute("username", auth.getName());
-      model.addAttribute("notices",
-          postService.findAllByPostType(PageRequest.of(0, 5), PostType.NOTICE));
-      model.addAttribute("faqs", postService.findFAQ());
-      return "home";
+      username = auth.getName();
+      isLoggedIn = true;
     }
-    return "index";
+    
+    model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", isLoggedIn);
+    model.addAttribute("notices",
+        postService.findAllByPostType(PageRequest.of(0, 5), PostType.NOTICE));
+    model.addAttribute("faqs", postService.findFAQ());
+    return "home";
+  }
+
+  @GetMapping("/landing")
+  public String landingPage(Model model) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    boolean isLoggedIn = (auth != null && auth.isAuthenticated() &&
+        !(auth instanceof AnonymousAuthenticationToken));
+    model.addAttribute("isLoggedIn", isLoggedIn);
+    return "landing";
   }
 
   // Recommendation: Move to /analysis/old or merge with /analysis
@@ -86,9 +100,10 @@ public class MainController {
   public String analysis(@RequestParam(required = false) Long offset,
       @RequestParam(defaultValue = "0") Integer idx, Model model, @AuthenticationPrincipal
       UserPrincipal userPrincipal) {
-    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
     log.info("Analysis page requested by user: {}, offset: {}", username, offset);
     model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", userPrincipal != null);
     model.addAttribute("url", "/analysis");
 
     if (offset != null) {
@@ -186,7 +201,7 @@ public class MainController {
 
   @GetMapping("/games/{id}")
   public String renderGame(@PathVariable Long id, @RequestParam(defaultValue = "0") Integer idx,
-      Model model) {
+      Model model, @AuthenticationPrincipal UserPrincipal userPrincipal) {
     log.info("Rendering game by id: {}, idx: {}", id, idx);
     Game game = gameService.getGameWithMoves(id, idx);
 
@@ -194,7 +209,8 @@ public class MainController {
       populateAnalysisModel(model, game);
       model.addAttribute("idx", idx);
     }
-
+    model.addAttribute("isLoggedIn", userPrincipal != null);
+    model.addAttribute("username", (userPrincipal != null) ? userPrincipal.getUsername() : "Guest");
     return "analysis";
   }
 
@@ -220,16 +236,18 @@ public class MainController {
   @GetMapping("/pawn-games")
   public String pawnGames(@RequestParam String fen,
       @AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
-    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
     model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", userPrincipal != null);
     model.addAttribute("fen", fen);
     return "pawn-games";
   }
 
   @GetMapping("/insight")
   public String showInsight(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
-    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
     model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", userPrincipal != null);
     model.addAttribute("url", "/insight");
     if (userPrincipal != null) {
       insightRepository.findByUser(userPrincipal.getUser()).ifPresent(insight -> {
@@ -244,8 +262,9 @@ public class MainController {
 
   @GetMapping("/study")
   public String studyPage(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
-    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
     model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", userPrincipal != null);
     model.addAttribute("url", "/study");
     model.addAttribute("studies",
         postService.findAllByPostType(PageRequest.of(0, 20), PostType.STUDY).getContent());
@@ -260,7 +279,7 @@ public class MainController {
   @GetMapping("/inquiries/{id}")
   public String inquiryDetailPage(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @PathVariable int id, Model model) {
-    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
     Inquiry inquiry = inquiryService.findInquiryById(id);
 
     if (inquiry == null) {
@@ -280,16 +299,26 @@ public class MainController {
 
     model.addAttribute("post", inquiry);
     model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", userPrincipal != null);
+    model.addAttribute("url", "/inquiry");
     return "post-detail";
   }
 
   @GetMapping("/posts/{id}")
   public String postDetailPage(@AuthenticationPrincipal UserPrincipal userPrincipal,
       @PathVariable int id, Model model) {
-    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "anonymous";
+    String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
     org.spring.createa.chessvalenti.domain.Post post = postService.findPostByPostId(id);
     model.addAttribute("post", post);
     model.addAttribute("username", username);
+    model.addAttribute("isLoggedIn", userPrincipal != null);
+
+    // Navigation highlighting context
+    if (post.getType() == PostType.STUDY) {
+      model.addAttribute("url", "/study");
+    } else if (post.getType() == PostType.NOTICE || post.getType() == PostType.FAQ) {
+      model.addAttribute("url", "/");
+    }
 
     // FAQ가 아닌 경우에만 댓글 조회
     if (post.getType() != PostType.FAQ) {

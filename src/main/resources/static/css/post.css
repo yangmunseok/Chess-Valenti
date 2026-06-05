@@ -191,3 +191,38 @@
   .btn-comment-submit:active {
     transform: translateY(0);
   }
+
+/* --- [Responsive Design] --- */
+@media (max-width: 768px) {
+  .post-container {
+    padding: 30px 20px;
+    border-radius: 16px;
+  }
+  
+  .post-header {
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .post-title {
+    font-size: 24px;
+  }
+  
+  .post-content.ql-snow {
+    font-size: 15px;
+  }
+  
+  .replies-container {
+    margin-left: 20px !important;
+    padding-left: 12px !important;
+  }
+  
+  .comment-item {
+    gap: 12px !important;
+  }
+  
+  .comment-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
