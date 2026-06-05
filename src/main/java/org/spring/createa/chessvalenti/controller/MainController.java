@@ -367,6 +367,7 @@ public class MainController {
   @GetMapping("/inquiry")
   public String inquiryPage(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
     model.addAttribute("username", userPrincipal.getUsername());
+    model.addAttribute("isLoggedIn", true);
     model.addAttribute("url", "/inquiry");
     model.addAttribute("inquiries",
         inquiryService.findAllByWriter(userPrincipal.getUser(), PageRequest.of(0, 10)));
