@@ -5,7 +5,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
     gtag('js', new Date());
 
     gtag('config', 'G-DBMLJY2F5L');
@@ -15,7 +19,8 @@
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="user_id" th:content="${user.userId}"/>
   <title>valenti Admin - Control Center</title>
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"/>
   <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
   <link rel="stylesheet" href="/css/admin.css">
   <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
@@ -51,7 +56,7 @@
         </div>
       </div>
 
-      <form class="admin-form" th:action="@{/admin/api/users/{id}(id=${user.userId})}">
+      <form class="admin-form" th:action="@{/api/admin/users/{id}(id=${user.userId})}">
         <div class="form-group">
           <label>사용자 권한 등급</label>
           <select class="admin-select" name="role">
@@ -102,7 +107,7 @@
   if (banBtn != null) {
     banBtn.addEventListener('click', (e) => {
       console.log('click')
-      fetch(`/admin/api/users/${id}`, {
+      fetch(`/api/admin/users/${id}`, {
         method: 'PATCH', headers: {
           "Content-Type": "application/json",
           [csrfHeader]: csrfToken
@@ -117,7 +122,7 @@
 
   if (unbanBtn != null) {
     unbanBtn.addEventListener('click', (e) => {
-      fetch(`/admin/api/users/${id}`, {
+      fetch(`/api/admin/users/${id}`, {
         method: 'PATCH', headers: {
           "Content-Type": "application/json",
           [csrfHeader]: csrfToken
@@ -133,7 +138,7 @@
 
   document.getElementById('user-role-btn').addEventListener('click', (e) => {
     const role = document.querySelector('.admin-select').value
-    fetch(`/admin/api/users/${id}`, {
+    fetch(`/api/admin/users/${id}`, {
       method: 'PATCH', headers: {
         "Content-Type": "application/json",
         [csrfHeader]: csrfToken

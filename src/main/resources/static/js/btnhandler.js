@@ -33,7 +33,7 @@ function saveFaq(e) {
   console.log(content)
 
   if (id != null) {
-    fetch(`/admin/api/posts/${id}`,
+    fetch(`/api/admin/posts/${id}`,
         {
           method: 'PATCH', headers: {
             "Content-Type": "application/json",
@@ -47,7 +47,7 @@ function saveFaq(e) {
     //update
   } else {
     //create
-    fetch("/admin/api/posts",
+    fetch("/api/admin/posts",
         {
           method: 'post', headers: {
             "Content-Type": "application/json",
@@ -66,7 +66,7 @@ function deleteFaq(e) {
   const faqItem = e.currentTarget.closest('.faq-edit-item');
   const id = faqItem.dataset.id;
 
-  fetch(`/admin/api/posts/${id}`,
+  fetch(`/api/admin/posts/${id}`,
       {
         method: 'DELETE', headers: {
           "Content-Type": "application/json",

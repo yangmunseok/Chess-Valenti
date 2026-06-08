@@ -39,7 +39,7 @@ public class InsightService {
       return;
     }
 
-    String systemUsername = (user != null) ? user.getUsername() : "anonymous";
+    String systemUsername = (user != null) ? user.getUsername() : "Guest";
     Map<String, GameResults> result = new java.util.concurrent.ConcurrentHashMap<>();
     AtomicInteger cnt = new AtomicInteger();
     long id = jobService.getAvailableId();
