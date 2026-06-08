@@ -5,7 +5,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
     gtag('js', new Date());
 
     gtag('config', 'G-DBMLJY2F5L');
@@ -192,7 +196,7 @@
       formData.append('imageFile', imageFile);
     }
 
-    const url = postId === null ? "/admin/api/posts" : `/admin/api/posts/${postId}`;
+    const url = postId === null ? "/api/admin/posts" : `/api/admin/posts/${postId}`;
     const method = postId === null ? 'POST' : 'PATCH';
 
     fetch(url, {
@@ -216,7 +220,7 @@
   if (document.getElementById('delete-post') !== null) {
     document.getElementById('delete-post').addEventListener('click', function () {
       console.log('delete post.')
-      fetch(`/admin/api/posts/${postId}`,
+      fetch(`/api/admin/posts/${postId}`,
           {
             method: 'DELETE', headers: {
               "Content-Type": "application/json",

@@ -37,7 +37,13 @@ public class CommentService {
   public void deleteComment(int id) {
     commentRepository.deleteById(id);
   }
-  
+
+  public boolean isOwner(int commentId, Long userId) {
+    return commentRepository.findById(commentId)
+        .map(comment -> comment.getWriter().getUserId() == userId)
+        .orElse(false);
+  }
+
   public Comment findById(int id) {
     return commentRepository.findById(id).orElseThrow();
   }
