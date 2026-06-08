@@ -181,6 +181,7 @@
     const count = message.loadedGame;
     const status = message.status;
     jobId = message.jobId;
+    
     if (type === 'load') {
       totalLoaded = count;
       document.getElementById('load-count').innerText = `${totalLoaded}`;
@@ -189,22 +190,23 @@
       stepDone.classList.remove('active');
 
       if (status === 'done') {
-        stepLoad.classList.remove('active')
+        stepLoad.classList.remove('active');
         stepFilter.classList.add('active');
-        totalFiltered = Object.keys(message.data).length;
-        document.getElementById(
-            'filter-count').innerText = `${totalFiltered}`;
+        if (message.data) {
+          totalFiltered = Object.keys(message.data).length;
+          document.getElementById('filter-count').innerText = `${totalFiltered}`;
+        }
       }
     } else if (type === 'filter') {
-
       stepLoad.classList.remove('active');
       stepFilter.classList.add('active');
       stepDone.classList.remove('active');
 
       if (status === 'done') {
-        totalFiltered = Object.keys(message.data).length;
-        document.getElementById(
-            'filter-count').innerText = `${totalFiltered}`;
+        if (message.data) {
+          totalFiltered = Object.keys(message.data).length;
+          document.getElementById('filter-count').innerText = `${totalFiltered}`;
+        }
         stepFilter.classList.remove('active');
         stepDone.classList.add('active');
         renderResultPage(message.data);
@@ -216,30 +218,6 @@
   const stompClient = new StompJs.Client({
     brokerURL: `${protocol}${window.location.host}/valenti-socket`
   });
-
-  connect();
-
-  const defaultStartDate = new Date();
-  defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
-  startDateInput.value = defaultStartDate.toISOString().split('T')[0];
-
-  const savedInsightData = /*[[${savedInsightData}]]*/ null;
-  if (savedInsightData) {
-    usernameInput.value = /*[[${savedLichessUsername}]]*/ "";
-    const savedSince = /*[[${savedSince}]]*/ null;
-    if (savedSince) {
-      startDateInput.value = new Date(savedSince).toISOString().split('T')[0];
-    }
-    const savedPerfType = /*[[${savedPerfType}]]*/ null;
-    if (savedPerfType) {
-      const perfs = savedPerfType.split(',');
-      const checkboxes = document.getElementsByName("timeControl");
-      checkboxes.forEach(cb => {
-        cb.checked = perfs.includes(cb.value);
-      });
-    }
-    renderResultPage(savedInsightData);
-  }
 
   stompClient.onConnect = (frame) => {
     //console.log('Connected: ' + frame);
@@ -263,6 +241,30 @@
 
   function connect() {
     stompClient.activate();
+  }
+
+  connect();
+
+  const defaultStartDate = new Date();
+  defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
+  startDateInput.value = defaultStartDate.toISOString().split('T')[0];
+
+  const savedInsightData = /*[[${savedInsightData}]]*/ null;
+  if (savedInsightData) {
+    usernameInput.value = /*[[${savedLichessUsername}]]*/ "";
+    const savedSince = /*[[${savedSince}]]*/ null;
+    if (savedSince) {
+      startDateInput.value = new Date(savedSince).toISOString().split('T')[0];
+    }
+    const savedPerfType = /*[[${savedPerfType}]]*/ null;
+    if (savedPerfType) {
+      const perfs = savedPerfType.split(',');
+      const checkboxes = document.getElementsByName("timeControl");
+      checkboxes.forEach(cb => {
+        cb.checked = perfs.includes(cb.value);
+      });
+    }
+    renderResultPage(savedInsightData);
   }
 
   document.querySelectorAll('.platform-toggle .tgl-btn').forEach(button => {
@@ -343,7 +345,18 @@
     }
 
     insightFilters.style.display = 'none';
+    resultArea.style.display = 'none';
     progressSection.style.display = 'block';
+    
+    // Reset UI state
+    document.getElementById('load-count').innerText = '0';
+    document.getElementById('filter-count').innerText = '0';
+    document.getElementById('fill-1').style.width = '0%';
+    document.getElementById('fill-2').style.width = '0%';
+    stepLoad.classList.add('active');
+    stepFilter.classList.remove('active');
+    stepDone.classList.remove('active');
+
     sendRequest();
   }
 
