@@ -5,28 +5,36 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
     gtag('js', new Date());
 
     gtag('config', 'G-DBMLJY2F5L');
   </script>
   <meta charset="UTF-8">
   <title>valenti Admin - Control Center</title>
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"/>
   <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body class="admin-body">
-<nav th:replace="~{/fragment/component :: adminSidebar(url='/admin/users')}"></nav>
+<nav th:replace="~{fragment/component :: adminSidebar(url='/admin/users')}"></nav>
 <main class="admin-main">
   <header class="admin-header">
-    <h2>사용자 관리 <span class="count" th:text="'전체 ' + ${users.totalElements} + '명'">전체 1,284명</span></h2>
+    <h2>사용자 관리 <span class="count" th:text="'전체 ' + ${users.totalElements} + '명'">전체 1,284명</span>
+    </h2>
     <div class="header-tools">
       <form action="/admin/users" method="GET" class="filter-form">
         <div class="filter-group">
-          <input type="text" name="username" placeholder="닉네임..." th:value="${usernameSearch}" class="filter-input">
-          <input type="text" name="email" placeholder="이메일..." th:value="${email}" class="filter-input">
+          <input type="text" name="username" placeholder="닉네임..." th:value="${usernameSearch}"
+                 class="filter-input">
+          <input type="text" name="email" placeholder="이메일..." th:value="${email}"
+                 class="filter-input">
           <input type="date" name="startDate" th:value="${startDate}" class="filter-input">
           <label class="online-filter">
             <input type="checkbox" name="onlineOnly" th:checked="${onlineOnly}"> Online
@@ -59,7 +67,7 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       padding-bottom: 20px;
     }
-    
+
     .admin-header h2 {
       font-size: 24px;
       font-weight: 700;
@@ -69,7 +77,7 @@
       margin: 0;
       letter-spacing: -0.02em;
     }
-    
+
     .admin-header h2 .count {
       font-size: 12px;
       font-weight: 600;
@@ -81,7 +89,7 @@
       margin-left: 12px;
       letter-spacing: 0;
     }
-    
+
     .header-tools {
       flex-shrink: 0;
     }
@@ -93,12 +101,14 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
+
     .filter-group {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
+
     .filter-input {
       background: rgba(0, 0, 0, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -110,15 +120,18 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       width: 140px;
     }
+
     .filter-input[type="date"] {
       width: 150px;
       color-scheme: dark;
     }
+
     .filter-input:focus {
       border-color: var(--accent-purple);
       background: rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 8px rgba(122, 162, 247, 0.2);
     }
+
     .online-filter {
       display: flex;
       align-items: center;
@@ -129,13 +142,16 @@
       user-select: none;
       transition: color 0.2s;
     }
+
     .online-filter:hover {
       color: #fff;
     }
+
     .online-filter input {
       accent-color: var(--accent-purple);
       cursor: pointer;
     }
+
     .filter-submit-btn {
       display: inline-flex;
       align-items: center;
@@ -152,14 +168,17 @@
       transition: all 0.2s ease;
       box-shadow: 0 4px 12px rgba(122, 162, 247, 0.15);
     }
+
     .filter-submit-btn:hover {
       opacity: 0.95;
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(122, 162, 247, 0.25);
     }
+
     .filter-submit-btn:active {
       transform: translateY(0);
     }
+
     .filter-reset-btn {
       color: #9499b8;
       text-decoration: none;
@@ -170,6 +189,7 @@
       display: inline-flex;
       align-items: center;
     }
+
     .filter-reset-btn:hover {
       color: #fff;
       background: rgba(255, 255, 255, 0.05);
@@ -285,7 +305,9 @@
         </svg>
       </button>
       <th:block th:each="page: ${#numbers.sequence(1,T(java.lang.Math).max(totalPages,1))}">
-        <a th:text="${page}" th:href="@{/admin/users(page=${page}-1, username=${usernameSearch}, email=${email}, onlineOnly=${onlineOnly}, startDate=${startDate})}" class="btn"
+        <a th:text="${page}"
+           th:href="@{/admin/users(page=${page}-1, username=${usernameSearch}, email=${email}, onlineOnly=${onlineOnly}, startDate=${startDate})}"
+           class="btn"
            th:classappend="${currentPage + 1 == page} ? 'active'"></a>
       </th:block>
       <button onclick="setCurrentPage(currentPage+10)" class="btn">
@@ -297,7 +319,7 @@
     </div>
   </section>
 </main>
-<div th:replace="~{/fragment/component :: stopModal}"></div>
+<div th:replace="~{fragment/component :: stopModal}"></div>
 </body>
 <script>
   let currentPage = 1;
