@@ -61,23 +61,31 @@ public class ChessComService {
   }
 
   private List<InsightGame> parsePgnGames(String monthlyPgn) {
-    log.debug("parsePgnGames invoked");
     if (monthlyPgn == null || monthlyPgn.isBlank()) {
       return List.of();
     }
 
-    String normalized = monthlyPgn.replace("\r\n", "\n").trim();
-    String[] rawGames = normalized.split("(?m)(?=^\\[Event\\s+\")");
     List<InsightGame> games = new ArrayList<>();
+    // [Event " 태그로 시작하는 지점을 찾아서 게임을 분리
+    String delimiter = "[Event \"";
+    int lastIdx = 0;
+    int currentIdx = monthlyPgn.indexOf(delimiter);
 
-    for (String rawGame : rawGames) {
-      String pgn = rawGame.trim();
-      if (pgn.isEmpty()) {
-        continue;
+    while (currentIdx != -1) {
+      int nextIdx = monthlyPgn.indexOf(delimiter, currentIdx + delimiter.length());
+      String pgn;
+      if (nextIdx != -1) {
+        pgn = monthlyPgn.substring(currentIdx, nextIdx).trim();
+      } else {
+        pgn = monthlyPgn.substring(currentIdx).trim();
       }
-      Map<String, String> headers = parseHeaders(pgn);
-      games.add(new InsightGame(getWinner(headers), pgn, headers.get("White"), headers.get("Black"),
-          headers.getOrDefault("Variant", "Chess").toLowerCase(Locale.ROOT)));
+
+      if (!pgn.isEmpty()) {
+        Map<String, String> headers = parseHeaders(pgn);
+        games.add(new InsightGame(getWinner(headers), pgn, headers.get("White"), headers.get("Black"),
+            headers.getOrDefault("Variant", "Chess").toLowerCase(Locale.ROOT)));
+      }
+      currentIdx = nextIdx;
     }
 
     return games;

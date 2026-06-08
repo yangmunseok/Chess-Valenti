@@ -144,7 +144,7 @@ public class LichessService {
   
   public void filterSimilarGame(Map<String, GameResults> map) {
     List<String> keys = new ArrayList<>(map.keySet());
-    List<Board> boards = new ArrayList<>(keys.size());
+    List<org.spring.createa.chessvalenti.dto.insight.PawnStructureSummary> summaries = new ArrayList<>(keys.size());
     Set<String> removeKey = new HashSet<>();
     List<Set<Integer>> groups = new ArrayList<>();
 
@@ -153,11 +153,11 @@ public class LichessService {
 
       Board board = new Board();
       board.loadFromFen(keys.get(i));
-      boards.add(board);
+      summaries.add(chessBoardUtil.summarizePawnStructure(board));
 
       for (Set<Integer> group : groups) {
         for (int idx : group) {
-          if (chessBoardUtil.isSimilar(boards.get(i), boards.get(idx))) {
+          if (chessBoardUtil.isSimilar(summaries.get(i), summaries.get(idx))) {
             groupFound = true;
             break;
           }
