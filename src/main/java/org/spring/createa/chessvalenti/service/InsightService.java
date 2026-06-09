@@ -15,6 +15,7 @@ import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -52,6 +53,11 @@ public class InsightService {
             sendProgress(systemUsername, request.username(), count, "pending", "load", id, null);
           }, error -> {
             log.error("Error loading games from {}", platform(request), error);
+            String errorMessage = "분석 중 오류가 발생했습니다.";
+            if (error instanceof WebClientResponseException.NotFound) {
+              errorMessage = "존재하지 않는 사용자 아이디입니다.";
+            }
+            sendProgress(systemUsername, request.username(), 0, "error", errorMessage, id, null);
             sink.error(error);
           }, () -> {
             int count = cnt.get();

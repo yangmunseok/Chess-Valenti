@@ -19,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @Slf4j
@@ -31,6 +32,11 @@ public class MainViewController {
     private final CommentService commentService;
     private final ChessBoardService chessBoardService;
     private final InsightRepository insightRepository;
+
+    @GetMapping("/favicon.ico")
+    @ResponseBody
+    public void returnNoFavicon() {
+    }
 
     @GetMapping("/")
     public String homepage(Model model) {
