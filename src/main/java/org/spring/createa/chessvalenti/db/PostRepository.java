@@ -15,8 +15,4 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
 
   Post findPostsByPostId(int id);
-
-  void deletePostByPostId(int id);
-
-  void deletePostsByPostId(int postId);
 }

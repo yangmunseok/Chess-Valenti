@@ -28,6 +28,23 @@
   <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/editor.css">
   <link rel="stylesheet" href="/css/btn-refactor.css">
+  <style>
+    .valenti-input.error {
+      border-color: #ff4444 !important;
+      box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2) !important;
+      background: rgba(255, 68, 68, 0.05) !important;
+    }
+    .error-message {
+      color: #ff4444;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+      display: none;
+    }
+    .error-message.show {
+      display: block;
+    }
+  </style>
 </head>
 <body class="valenti-dark">
 
@@ -47,6 +64,7 @@
           <input type="text" id="post-title" th:placeholder="${post == null? '제목을 입력하세요...':''}"
                  th:value="${post == null? '':post.title}"
                  class="valenti-input">
+          <p id="title-error" class="error-message">이미 존재하는 제목입니다.</p>
         </div>
 
         <div class="input-group">
@@ -170,9 +188,16 @@
   // 초기 로드 시 실행
   toggleStudyFields();
 
+  // 제목 입력 시 에러 상태 해제
+  document.getElementById('post-title').addEventListener('input', function() {
+    this.classList.remove('error');
+    document.getElementById('title-error').classList.remove('show');
+  });
+
   // 발행 버튼 클릭 이벤트
   document.getElementById('save-post').addEventListener('click', function () {
-    const title = document.getElementById('post-title').value;
+    const titleInput = document.getElementById('post-title');
+    const title = titleInput.value;
     const postType = document.getElementById('post-type').value;
     const videoUrl = document.getElementById('video-url').value;
     const difficulty = document.getElementById('difficulty').value;
@@ -182,6 +207,7 @@
 
     if (!title) {
       alert('제목을 입력해주세요.');
+      titleInput.focus();
       return;
     }
 
@@ -210,6 +236,11 @@
       if (res.ok) {
         alert('글이 성공적으로 기록되었습니다.');
         location.href = '/admin/contents';
+      } else if (res.status === 409) {
+        const errorMsg = document.getElementById('title-error');
+        titleInput.classList.add('error');
+        errorMsg.classList.add('show');
+        titleInput.focus();
       } else {
         alert('오류가 발생했습니다.');
       }

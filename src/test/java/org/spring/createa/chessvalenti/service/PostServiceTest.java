@@ -2,6 +2,7 @@ package org.spring.createa.chessvalenti.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -78,8 +79,10 @@ public class PostServiceTest {
 
   @Test
   void deletePost_ShouldCallRepositoryDelete() {
+    Post post = new Notice();
+    when(postRepository.findById(1)).thenReturn(Optional.of(post));
     postService.deletePost(1);
-    verify(postRepository).deletePostsByPostId(1);
+    verify(postRepository).delete(post);
   }
 
   @Test

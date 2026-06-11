@@ -84,7 +84,8 @@ public class PostService {
 
   @Transactional
   public void deletePost(int id) {
-    postRepository.deletePostsByPostId(id);
+    Post post = postRepository.findById(id).orElseThrow();
+    postRepository.delete(post);
   }
 
   public Page<Post> findAllByPostType(Pageable pageable, PostType postType) {

@@ -8,6 +8,7 @@ import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.service.FileService;
 import org.spring.createa.chessvalenti.service.PostService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,33 +25,33 @@ public class AdminContentRestController {
     private final FileService fileService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void savePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                         @RequestParam("title") String title,
-                         @RequestParam("content") String content,
-                         @RequestParam(value = "videoUrl", required = false) String videoUrl,
-                         @RequestParam("postType") PostType postType,
-                         @RequestParam(value = "difficulty", required = false) Difficulty difficulty,
-                         @RequestParam(value = "introduction", required = false) String introduction,
-                         @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
+    public ResponseEntity<Void> savePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                         @RequestParam("title") String title,
+                                         @RequestParam("content") String content,
+                                         @RequestParam(value = "videoUrl", required = false) String videoUrl,
+                                         @RequestParam("postType") PostType postType,
+                                         @RequestParam(value = "difficulty", required = false) Difficulty difficulty,
+                                         @RequestParam(value = "introduction", required = false) String introduction,
+                                         @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
         log.info("Saving post by user {}", userPrincipal.getUsername());
         String imageUrl = (imageFile != null && !imageFile.isEmpty()) ? fileService.saveFile(imageFile) : null;
         postService.savePost(userPrincipal.getUser(), title, content, videoUrl, postType, difficulty, introduction, imageUrl);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
-                           @PathVariable int id,
-                           @RequestParam("title") String title,
-                           @RequestParam("content") String content,
-                           @RequestParam(value = "videoUrl", required = false) String videoUrl,
-                           @RequestParam(value = "difficulty", required = false) Difficulty difficulty,
-                           @RequestParam(value = "introduction", required = false) String introduction,
-                           @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
+    public ResponseEntity<Void> updatePost(@AuthenticationPrincipal UserPrincipal userPrincipal,
+                                           @PathVariable int id,
+                                           @RequestParam("title") String title,
+                                           @RequestParam("content") String content,
+                                           @RequestParam(value = "videoUrl", required = false) String videoUrl,
+                                           @RequestParam(value = "difficulty", required = false) Difficulty difficulty,
+                                           @RequestParam(value = "introduction", required = false) String introduction,
+                                           @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
         log.info("Updating post {} by user {}", id, userPrincipal.getUsername());
         String imageUrl = (imageFile != null && !imageFile.isEmpty()) ? fileService.saveFile(imageFile) : null;
         postService.updatePost(id, title, content, videoUrl, difficulty, introduction, imageUrl);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
