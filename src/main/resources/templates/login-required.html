@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인이 필요합니다 - valenti</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <style>
+        .login-required-card {
+            background: var(--bg-panel);
+            padding: 48px 32px;
+            border-radius: 28px;
+            border: 1px solid var(--border-color);
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px;
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .message-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .message-text {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 36px;
+            font-size: 16px;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <div th:replace="~{fragment/component :: sidebar(username='Guest', url='/login-required')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="login-required-card">
+            <div class="icon-circle">🔒</div>
+            <h2 class="message-title">로그인이 필요한 서비스입니다</h2>
+            <p class="message-text">
+                요청하신 페이지는 회원 전용 서비스입니다.<br>
+                로그인 후 더 많은 기능을 이용해 보세요.
+            </p>
+            <div class="btn-group">
+                <a th:href="@{/login}" class="btn btn-primary btn-lg btn-shadow">로그인하러 가기</a>
+                <a th:href="@{/}" class="btn btn-ghost btn-md">홈으로 돌아가기</a>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

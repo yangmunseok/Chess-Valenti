@@ -17,6 +17,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
@@ -47,7 +48,7 @@ public class SecurityConfig {
     return httpSecurity
         .csrf(csrf -> csrf.ignoringRequestMatchers("/logout"))
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers("/login", "/signup", "/css/**", "/", "/landing", "/js/**", "/forgot-password", "/reset-password", "/favicon.ico").permitAll()
+            auth -> auth.requestMatchers("/login", "/signup", "/css/**", "/", "/landing", "/js/**", "/forgot-password", "/reset-password", "/favicon.ico", "/login-required", "/access-denied").permitAll()
                 .requestMatchers("/analysis", "/insight", "/board", "/api/games/**",
                     "/api/evaluation", "/api/evaluation/stream", "/games/**", "/posts/**",
                     "/valenti-socket/**", "/study", "/pawn-games").permitAll()
@@ -55,7 +56,11 @@ public class SecurityConfig {
                 .authenticated())
         .formLogin(
             form -> form.loginPage("/login").loginProcessingUrl("/login")
-                .defaultSuccessUrl("/", true)).sessionManagement(session -> session
+                .defaultSuccessUrl("/", true))
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login-required"))
+            .accessDeniedPage("/access-denied"))
+        .sessionManagement(session -> session
             .maximumSessions(1) // 최대 동시 세션 수
             .maxSessionsPreventsLogin(true) // true: 기존 세션 만료 대신 신규 로그인 차단
             .expiredUrl("/login") // 세션 만료 시 이동할 URL

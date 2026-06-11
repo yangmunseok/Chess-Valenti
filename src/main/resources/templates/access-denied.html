@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>접근 권한이 없습니다 - valenti</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <style>
+        .access-denied-card {
+            background: var(--bg-panel);
+            padding: 48px 32px;
+            border-radius: 28px;
+            border: 1px solid var(--border-color);
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px;
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .message-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+        .message-text {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 36px;
+            font-size: 16px;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <div th:replace="~{fragment/component :: sidebar(username=${username}, url='/access-denied')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="access-denied-card">
+            <div class="icon-circle">🚫</div>
+            <h2 class="message-title">접근 권한이 없습니다</h2>
+            <p class="message-text">
+                해당 페이지는 관리자 전용 구역입니다.<br>
+                일반 사용자는 접근하실 수 없습니다.
+            </p>
+            <div class="btn-group">
+                <a th:href="@{/}" class="btn btn-primary btn-lg btn-shadow">홈으로 돌아가기</a>
+                <form th:action="@{/logout}" method="post" style="display: contents;">
+                    <button type="submit" class="btn btn-ghost btn-md">다른 계정으로 로그인</button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

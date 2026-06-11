@@ -171,6 +171,135 @@
   gap: 1rem;
 }
 
+/* --- [Responsive Design] --- */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 200px;
+    min-width: 200px;
+    padding: 24px 12px;
+  }
+
+  .admin-main {
+    padding: 30px;
+  }
+
+  .admin-mini-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-body {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    padding: 20px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .admin-logo {
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  .admin-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    gap: 8px;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .admin-menu::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  .admin-menu a {
+    white-space: nowrap;
+    padding: 10px 14px;
+  }
+
+  .admin-menu li.active a {
+    border-left: none;
+    border-bottom: 3px solid var(--accent-purple);
+    border-radius: 4px;
+    padding-left: 14px;
+    padding-bottom: 7px;
+  }
+
+  .admin-user-bottom {
+    display: none; /* Hide admin bottom section on mobile for space */
+  }
+
+  .admin-main {
+    padding: 20px 15px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header-tools {
+    width: 100%;
+  }
+
+  /* Filter form specific for mobile (if used) */
+  .filter-form {
+    width: 100%;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-input {
+    width: 100% !important;
+  }
+
+  .filter-submit-btn {
+    width: 100%;
+  }
+
+  .admin-mini-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  /* Table responsiveness: scrollable container */
+  .admin-content {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 15px;
+  }
+
+  .admin-table {
+    min-width: 700px; /* Ensure table doesn't collapse too much */
+  }
+
+  .admin-tabs {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .tab-btn {
+    text-align: left;
+    width: 100%;
+  }
+
+  .user-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

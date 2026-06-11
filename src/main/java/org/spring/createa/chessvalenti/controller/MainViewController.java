@@ -185,9 +185,24 @@ public class MainViewController {
         return "post-detail";
     }
 
+    @GetMapping("/access-denied")
+    public String accessDenied(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
+        String username = (userPrincipal != null) ? userPrincipal.getUsername() : "Guest";
+        model.addAttribute("isLoggedIn", userPrincipal != null);
+        model.addAttribute("username", username);
+        return "access-denied";
+    }
+
+    @GetMapping("/login-required")
+    public String loginRequired(Model model) {
+        model.addAttribute("isLoggedIn", false);
+        model.addAttribute("username", "Guest");
+        return "login-required";
+    }
+
     @GetMapping("/inquiry")
     public String inquiryPage(@AuthenticationPrincipal UserPrincipal userPrincipal, Model model) {
-        if (userPrincipal == null) return "redirect:/login";
+        if (userPrincipal == null) return "redirect:/login-required";
         model.addAttribute("username", userPrincipal.getUsername());
         model.addAttribute("isLoggedIn", true);
         model.addAttribute("url", "/inquiry");
