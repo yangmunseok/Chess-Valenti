@@ -7,7 +7,7 @@ import {
   setCurrentNode,
   setPossibleMoves
 } from "./state.js";
-import {drawSymbol, renderBoardFromFen, updateSquareEvent} from "./board.js";
+import {drawSymbol, renderBoardFromFen, updateSquareEvent, clearHighlights} from "./board.js";
 import {refreshMoveHistory, renderEvaluataion} from "./history.js";
 
 function getMoveNotation(from, to, pieceText) {
@@ -42,7 +42,11 @@ function getMoveNotation(from, to, pieceText) {
       `.square[data-coord="${to}"]`);
   const toPiece = toSquareClass.querySelector('.piece');
 
-  let capture = toPiece ? "x" : "";
+  const fromFile = from.substring(0, 1);
+  const toFile = to.substring(0, 1);
+  const isEnPassant = pieceText === "p" && fromFile !== toFile && !toPiece;
+
+  let capture = (toPiece || isEnPassant) ? "x" : "";
 
   const pieceTextToSanText = {
     "b": "B",
@@ -50,7 +54,7 @@ function getMoveNotation(from, to, pieceText) {
     "r": "R",
     "q": "Q",
     "k": "K",
-    "p": toPiece ? from.substring(0, 1) : ""
+    "p": (toPiece || isEnPassant) ? fromFile : ""
   };
 
   if (pieceText === "p") {
@@ -197,6 +201,8 @@ export async function loadBoardFromNode(node) {
   if (!node) {
     return;
   }
+
+  clearHighlights();
 
   if (node.fen) {
     if (!node.legalMove || node.legalMove.length === 0) {

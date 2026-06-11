@@ -5,7 +5,11 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
     gtag('js', new Date());
 
     gtag('config', 'G-DBMLJY2F5L');
@@ -13,7 +17,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>valenti - Pawn Games</title>
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"/>
   <link th:href="@{/css/app.css}" rel="stylesheet">
   <link th:href="@{/css/analysis.css}" rel="stylesheet">
   <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
@@ -28,19 +33,23 @@
       border-radius: 20px;
       border: 1px solid var(--border-color);
     }
+
     .preview-board-wrapper {
       width: 200px;
       height: 200px;
       flex-shrink: 0;
     }
+
     .header-info h1 {
       font-size: 24px;
       margin-bottom: 10px;
     }
+
     .header-info p {
       color: var(--text-secondary);
       font-size: 14px;
     }
+
     .results-container {
       width: 100%;
       max-width: 1000px;
@@ -54,25 +63,31 @@
         text-align: center;
         margin-bottom: 24px;
       }
+
       .preview-board-wrapper {
         width: 150px;
         height: 150px;
       }
+
       .header-info h1 {
         font-size: 20px;
       }
+
       .hide-mobile {
         display: none;
       }
+
       .game-table th, .game-table td {
         padding: 12px 8px;
         font-size: 13px;
       }
+
       .mobile-stack {
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
+
       .player-sub {
         font-size: 11px;
         color: var(--text-secondary);
@@ -117,11 +132,12 @@
             </tr>
             </thead>
             <tbody id="game-list-body">
-              <tr>
-                <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                  게임 데이터를 불러오고 있습니다...
-                </td>
-              </tr>
+            <tr>
+              <td colspan="5"
+                  style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                게임 데이터를 불러오고 있습니다...
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -137,7 +153,7 @@
 </div>
 
 <script type="module" th:inline="javascript">
-  import {initBoard, renderBoardFromFen} from "/js/newStructure/board.js";
+  import {initBoard, renderBoardFromFen} from "/js/board.js";
 
   const targetFen = /*[[${fen}]]*/ "";
   let currentPage = 0; // 0-indexed for backend
@@ -151,27 +167,33 @@
 
   async function fetchGames(page) {
     currentPage = page;
-    const url = `/api/games/paginated?fen=${encodeURIComponent(targetFen)}&page=${page}&size=${itemsPerPage}`;
-    
-    document.getElementById('game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
+    const url = `/api/games/paginated?fen=${encodeURIComponent(
+        targetFen)}&page=${page}&size=${itemsPerPage}`;
+
+    document.getElementById(
+        'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
 
     try {
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Fetch failed');
-      
+      if (!res.ok) {
+        throw new Error('Fetch failed');
+      }
+
       const data = await res.json();
       totalPages = data.totalPages;
-      
+
       document.getElementById('total-games').innerText = data.totalElements;
       renderGameTable(data.content);
       updatePaginationControls();
-      
+
       if (data.content.length === 0) {
-        document.getElementById('game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
+        document.getElementById(
+            'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
       }
     } catch (err) {
       console.error(err);
-      document.getElementById('game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
+      document.getElementById(
+          'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
     }
   }
 
@@ -196,16 +218,22 @@
   }
 
   function updatePaginationControls() {
-    document.getElementById('page-info').innerText = `${currentPage + 1} / ${Math.max(1, totalPages)}`;
+    document.getElementById('page-info').innerText = `${currentPage + 1} / ${Math.max(1,
+        totalPages)}`;
     document.getElementById('prev-page').disabled = (currentPage === 0);
-    document.getElementById('next-page').disabled = (currentPage >= totalPages - 1 || totalPages === 0);
+    document.getElementById('next-page').disabled = (currentPage >= totalPages - 1 || totalPages
+        === 0);
   }
 
   document.getElementById('prev-page').onclick = () => {
-    if (currentPage > 0) fetchGames(currentPage - 1);
+    if (currentPage > 0) {
+      fetchGames(currentPage - 1);
+    }
   };
   document.getElementById('next-page').onclick = () => {
-    if (currentPage < totalPages - 1) fetchGames(currentPage + 1);
+    if (currentPage < totalPages - 1) {
+      fetchGames(currentPage + 1);
+    }
   };
 
 </script>

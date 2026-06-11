@@ -224,4 +224,5 @@ export function clearHighlights() {
   document.querySelectorAll('.square').forEach(sq => {
     sq.classList.remove('selected-sq', 'possible-move');
   });
+  selectedSquare = null;
 }

@@ -13,6 +13,7 @@ import org.spring.createa.chessvalenti.dto.game.GameResults;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
+import org.spring.createa.chessvalenti.exception.UserNotFoundException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -54,7 +55,7 @@ public class InsightService {
           }, error -> {
             log.error("Error loading games from {}", platform(request), error);
             String errorMessage = "분석 중 오류가 발생했습니다.";
-            if (error instanceof WebClientResponseException.NotFound) {
+            if (error instanceof UserNotFoundException) {
               errorMessage = "존재하지 않는 사용자 아이디입니다.";
             }
             sendProgress(systemUsername, request.username(), 0, "error", errorMessage, id, null);
@@ -91,25 +92,29 @@ public class InsightService {
   }
 
   private Flux<InsightGame> loadInsightGames(InsightRequestMessage request) {
+    Flux<InsightGame> gameFlux;
     if ("chesscom".equals(platform(request))) {
-      return chessComService.loadGames(request.username(), request.perfType(), request.since());
+      gameFlux = chessComService.loadGames(request.username(), request.perfType(), request.since());
+    } else {
+      gameFlux = lichessApi.loadGames(request.username(), true, request.perfType(), request.since())
+          .map(response -> {
+            String whiteUsername = null;
+            String blackUsername = null;
+            if (response.players() != null) {
+              if (response.players().white() != null && response.players().white().user() != null) {
+                whiteUsername = response.players().white().user().name();
+              }
+              if (response.players().black() != null && response.players().black().user() != null) {
+                blackUsername = response.players().black().user().name();
+              }
+            }
+            return new InsightGame(response.winner(), response.pgn(), whiteUsername,
+                blackUsername, response.variant());
+          });
     }
 
-    return lichessApi.loadGames(request.username(), true, request.perfType(), request.since())
-        .map(response -> {
-          String whiteUsername = null;
-          String blackUsername = null;
-          if (response.players() != null) {
-            if (response.players().white() != null && response.players().white().user() != null) {
-              whiteUsername = response.players().white().user().name();
-            }
-            if (response.players().black() != null && response.players().black().user() != null) {
-              blackUsername = response.players().black().user().name();
-            }
-          }
-          return new InsightGame(response.winner(), response.pgn(), whiteUsername,
-              blackUsername, response.variant());
-        });
+    return gameFlux.onErrorMap(WebClientResponseException.NotFound.class,
+        e -> new UserNotFoundException("존재하지 않는 사용자입니다: " + request.username()));
   }
 
   private String platform(InsightRequestMessage request) {
