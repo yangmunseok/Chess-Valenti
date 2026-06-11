@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom {
 
   private static final String PAWN_SORT_INDEX = "pawn_sort_idx";
-  private static final String PAWN_PIECE_SORT_INDEX = "pawn_piece_sort_idx";
   private static final String LEGACY_PAWN_PIECE_CONFIGURATION_INDEX =
       "pawn_piece_configuration_idx";
   private static final int INSERT_CHUNK_SIZE = 1000;
@@ -45,7 +44,7 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
 
   private String getDatabaseProductName() {
     if (cachedDatabaseProductName == null) {
-      try (java.sql.Connection conn = jdbcTemplate.getDataSource().getConnection()) {
+      try (Connection conn = jdbcTemplate.getDataSource().getConnection()) {
         cachedDatabaseProductName = conn.getMetaData().getDatabaseProductName();
       } catch (SQLException e) {
         throw new RuntimeException("Could not determine database product name", e);
@@ -93,7 +92,6 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   public void prepareForBulkInsert() {
     truncateTable();
     dropIndexIfExists(PAWN_SORT_INDEX);
-    dropIndexIfExists(PAWN_PIECE_SORT_INDEX);
     dropIndexIfExists(LEGACY_PAWN_PIECE_CONFIGURATION_INDEX);
   }
 
@@ -172,16 +170,6 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
     createIndexIfMissing(PAWN_SORT_INDEX, """
         create index pawn_sort_idx
         on game_index (pawn_structure, max_elo desc, total_elo desc, id desc)
-        """);
-    createIndexIfMissing(PAWN_PIECE_SORT_INDEX, """
-        create index pawn_piece_sort_idx
-        on game_index (
-          pawn_structure,
-          piece_configuration,
-          max_elo desc,
-          total_elo desc,
-          id desc
-        )
         """);
     syncSequenceWithTable();
   }
