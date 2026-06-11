@@ -35,7 +35,13 @@ function onServerUpdate(message) {
   jobId = message.jobId;
 
   if (status === 'error') {
-    alert(message.goal);
+    const errorModal = document.getElementById('error-modal');
+    if (errorModal) {
+      document.getElementById('error-message').innerText = message.goal;
+      errorModal.style.display = 'flex';
+    } else {
+      alert(message.goal);
+    }
     elements.progressSection.style.display = 'none';
     elements.insightFilters.style.display = 'block';
     return;

@@ -87,8 +87,13 @@ public class InsightService {
       });
     });
 
-    jobService.work(mono, id);
-    sendProgress(systemUsername, request.username(), 0, "done", "register", id, null);
+    try {
+      jobService.work(mono, id);
+      sendProgress(systemUsername, request.username(), 0, "done", "register", id, null);
+    } catch (RuntimeException e) {
+      log.error("Failed to register analysis job", e);
+      sendProgress(systemUsername, request.username(), 0, "error", e.getMessage(), id, null);
+    }
   }
 
   private Flux<InsightGame> loadInsightGames(InsightRequestMessage request) {
