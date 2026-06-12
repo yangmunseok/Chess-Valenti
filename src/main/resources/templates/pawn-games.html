@@ -52,7 +52,88 @@
 
     .results-container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1200px;
+    }
+
+    /* Improved Table Styles */
+    .game-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 4px;
+      margin-top: 10px;
+    }
+
+    .game-table th {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .game-table td {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.01);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+
+    .game-table tr:hover td {
+      background: rgba(59, 130, 246, 0.05);
+      border-bottom-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .player-name-bold {
+      font-weight: 700;
+      color: #fff;
+      display: block;
+    }
+
+    .elo-cell {
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .game-list-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+    }
+
+    .badge-result {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      display: inline-block;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .player-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .show-mobile {
+      display: none;
+    }
+
+    @media (max-width: 1024px) {
+      .results-container {
+        padding: 0 10px;
+      }
     }
 
     @media (max-width: 768px) {
@@ -74,23 +155,26 @@
       }
 
       .hide-mobile {
-        display: none;
+        display: none !important;
+      }
+
+      .show-mobile {
+        display: block;
       }
 
       .game-table th, .game-table td {
-        padding: 12px 8px;
+        padding: 12px 10px;
         font-size: 13px;
-      }
-
-      .mobile-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
       }
 
       .player-sub {
         font-size: 11px;
-        color: var(--text-secondary);
+        color: var(--accent-blue);
+        opacity: 0.8;
+      }
+
+      .view-btn {
+        padding: 8px;
       }
     }
   </style>
@@ -125,15 +209,17 @@
             <thead>
             <tr>
               <th class="hide-mobile">Event</th>
-              <th>Players</th>
+              <th>White</th>
+              <th class="hide-mobile">Elo</th>
+              <th>Black</th>
+              <th class="hide-mobile">Elo</th>
               <th>Result</th>
               <th class="hide-mobile">Date</th>
-              <th>View</th>
             </tr>
             </thead>
             <tbody id="game-list-body">
             <tr>
-              <td colspan="5"
+              <td colspan="8"
                   style="text-align: center; padding: 40px; color: var(--text-secondary);">
                 게임 데이터를 불러오고 있습니다...
               </td>
@@ -171,7 +257,7 @@
         targetFen)}&page=${page}&size=${itemsPerPage}`;
 
     document.getElementById(
-        'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
+        'game-list-body').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
 
     try {
       const res = await fetch(url);
@@ -180,39 +266,53 @@
       }
 
       const data = await res.json();
-      totalPages = data.totalPages;
+      console.debug("Fetched games data:", data);
 
-      document.getElementById('total-games').innerText = data.totalElements;
+      totalPages = data.page.totalPages;
+      const totalElements = (data.page.totalElements !== undefined) ? data.page.totalElements
+          : 0;
+
+      document.getElementById('total-games').innerText = totalElements.toLocaleString();
       renderGameTable(data.content);
       updatePaginationControls();
 
-      if (data.content.length === 0) {
+      if (!data.content || data.content.length === 0) {
         document.getElementById(
-            'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
+            'game-list-body').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
       }
     } catch (err) {
       console.error(err);
       document.getElementById(
-          'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
+          'game-list-body').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
     }
   }
 
   function renderGameTable(games) {
     const tbody = document.getElementById('game-list-body');
-    const isMobile = window.innerWidth <= 768;
+    if (!games) {
+      return;
+    }
 
     tbody.innerHTML = games.map(game => `
-      <tr>
-          <td class="hide-mobile">${game.event}</td>
+      <tr onclick="window.open('/games/${game.gameOffset}?idx=${game.moveIdx}', '_blank')">
+          <td class="hide-mobile" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${game.event
+    || '-'}</td>
           <td>
-            <div class="mobile-stack">
-              <span>${game.whitePlayer.name} <small class="player-sub">(${game.whitePlayer.elo})</small></span>
-              <span>${game.blackPlayer.name} <small class="player-sub">(${game.blackPlayer.elo})</small></span>
+            <div class="player-cell">
+              <span class="player-name-bold">${game.whitePlayer?.name || 'Unknown'}</span>
+              <span class="show-mobile player-sub">${game.whitePlayer?.elo || '-'}</span>
             </div>
           </td>
-          <td class="result-cell">${game.result}</td>
-          <td class="hide-mobile">${game.date}</td>
-          <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}" target="_blank">👁️</a></td>
+          <td class="hide-mobile elo-cell">${game.whitePlayer?.elo || '-'}</td>
+          <td>
+            <div class="player-cell">
+              <span class="player-name-bold">${game.blackPlayer?.name || 'Unknown'}</span>
+              <span class="show-mobile player-sub">${game.blackPlayer?.elo || '-'}</span>
+            </div>
+          </td>
+          <td class="hide-mobile elo-cell">${game.blackPlayer?.elo || '-'}</td>
+          <td class="result-cell"><span class="badge-result">${game.result}</span></td>
+          <td class="hide-mobile">${game.date || '-'}</td>
       </tr>
     `).join('');
   }
@@ -238,4 +338,6 @@
 
 </script>
 </body>
+</html>
+
 </html>

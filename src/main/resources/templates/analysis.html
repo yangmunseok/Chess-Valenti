@@ -384,10 +384,12 @@
           <thead>
           <tr>
             <th class="hide-mobile">Event</th>
-            <th>Players</th>
+            <th>White</th>
+            <th class="hide-mobile">Elo</th>
+            <th>Black</th>
+            <th class="hide-mobile">Elo</th>
             <th>Result</th>
             <th class="hide-mobile">Date</th>
-            <th>View</th>
           </tr>
           </thead>
           <tbody id="game-list-body">
@@ -424,7 +426,7 @@
 </div>
 
 <script type="module" th:inline="javascript">
-  import { initAnalysisPage } from "/js/analysis-init.js";
+  import {initAnalysisPage} from "/js/analysis-init.js";
 
   const config = {
     fen: /*[[${fen}]]*/ "start",

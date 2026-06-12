@@ -124,18 +124,30 @@ function renderGamePage(page) {
 
   const tbody = document.getElementById('game-list-body');
   tbody.innerHTML = pagedData.map(game => `
-        <tr>
-            <td class="hide-mobile">${game.event}</td>
-            <td>
-              <div class="mobile-stack">
-                <span>${game.whitePlayer.name} <small class="player-sub">(${game.whitePlayer.elo})</small></span>
-                <span>${game.blackPlayer.name} <small class="player-sub">(${game.blackPlayer.elo})</small></span>
-              </div>
-            </td>
-            <td class="result-cell">${game.result}</td>
-            <td class="hide-mobile">${game.date}</td>
-            <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}">👁️</a></td>
-        </tr>
+      <tr onclick="window.open('/games/${game.gameOffset}?idx=${game.moveIdx}', '_blank')">
+          <td class="hide-mobile" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${game.event
+  || '-'}</td>
+          <td>
+            <div class="player-cell">
+              <span class="player-name-bold">${game.whitePlayer?.name
+  || 'Unknown'}</span>
+              <span class="show-mobile player-sub">${game.whitePlayer?.elo
+  || '-'}</span>
+            </div>
+          </td>
+          <td class="hide-mobile elo-cell">${game.whitePlayer?.elo || '-'}</td>
+          <td>
+            <div class="player-cell">
+              <span class="player-name-bold">${game.blackPlayer?.name
+  || 'Unknown'}</span>
+              <span class="show-mobile player-sub">${game.blackPlayer?.elo
+  || '-'}</span>
+            </div>
+          </td>
+          <td class="hide-mobile elo-cell">${game.blackPlayer?.elo || '-'}</td>
+          <td class="result-cell"><span class="badge-result">${game.result}</span></td>
+          <td class="hide-mobile">${game.date || '-'}</td>
+      </tr>
     `).join('');
 
   // 페이지 정보 업데이트

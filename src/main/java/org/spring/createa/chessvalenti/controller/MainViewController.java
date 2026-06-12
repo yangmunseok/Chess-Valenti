@@ -50,6 +50,7 @@ public class MainViewController {
 
         model.addAttribute("username", username);
         model.addAttribute("isLoggedIn", isLoggedIn);
+        model.addAttribute("url", "/");
         model.addAttribute("notices", postService.findAllByPostType(PageRequest.of(0, 5), PostType.NOTICE));
         model.addAttribute("faqs", postService.findFAQ());
         return "home";
@@ -102,6 +103,7 @@ public class MainViewController {
         }
         model.addAttribute("isLoggedIn", userPrincipal != null);
         model.addAttribute("username", (userPrincipal != null) ? userPrincipal.getUsername() : "Guest");
+        model.addAttribute("url", "/analysis");
         return "analysis";
     }
 
