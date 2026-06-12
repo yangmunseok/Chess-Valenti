@@ -15,7 +15,6 @@
     gtag('config', 'G-DBMLJY2F5L');
   </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
@@ -36,7 +35,8 @@
   <div class="admin-tabs" th:data-current="${mode}">
     <button id="tab-inquiry" class="tab-btn"
             onclick="window.location='/admin/support?mode=inquiry'">1:1 문의 내역
-    </button>
+      <span
+          class="badge-count">7</span></button>
   </div>
   <div id="tab-inquiry-content" class="tab-content">
     <section

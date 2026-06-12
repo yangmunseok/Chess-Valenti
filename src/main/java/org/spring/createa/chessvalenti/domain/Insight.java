@@ -31,8 +31,8 @@ public class Insight {
   private String perfType;
   private Long since;
 
-  @jakarta.persistence.Lob
   @Convert(converter = org.spring.createa.chessvalenti.util.InsightDataConverter.class)
+  @Column(columnDefinition = "TEXT")
   private Map<String, GameResults> data;
 
   private LocalDateTime createdAt = LocalDateTime.now();
