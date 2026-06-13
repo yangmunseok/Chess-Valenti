@@ -42,8 +42,7 @@ https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
 
 ### Backend
 
-- **Java 17**
-- **Spring Boot 3.3.5**
+- **Spring Boot**
 - **Spring Data JPA**
 - **Spring Security** (OAuth2/RBAC)
 - **Spring WebFlux & Reactor** (비동기 데이터 스트리밍)
