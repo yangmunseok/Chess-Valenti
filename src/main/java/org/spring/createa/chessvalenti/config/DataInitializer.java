@@ -192,6 +192,7 @@ public class DataInitializer implements CommandLineRunner {
 
               if (pawnMoveCnt < 6 || !chessBoardUtil.isMaterialEven(board)
                   || chessBoardUtil.countCenterPawns(board) < 4) {
+                move_idx++;
                 continue;
               }
             } catch (Exception e) {
