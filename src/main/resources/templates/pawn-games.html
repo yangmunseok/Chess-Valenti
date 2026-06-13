@@ -180,9 +180,10 @@
       }
 
       const data = await res.json();
-      totalPages = data.totalPages;
+      console.log(data);
+      totalPages = data.page.totalPages;
 
-      document.getElementById('total-games').innerText = data.totalElements;
+      document.getElementById('total-games').innerText = data.page.totalElements;
       renderGameTable(data.content);
       updatePaginationControls();
 
