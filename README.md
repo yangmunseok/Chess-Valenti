@@ -16,9 +16,8 @@ https://github.com/user-attachments/assets/2768227f-eb02-46d3-8896-dae46499edae
 ### 2. Chess Insight (데이터 시각화)
 
 - **플랫폼 연동:** Lichess 및 Chess.com API를 통해 사용자의 게임 데이터를 동기화합니다.
-- **통계 분석:** 승률, 오프닝 선호도, 시간대별 성적 등 다양한 통계 데이터를 시각화하여 제공합니다.
-- **유사 게임 필터링:** 자신과 유사한 실력대의 플레이어들이 둔 게임을 분석하여 학습 기회를 제공합니다.
-
+- **통계 분석:** 폰구조별 게임 수, 색깔별 승률등 다양한 통계 데이터를 시각화하여 제공합니다.
+- 
 ### 3. 커뮤니티 및 소통
 
 - **계층형 댓글 시스템:** 공지사항, 스터디 게시글에 댓글 및 대댓글을 달아 사용자 간 소통이 가능합니다.
@@ -28,7 +27,6 @@ https://github.com/user-attachments/assets/2768227f-eb02-46d3-8896-dae46499edae
 ### 4. 사용자 편의 및 보안
 
 - **비밀번호 찾기:** 가입된 이메일로 비밀번호 재설정 링크를 발송하며, 보안 토큰 방식을 통해 안전하게 비밀번호를 변경할 수 있습니다.
-- **멤버십 및 후원:** Toss Payments API를 통한 후원 시스템 및 멤버십 레벨 관리 기능을 포함합니다.
 
 ### 5. 관리자 도구 (Admin Dashboard)
 
@@ -39,7 +37,6 @@ https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
 - **통합 콘텐츠 관리:** 게시글(공지사항, 스터디, FAQ) 및 1:1 문의를 리스트 형태로 관리하고 즉시 삭제 및 처리할 수 있습니다.
 - **사용자 관리:** 전체 사용자 목록 조회, 권한(Role) 변경 및 차단(Ban) 기능.
 - **지표 모니터링:** 신규 가입자 추이, 실시간 온라인 사용자, 멤버십 전환율 등 주요 서비스 지표를 시각화합니다.
-- **재무 관리:** 결제 및 후원 내역의 상세 조회와 환불 요청 처리를 지원합니다.
 
 ## 🛠 기술 스택
 
@@ -63,35 +60,8 @@ https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
 
 ### Database
 
-- **MySQL**
-
-## ⚙️ 설치 및 실행 방법
-
-### 요구 사항
-
-- Java 25 이상
-- Maven
-- MySQL
-
-### 설정 (application.properties)
-
-1. `src/main/resources/application.properties.example` 파일을 복사하여 `application.properties`를 생성합니다.
-2. 데이터베이스 연결 정보 및 Toss Payments API 키를 설정합니다.
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/YOUR_DATABASE_NAME
-spring.datasource.username=YOUR_USERNAME
-spring.datasource.password=YOUR_PASSWORD
-# Toss Payment
-toss.payment.secret-key=YOUR_TOSS_SECRET_KEY
-```
-
-### 실행
-
-```bash
-mvn clean install
-mvn spring-boot:run
-```
+- **MySQL** (dev 환경)
+- **PostgreSQL** (배포 환경)
 
 ## 📂 프로젝트 구조
 
