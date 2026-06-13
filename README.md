@@ -32,9 +32,9 @@ https://github.com/user-attachments/assets/2768227f-eb02-46d3-8896-dae46499edae
 
 ### 5. 관리자 도구 (Admin Dashboard)
 
-https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
-
 https://github.com/user-attachments/assets/d6fd8c3d-1a22-4bee-9d83-2a9f82a47b1b
+
+https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
 
 - **통합 콘텐츠 관리:** 게시글(공지사항, 스터디, FAQ) 및 1:1 문의를 리스트 형태로 관리하고 즉시 삭제 및 처리할 수 있습니다.
 - **사용자 관리:** 전체 사용자 목록 조회, 권한(Role) 변경 및 차단(Ban) 기능.
