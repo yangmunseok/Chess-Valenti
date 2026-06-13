@@ -126,12 +126,10 @@ function renderGamePage(page) {
   tbody.innerHTML = pagedData.map(game => `
         <tr>
             <td class="hide-mobile">${game.event}</td>
-            <td>
-              <div class="mobile-stack">
-                <span>${game.whitePlayer.name} <small class="player-sub">(${game.whitePlayer.elo})</small></span>
-                <span>${game.blackPlayer.name} <small class="player-sub">(${game.blackPlayer.elo})</small></span>
-              </div>
-            </td>
+            <td>${game.whitePlayer.name}</td>
+            <td>${game.blackPlayer.name}</td>
+            <td>${game.whitePlayer.elo}</td>
+            <td>${game.blackPlayer.elo}</td>
             <td class="result-cell">${game.result}</td>
             <td class="hide-mobile">${game.date}</td>
             <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}">👁️</a></td>

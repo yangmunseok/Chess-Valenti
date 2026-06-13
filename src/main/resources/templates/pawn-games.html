@@ -125,7 +125,10 @@
             <thead>
             <tr>
               <th class="hide-mobile">Event</th>
-              <th>Players</th>
+              <th>White</th>
+              <th>Black</th>
+              <th>WhiteElo</th>
+              <th>BlackElo</th>
               <th>Result</th>
               <th class="hide-mobile">Date</th>
               <th>View</th>
@@ -133,7 +136,7 @@
             </thead>
             <tbody id="game-list-body">
             <tr>
-              <td colspan="5"
+              <td colspan="8"
                   style="text-align: center; padding: 40px; color: var(--text-secondary);">
                 게임 데이터를 불러오고 있습니다...
               </td>
@@ -171,7 +174,7 @@
         targetFen)}&page=${page}&size=${itemsPerPage}`;
 
     document.getElementById(
-        'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
+        'game-list-body').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">게임 데이터를 불러오고 있습니다...</td></tr>';
 
     try {
       const res = await fetch(url);
@@ -180,7 +183,6 @@
       }
 
       const data = await res.json();
-      console.log(data);
       totalPages = data.page.totalPages;
 
       document.getElementById('total-games').innerText = data.page.totalElements;
@@ -189,12 +191,12 @@
 
       if (data.content.length === 0) {
         document.getElementById(
-            'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
+            'game-list-body').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">해당 구조의 게임이 없습니다.</td></tr>';
       }
     } catch (err) {
       console.error(err);
       document.getElementById(
-          'game-list-body').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
+          'game-list-body').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--danger);">데이터를 불러오지 못했습니다.</td></tr>';
     }
   }
 
@@ -205,12 +207,10 @@
     tbody.innerHTML = games.map(game => `
       <tr>
           <td class="hide-mobile">${game.event}</td>
-          <td>
-            <div class="mobile-stack">
-              <span>${game.whitePlayer.name} <small class="player-sub">(${game.whitePlayer.elo})</small></span>
-              <span>${game.blackPlayer.name} <small class="player-sub">(${game.blackPlayer.elo})</small></span>
-            </div>
-          </td>
+          <td>${game.whitePlayer.name}</td>
+          <td>${game.blackPlayer.name}</td>
+          <td>${game.whitePlayer.elo}</td>
+          <td>${game.blackPlayer.elo}</td>
           <td class="result-cell">${game.result}</td>
           <td class="hide-mobile">${game.date}</td>
           <td><a class="view-btn" href="/games/${game.gameOffset}?idx=${game.moveIdx}" target="_blank">👁️</a></td>

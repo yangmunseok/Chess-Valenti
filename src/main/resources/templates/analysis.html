@@ -384,7 +384,10 @@
           <thead>
           <tr>
             <th class="hide-mobile">Event</th>
-            <th>Players</th>
+            <th>White</th>
+            <th>Black</th>
+            <th>WhiteElo</th>
+            <th>BlackElo</th>
             <th>Result</th>
             <th class="hide-mobile">Date</th>
             <th>View</th>
@@ -424,7 +427,7 @@
 </div>
 
 <script type="module" th:inline="javascript">
-  import { initAnalysisPage } from "/js/analysis-init.js";
+  import {initAnalysisPage} from "/js/analysis-init.js";
 
   const config = {
     fen: /*[[${fen}]]*/ "start",
