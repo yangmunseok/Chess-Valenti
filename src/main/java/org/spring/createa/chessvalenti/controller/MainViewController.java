@@ -100,6 +100,7 @@ public class MainViewController {
         if (game != null) {
             model.addAttribute("idx", idx);
         }
+        model.addAttribute("url", "/analysis");
         model.addAttribute("isLoggedIn", userPrincipal != null);
         model.addAttribute("username", (userPrincipal != null) ? userPrincipal.getUsername() : "Guest");
         return "analysis";

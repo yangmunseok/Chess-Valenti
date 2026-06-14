@@ -173,7 +173,7 @@
       </svg>
       <span>Contact</span>
     </a>
-    <a href="/admin/users" class="mobile-nav-item" th:classappend="${#strings.startsWith(url, '/admin') ? 'active' : ''}" sec:authorize="hasRole('ROLE_ADMIN')">
+    <a href="/admin/users" class="mobile-nav-item" th:classappend="${url != null && #strings.startsWith(url, '/admin') ? 'active' : ''}" sec:authorize="hasRole('ROLE_ADMIN')">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
         <line x1="3" y1="9" x2="21" y2="9"/>
