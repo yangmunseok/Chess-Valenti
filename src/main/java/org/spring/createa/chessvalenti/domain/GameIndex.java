@@ -10,9 +10,9 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 @Entity
 @Data
+@Table(indexes = @Index(name = "pawn_idx", columnList = "pawn_structure_idx"))
 public class GameIndex {
 
   @Id

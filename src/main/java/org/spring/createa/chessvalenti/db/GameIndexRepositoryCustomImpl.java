@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
@@ -15,19 +14,15 @@ import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom {
 
   private static final String PAWN_SORT_INDEX = "pawn_sort_idx";
-  private static final String LEGACY_PAWN_PIECE_CONFIGURATION_INDEX =
-      "pawn_piece_configuration_idx";
   private static final int INSERT_CHUNK_SIZE = 1000;
 
   @Autowired
@@ -89,35 +84,6 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
   }
 
   @Override
-  public void prepareForBulkInsert() {
-    truncateTable();
-    dropIndexIfExists(PAWN_SORT_INDEX);
-    dropIndexIfExists(LEGACY_PAWN_PIECE_CONFIGURATION_INDEX);
-  }
-
-  private void truncateTable() {
-    if (isPostgreSQL()) {
-      jdbcTemplate.execute("truncate table game_index restart identity cascade");
-    } else {
-      jdbcTemplate.execute("truncate table game_index");
-    }
-  }
-
-  @Override
-  @Transactional
-  public void insertAll(List<GameIndex> gameIndexes) {
-    if (gameIndexes.isEmpty()) {
-      return;
-    }
-
-    long firstId = reserveIds(gameIndexes.size());
-    for (int start = 0; start < gameIndexes.size(); start += INSERT_CHUNK_SIZE) {
-      int end = Math.min(start + INSERT_CHUNK_SIZE, gameIndexes.size());
-      insertChunk(gameIndexes, firstId, start, end);
-    }
-  }
-
-  @Override
   public void importFromCsv(Path path) {
     if (isPostgreSQL()) {
       importFromCsvPostgreSQL(path);
@@ -153,7 +119,7 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
     });
   }
 
-  private void importFromCsvMySQL(java.nio.file.Path path) {
+  private void importFromCsvMySQL(Path path) {
     String absolutePath = path.toAbsolutePath().toString().replace("\\", "/");
     String sql = "LOAD DATA LOCAL INFILE '" + absolutePath + "' " +
         "INTO TABLE game_index " +
@@ -167,98 +133,7 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
 
   @Override
   public void finishBulkInsert() {
-    createIndexIfMissing(PAWN_SORT_INDEX, """
-        create index pawn_sort_idx
-        on game_index (pawn_structure, max_elo desc, total_elo desc, id desc)
-        """);
     syncSequenceWithTable();
-  }
-
-  private void dropIndexIfExists(String indexName) {
-    if (isPostgreSQL()) {
-      jdbcTemplate.execute("drop index if exists " + indexName);
-    } else {
-      try {
-        jdbcTemplate.execute("alter table game_index drop index " + indexName);
-      } catch (DataAccessException e) {
-        if (indexExists(indexName)) {
-          throw e;
-        }
-      }
-    }
-  }
-
-  private void createIndexIfMissing(String indexName, String sql) {
-    try {
-      jdbcTemplate.execute(sql);
-    } catch (DataAccessException e) {
-      if (!indexExists(indexName)) {
-        throw e;
-      }
-    }
-  }
-
-  private boolean indexExists(String indexName) {
-    if (isPostgreSQL()) {
-      Integer count = jdbcTemplate.queryForObject("""
-              select count(*)
-              from pg_indexes
-              where tablename = 'game_index'
-                and indexname = ?
-              """,
-          Integer.class,
-          indexName);
-      return count != null && count > 0;
-    } else {
-      Integer count = jdbcTemplate.queryForObject("""
-              select count(*)
-              from information_schema.statistics
-              where table_schema = database()
-                and table_name = 'game_index'
-                and index_name = ?
-              """,
-          Integer.class,
-          indexName);
-      return count != null && count > 0;
-    }
-  }
-
-  private void insertChunk(List<GameIndex> gameIndexes, long firstId, int start, int end) {
-    StringBuilder sql = new StringBuilder("""
-        insert into game_index (
-          id,
-          pawn_structure,
-          piece_configuration,
-          game_offset,
-          move_index,
-          white_player_id,
-          black_player_id,
-          white_elo,
-          black_elo,
-          max_elo,
-          total_elo
-        ) values
-        """);
-    List<Object> params = new ArrayList<>((end - start) * 11);
-    for (int i = start; i < end; i++) {
-      if (i > start) {
-        sql.append(", ");
-      }
-      sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-      GameIndex gameIndex = gameIndexes.get(i);
-      params.add(firstId + i);
-      params.add(gameIndex.getPawnStructure());
-      params.add(gameIndex.getPieceConfiguration());
-      params.add(gameIndex.getGameOffset());
-      params.add(gameIndex.getMoveIndex());
-      params.add(gameIndex.getWhitePlayer().getId());
-      params.add(gameIndex.getBlackPlayer().getId());
-      params.add(gameIndex.getWhiteElo());
-      params.add(gameIndex.getBlackElo());
-      params.add(gameIndex.getMaxElo());
-      params.add(gameIndex.getTotalElo());
-    }
-    jdbcTemplate.update(sql.toString(), params.toArray());
   }
 
   private void syncSequenceWithTable() {
@@ -274,30 +149,6 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
             coalesce((select max_id from (select max(id) + 1 as max_id from game_index) ids), 1)
           )
           """);
-    }
-  }
-
-  private long reserveIds(int count) {
-    if (isPostgreSQL()) {
-      Long lastId = jdbcTemplate.queryForObject(
-          "select nextval('game_index_seq')",
-          Long.class);
-      if (lastId == null) {
-        throw new IllegalStateException("Could not get nextval from game_index_seq");
-      }
-      if (count > 1) {
-        jdbcTemplate.execute("select setval('game_index_seq', " + (lastId + count - 1) + ", true)");
-      }
-      return lastId;
-    } else {
-      Long firstId = jdbcTemplate.queryForObject(
-          "select next_val from game_index_seq for update",
-          Long.class);
-      if (firstId == null) {
-        throw new IllegalStateException("game_index_seq.next_val is null");
-      }
-      jdbcTemplate.update("update game_index_seq set next_val = ?", firstId + count);
-      return firstId;
     }
   }
 }
