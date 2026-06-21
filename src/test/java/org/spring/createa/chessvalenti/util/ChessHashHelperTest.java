@@ -19,12 +19,6 @@ public class ChessHashHelperTest {
     this.chessHashHelper = chessHashHelper;
   }
 
-
-  @Test
-  void checkColision() {
-    // it will soon added.
-  }
-
   @Test
   void testGetActiveBits() {
     /*

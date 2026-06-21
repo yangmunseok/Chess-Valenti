@@ -9,6 +9,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
+import org.spring.createa.chessvalenti.dto.game.CustomGame;
+import org.spring.createa.chessvalenti.util.ValentiBoard;
 
 @Entity
 @Data
@@ -48,6 +50,18 @@ public class GameIndex {
     this.blackElo = blackElo;
     this.maxElo = Math.max(whiteElo, blackElo);
     this.totalElo = whiteElo + blackElo;
+  }
+
+  public GameIndex(CustomGame game, ValentiBoard board, ChessPlayer whitePlayer,
+      ChessPlayer blackPlayer) {
+    this.pawnStructure = board.getPawnStructure();
+    this.pieceConfiguration = board.getPieceConfiguration();
+    this.gameOffset = game.getOffset();
+    this.moveIndex = board.getPlyCount();
+    this.whitePlayer = whitePlayer;
+    this.blackPlayer = blackPlayer;
+    this.whiteElo = whitePlayer.getRating();
+    this.blackElo = blackPlayer.getRating();
   }
 
   long moveIndex;

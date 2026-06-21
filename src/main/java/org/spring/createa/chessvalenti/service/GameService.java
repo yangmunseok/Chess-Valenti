@@ -56,7 +56,6 @@ public class GameService {
       gameInfo.setGameOffset(gameIndex.getGameOffset());
       gameInfo.setMoveIdx(gameIndex.getMoveIndex());
       gameInfo.setGame(gameRepository.findGameByGameOffset(gameIndex.getGameOffset()));
-      //gameInfo.setPgn(gameInfo.getGame().toPgn(true, true));
       return gameInfo;
     } catch (Exception e) {
       log.error("Error creating GameInfo from GameIndex", e);

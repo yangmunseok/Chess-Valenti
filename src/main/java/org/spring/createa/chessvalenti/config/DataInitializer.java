@@ -1,18 +1,12 @@
 package org.spring.createa.chessvalenti.config;
 
-import com.github.bhlangonijr.chesslib.Board;
-import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.game.Player;
 import com.github.bhlangonijr.chesslib.move.Move;
-import com.github.bhlangonijr.chesslib.move.MoveList;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.ChessPlayerRepository;
@@ -23,15 +17,17 @@ import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.game.CustomGame;
+import org.spring.createa.chessvalenti.service.GameService;
 import org.spring.createa.chessvalenti.util.ChessBoardUtil;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
+import org.spring.createa.chessvalenti.util.GameProcessor;
 import org.spring.createa.chessvalenti.util.pgn.CustomPgnIterator;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -46,8 +42,11 @@ public class DataInitializer implements CommandLineRunner {
   private final ChessPlayerRepository chessPlayerRepository;
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
-  private final PlatformTransactionManager transactionManager;
   private final ChessBoardUtil chessBoardUtil;
+  private final GameService gameService;
+  ObjectProvider<GameProcessor> gameProcessorObjectProvider;
+
+  Map<String, ChessPlayer> playerCache;
 
   @Value("${chess.pgn.path}")
   private String pgnPath;
@@ -83,12 +82,8 @@ public class DataInitializer implements CommandLineRunner {
   }
 
   public void run(String... args) throws Exception {
-    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-    transactionTemplate.execute(status -> {
-      initializeAdminUser();
-      return null;
-    });
 
+    initializeAdminUser();
     DataInitMode mode = DataInitMode.from(initMode);
     if (mode == DataInitMode.OFF) {
       log.info("Data initialization is OFF.");
@@ -96,178 +91,108 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     if (mode == DataInitMode.CSV_TO_DB) {
-      importFromCsv(transactionTemplate);
+      importFromCsv();
       return;
     }
 
-    processPgn(mode, transactionTemplate);
+    processPgn(mode);
   }
 
-  private void processPgn(DataInitMode mode, TransactionTemplate transactionTemplate)
+  private ChessPlayer getOrCreatePlayer(Player player) {
+    return playerCache.computeIfAbsent(player.getName(),
+        (name) -> {
+          ChessPlayer chessPlayer = new ChessPlayer(name, player.getElo());
+          chessPlayer.setId(playerCache.size());
+          return chessPlayer;
+        });
+  }
+
+  private void saveGameIndexes(CustomGame game, DataInitMode dataInitMode) {
+    ChessPlayer whitePlayer = getOrCreatePlayer(game.getWhitePlayer());
+    ChessPlayer blackPlayer = getOrCreatePlayer(game.getBlackPlayer());
+
+    GameProcessor gameProcessor = new GameProcessor(chessBoardUtil, game, whitePlayer,
+        blackPlayer);
+
+    if (dataInitMode == DataInitMode.PGN_TO_CSV) {
+      gameProcessor.writeChessPlayerToCsv();
+    }
+
+    for (Move move : game.getHalfMoves()) {
+
+      if (!gameProcessor.doMove(move) && dataInitMode == DataInitMode.CSV_TO_DB) {
+        gameIndexRepository.removeGameIndexByGameOffset(game.getOffset());
+        GameProcessor.removeGame(game);
+      }
+
+      if (gameProcessor.hasEnoughExampleGameWithPawnStructure()) {
+        continue;
+      }
+
+      if (gameProcessor.pawnStructureIsMeaningful() && gameProcessor.boardHasNewPawnStructure()) {
+
+        if (dataInitMode == DataInitMode.PGN_TO_DB) {
+          gameProcessor.saveGameIndex();
+        }
+
+        if (dataInitMode == DataInitMode.PGN_TO_CSV) {
+          gameProcessor.writeGameIndexToCsv();
+        }
+      }
+    }
+  }
+
+  private void processPgn(DataInitMode mode)
       throws Exception {
     boolean toDb = mode == DataInitMode.PGN_TO_DB;
     String path = Path.of(pgnPath).toFile().getAbsolutePath();
 
-    int batchSize = 10000;
     int cnt = 0;
-    int maxGame = 50;
-    int engineRating = 2900;
-    int gmRating = 2500;
-    List<GameIndex> gameIndexList = new ArrayList<>(batchSize);
-    Map<String, ChessPlayer> playerCache = toDb ? loadPlayerCache() : new HashMap<>();
-    Map<Long, Integer> pawnStructureCnt = new HashMap<>();
+    playerCache = toDb ? loadPlayerCache() : new HashMap<>();
 
-    PrintWriter playerWriter = null;
-    PrintWriter gameIndexWriter = null;
-    long nextPlayerId = 1;
-    long nextGameIndexId = 1;
-
+    //Ready for Export PGN to CSV
     if (!toDb) {
       Files.createDirectories(Path.of(csvDir));
-      playerWriter = new PrintWriter(Files.newBufferedWriter(Path.of(csvDir, "players.csv")));
-      gameIndexWriter = new PrintWriter(
+      PrintWriter playerWriter = new PrintWriter(
+          Files.newBufferedWriter(Path.of(csvDir, "players.csv")));
+      PrintWriter gameIndexWriter = new PrintWriter(
           Files.newBufferedWriter(Path.of(csvDir, "game_indexes.csv")));
+      GameProcessor.setPlayerWriter(playerWriter);
+      GameProcessor.setGameIndexWriter(gameIndexWriter);
       log.info("Exporting PGN to CSV in: {}", csvDir);
-    } else {
-      gameIndexRepository.prepareForBulkInsert();
     }
 
-    try {
-      try (CustomPgnIterator games = new CustomPgnIterator(path)) {
-        for (CustomGame game : games) {
-          int pawnMoveCnt = 0;
-          int whiteElo = game.getWhitePlayer().getElo();
-          int blackElo = game.getBlackPlayer().getElo();
+    CustomPgnIterator games = new CustomPgnIterator(path);
+    for (CustomGame game : games) {
 
-          if (Math.max(whiteElo, blackElo) > engineRating
-              || Math.max(whiteElo, blackElo) < gmRating) {
-            continue;
-          }
-
-          String initialFen = game.getFen();
-          if (initialFen != null && !initialFen.equals(DEFAULT_STARTING_FEN)) {
-            continue;
-          }
-
-          MoveList moves = game.getHalfMoves();
-
-          Set<Long> visited = new HashSet<>(128);
-          Board board = new Board();
-          visited.add(chessHashHelper.hashPawnStructure(board));
-
-          int white_elo = game.getWhitePlayer().getElo();
-          int black_elo = game.getBlackPlayer().getElo();
-
-          ChessPlayer whitePlayer;
-          ChessPlayer blackPlayer;
-
-          if (toDb) {
-            whitePlayer = savePlayer(game.getWhitePlayer(), playerCache);
-            blackPlayer = savePlayer(game.getBlackPlayer(), playerCache);
-          } else {
-            whitePlayer = getOrAssignPlayer(game.getWhitePlayer().getName(), playerCache,
-                playerWriter, new long[]{nextPlayerId});
-            if (whitePlayer.getId() == nextPlayerId) {
-              nextPlayerId++;
-            }
-            blackPlayer = getOrAssignPlayer(game.getBlackPlayer().getName(), playerCache,
-                playerWriter, new long[]{nextPlayerId});
-            if (blackPlayer.getId() == nextPlayerId) {
-              nextPlayerId++;
-            }
-          }
-
-          long game_offset = game.getOffset();
-          long move_idx = 0;
-
-          for (Move move : moves) {
-            try {
-              Piece piece = board.getPiece(move.getFrom());
-
-              if (piece == Piece.BLACK_PAWN || piece == Piece.WHITE_PAWN) {
-                pawnMoveCnt++;
-              }
-
-              board.doMove(move);
-
-              if (pawnMoveCnt < 6 || !chessBoardUtil.isMaterialEven(board)
-                  || chessBoardUtil.countCenterPawns(board) < 4) {
-                move_idx++;
-                continue;
-              }
-            } catch (Exception e) {
-              if (toDb) {
-                gameIndexRepository.removeGameIndexByGameOffset(game_offset);
-                gameIndexList.removeIf((gameIndex -> gameIndex.getGameOffset() == game_offset));
-              }
-              break;
-            }
-
-            move_idx++;
-            long key = chessHashHelper.hashPawnStructure(board);
-            if (!visited.add(key)) {
-              continue;
-            }
-            int game_num = pawnStructureCnt.getOrDefault(key, 0);
-
-            if (game_num >= maxGame) {
-              continue;
-            }
-
-            pawnStructureCnt.put(key, game_num + 1);
-
-            int wq = Long.bitCount(board.getBitboard(Piece.WHITE_QUEEN));
-            int wr = Long.bitCount(board.getBitboard(Piece.WHITE_ROOK));
-            int wb = Long.bitCount(board.getBitboard(Piece.WHITE_BISHOP));
-            int wn = Long.bitCount(board.getBitboard(Piece.WHITE_KNIGHT));
-            int bq = Long.bitCount(board.getBitboard(Piece.BLACK_QUEEN));
-            int br = Long.bitCount(board.getBitboard(Piece.BLACK_ROOK));
-            int bb = Long.bitCount(board.getBitboard(Piece.BLACK_BISHOP));
-            int bn = Long.bitCount(board.getBitboard(Piece.BLACK_KNIGHT));
-
-            int hashedPieceConfiguration = chessHashHelper.hashPieceConfiguration(wq, wr, wb, wn,
-                bq, br, bb, bn);
-            cnt++;
-
-            GameIndex gameIndex = new GameIndex(key, hashedPieceConfiguration, game_offset,
-                move_idx, whitePlayer, blackPlayer, white_elo, black_elo);
-
-            if (toDb) {
-              gameIndexList.add(gameIndex);
-              if (gameIndexList.size() >= batchSize) {
-                flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
-              }
-            } else {
-              gameIndex.setId(nextGameIndexId++);
-              writeGameIndexToCsv(gameIndex, gameIndexWriter);
-            }
-          }
-        }
+      if (game.isNotGMGame() || game.isNotClassicalFormat()) {
+        continue;
       }
-      if (toDb) {
-        flushGameIndexesInTransaction(gameIndexList, transactionTemplate);
-      }
-    } finally {
-      if (toDb) {
-        gameIndexRepository.finishBulkInsert();
-      } else {
-        if (playerWriter != null) {
-          playerWriter.close();
-        }
-        if (gameIndexWriter != null) {
-          gameIndexWriter.close();
-        }
-      }
+
+      saveGameIndexes(game, mode);
+      cnt++;
+    }
+    if (toDb) {
+      GameProcessor gameProcessor = new GameProcessor();
+      gameProcessor.saveAndFlushGameIndexes();
+    }
+    games.close();
+
+    if (toDb) {
+      gameIndexRepository.finishBulkInsert();
+    } else {
+      GameProcessor.close();
     }
     log.info("Data processing completed. Total game indexes: {}", cnt);
   }
 
+  //플레이어를 캐시해서 찾아보고 없으면 생성한뒤 파일에 넣는다.
   private ChessPlayer getOrAssignPlayer(String name, Map<String, ChessPlayer> playerCache,
-      PrintWriter writer, long[] nextId) {
+      PrintWriter writer, long nextId) {
     ChessPlayer player = playerCache.get(name);
     if (player == null) {
       player = new ChessPlayer(name);
-      player.setId(nextId[0]);
+      player.setId(nextId);
       playerCache.put(name, player);
       writer.print(player.getId() + ",\"" + name.replace("\"", "\"\"") + "\"\n");
     }
@@ -277,20 +202,26 @@ public class DataInitializer implements CommandLineRunner {
   private void writeGameIndexToCsv(GameIndex gi, PrintWriter writer) {
     // Column order: id, pawn_structure, piece_configuration, game_offset, move_index, 
     // white_player_id, black_player_id, white_elo, black_elo, max_elo, total_elo
-    writer.print(gi.getId() + "," +
+    writer.print(
         gi.getPawnStructure() + "," +
-        gi.getPieceConfiguration() + "," +
-        gi.getGameOffset() + "," +
-        gi.getMoveIndex() + "," +
-        gi.getWhitePlayer().getId() + "," +
-        gi.getBlackPlayer().getId() + "," +
-        gi.getWhiteElo() + "," +
-        gi.getBlackElo() + "," +
-        gi.getMaxElo() + "," +
-        gi.getTotalElo() + "\n");
+            gi.getPieceConfiguration() + "," +
+            gi.getGameOffset() + "," +
+            gi.getMoveIndex() + "," +
+            gi.getWhitePlayer().getId() + "," +
+            gi.getBlackPlayer().getId() + "," +
+            gi.getWhiteElo() + "," +
+            gi.getBlackElo() + "," +
+            gi.getMaxElo() + "," +
+            gi.getTotalElo() + "\n");
   }
 
-  private void importFromCsv(TransactionTemplate transactionTemplate) throws Exception {
+  private void writeChessPlayerToCsv(ChessPlayer player, PrintWriter writer) {
+    writer.print(
+        player.getId() + ",\"" + player.getName().replace("\"", "\"\"")
+            + ",\"" + player.getRating() + "\"\n");
+  }
+
+  private void importFromCsv() {
     long startTime = System.currentTimeMillis();
     log.info("Importing data from CSV files in: {} using native DB commands", csvDir);
     Path playerCsv = Path.of(csvDir, "players.csv");
@@ -306,9 +237,6 @@ public class DataInitializer implements CommandLineRunner {
     log.info("Importing players from CSV...");
     chessPlayerRepository.importFromCsv(playerCsv);
     log.info("Chess players imported.");
-
-    log.info("Preparing game_index for bulk insert (truncating and dropping indexes)...");
-    gameIndexRepository.prepareForBulkInsert();
 
     try {
       log.info("Importing game indexes from CSV (this may take a minute)...");
@@ -326,44 +254,8 @@ public class DataInitializer implements CommandLineRunner {
     log.info("Total CSV import completed in {} ms.", System.currentTimeMillis() - startTime);
   }
 
-  private String[] parseCsvLine(String line) {
-    List<String> result = new ArrayList<>();
-    boolean inQuotes = false;
-    StringBuilder sb = new StringBuilder();
-    for (char c : line.toCharArray()) {
-      if (c == '\"') {
-        inQuotes = !inQuotes;
-      } else if (c == ',' && !inQuotes) {
-        result.add(sb.toString());
-        sb.setLength(0);
-      } else {
-        sb.append(c);
-      }
-    }
-    result.add(sb.toString());
-    return result.toArray(new String[0]);
-  }
-
-  private Map<Long, ChessPlayer> loadPlayerCacheById() {
-    Map<Long, ChessPlayer> playerCache = new HashMap<>();
-    for (ChessPlayer chessPlayer : chessPlayerRepository.findAll()) {
-      playerCache.put(chessPlayer.getId(), chessPlayer);
-    }
-    return playerCache;
-  }
-
-  private void flushGameIndexesInTransaction(List<GameIndex> gameIndexList,
-      TransactionTemplate transactionTemplate) {
-    if (gameIndexList.isEmpty()) {
-      return;
-    }
-    transactionTemplate.execute(status -> {
-      flushGameIndexes(gameIndexList);
-      return null;
-    });
-  }
-
-  private void initializeAdminUser() {
+  @Transactional
+  protected void initializeAdminUser() {
     String username = normalizePropertyValue(adminUsername);
     String password = normalizePropertyValue(adminPassword);
     String email = normalizePropertyValue(adminEmail);
@@ -426,7 +318,8 @@ public class DataInitializer implements CommandLineRunner {
     return playerCache;
   }
 
-  private ChessPlayer savePlayer(com.github.bhlangonijr.chesslib.game.Player player,
+  //플레이어를 캐시해서 찾아보고 없으면 생성한뒤 캐시에 넣는다.
+  private ChessPlayer savePlayer(Player player,
       Map<String, ChessPlayer> playerCache) {
     String name = player.getName();
     String key = name;
@@ -438,30 +331,6 @@ public class DataInitializer implements CommandLineRunner {
     ChessPlayer chessPlayer = new ChessPlayer(name);
     playerCache.put(key, chessPlayer);
     return chessPlayer;
-  }
-
-  private void flushGameIndexes(List<GameIndex> gameIndexList) {
-    if (gameIndexList.isEmpty()) {
-      return;
-    }
-    chessPlayerRepository.insertMissingAndFillIds(collectPlayers(gameIndexList));
-    gameIndexRepository.insertAll(gameIndexList);
-    gameIndexList.clear();
-  }
-
-  private List<ChessPlayer> collectPlayers(List<GameIndex> gameIndexList) {
-    Map<String, ChessPlayer> players = new HashMap<>();
-    for (GameIndex gameIndex : gameIndexList) {
-      ChessPlayer whitePlayer = gameIndex.getWhitePlayer();
-      ChessPlayer blackPlayer = gameIndex.getBlackPlayer();
-      if (whitePlayer.getId() == 0) {
-        players.putIfAbsent(whitePlayer.getName(), whitePlayer);
-      }
-      if (blackPlayer.getId() == 0) {
-        players.putIfAbsent(blackPlayer.getName(), blackPlayer);
-      }
-    }
-    return new ArrayList<>(players.values());
   }
 
 }

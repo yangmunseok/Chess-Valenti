@@ -21,5 +21,9 @@ public interface GameIndexRepositoryCustom {
 
   void importFromCsv(Path path);
 
+  void insertAll(List<GameIndex> gameIndexList);
+
+  void truncateTable();
+
   void finishBulkInsert();
 }

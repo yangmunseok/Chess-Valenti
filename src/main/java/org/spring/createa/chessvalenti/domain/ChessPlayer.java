@@ -1,5 +1,6 @@
 package org.spring.createa.chessvalenti.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,8 +18,10 @@ public class ChessPlayer {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   long id;
 
-  @jakarta.persistence.Column(unique = true)
+  @Column(unique = true)
   String name;
+
+  int rating;
 
   public ChessPlayer() {
 
@@ -27,4 +30,10 @@ public class ChessPlayer {
   public ChessPlayer(String name) {
     this.name = name;
   }
+
+  public ChessPlayer(String name, int rating) {
+    this.name = name;
+    this.rating = rating;
+  }
+
 }

@@ -13,25 +13,25 @@ public class ChessHashHelper {
     initCombinationTable();
   }
 
-  public long hashPawnStructure(Board board) {
+  public static long hashPawnStructure(Board board) {
     long whitePawn = board.getBitboard(Piece.WHITE_PAWN);
     long blackPawn = board.getBitboard(Piece.BLACK_PAWN);
     return hashPawnStructure(whitePawn, blackPawn);
   }
 
-  public long hashPawnStructure(long whitePawn, long blackPawn) {
+  public static long hashPawnStructure(long whitePawn, long blackPawn) {
     long hashedWhitePawn = hashNumbers(generateInputs(whitePawn));
     long hashedBlackPawn = hashNumbers(generateInputs(blackPawn));
 
     return (hashedWhitePawn << 32) | (Integer.reverse((int) hashedBlackPawn) & 0xffffffffL);
   }
 
-  public List<Integer> generateInputs(long pawns) {
+  public static List<Integer> generateInputs(long pawns) {
     List<Integer> activeBits = getActiveBits(pawns);
     return generateInputs(activeBits);
   }
 
-  public List<Integer> generateInputs(List<Integer> activeBits) {
+  public static List<Integer> generateInputs(List<Integer> activeBits) {
     List<Integer> input = new ArrayList<>();
 
     // 문서 참조.
@@ -46,7 +46,7 @@ public class ChessHashHelper {
     return input;
   }
 
-  public List<Integer> getActiveBits(long input) {
+  public static List<Integer> getActiveBits(long input) {
     input &= 0xffffffffffff00L;
 
     List<Integer> output = new ArrayList<>();
@@ -61,9 +61,9 @@ public class ChessHashHelper {
     return output;
   }
 
-  int MAX_N = 64;
-  int MAX_K = 8;
-  long[][] combinationTable = new long[MAX_N + 1][MAX_K + 1];
+  static int MAX_N = 64;
+  static int MAX_K = 8;
+  static long[][] combinationTable = new long[MAX_N + 1][MAX_K + 1];
 
   private void initCombinationTable() {
     for (int k = 0; k < MAX_K; k++) {
@@ -85,7 +85,7 @@ public class ChessHashHelper {
     }
   }
 
-  public long hashNumbers(List<Integer> input) {
+  public static long hashNumbers(List<Integer> input) {
     long output = 0;
     try {
       for (int i = 0; i < input.size(); i++) {
@@ -98,8 +98,22 @@ public class ChessHashHelper {
     return output;
   }
 
-  public int hashPieceConfiguration(int wq, int wr, int wb, int wn, int bq, int br, int bb,
+  public static int hashPieceConfiguration(int wq, int wr, int wb, int wn, int bq, int br, int bb,
       int bn) {
     return (wq << 13 | wr << 11 | wb << 9 | wn << 7 | bn << 5 | bb << 3 | br << 1 | bq);
+  }
+
+  public static int hashPieceConfiguration(Board board) {
+    int wq = Long.bitCount(board.getBitboard(Piece.WHITE_QUEEN));
+    int wr = Long.bitCount(board.getBitboard(Piece.WHITE_ROOK));
+    int wb = Long.bitCount(board.getBitboard(Piece.WHITE_BISHOP));
+    int wn = Long.bitCount(board.getBitboard(Piece.WHITE_KNIGHT));
+    int bq = Long.bitCount(board.getBitboard(Piece.BLACK_QUEEN));
+    int br = Long.bitCount(board.getBitboard(Piece.BLACK_ROOK));
+    int bb = Long.bitCount(board.getBitboard(Piece.BLACK_BISHOP));
+    int bn = Long.bitCount(board.getBitboard(Piece.BLACK_KNIGHT));
+
+    return hashPieceConfiguration(wq, wr, wb, wn,
+        bq, br, bb, bn);
   }
 }
