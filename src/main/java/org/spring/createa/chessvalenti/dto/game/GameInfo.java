@@ -71,7 +71,9 @@ public class GameInfo {
     this.property = game.getProperty();
     this.fen = game.getFen();
     this.opening = game.getOpening();
-    this.event = game.getRound().getEvent().getName();
+    if (game.getRound() != null && game.getRound().getEvent() != null) {
+      this.event = game.getRound().getEvent().getName();
+    }
   }
 
   public String getPgn() {
