@@ -1,7 +1,6 @@
 package org.spring.createa.chessvalenti.util;
 
 import com.github.bhlangonijr.chesslib.Piece;
-import com.github.bhlangonijr.chesslib.game.Player;
 import com.github.bhlangonijr.chesslib.move.Move;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -45,8 +44,15 @@ public class GameProcessor {
   private static final List<GameIndex> gameIndexList = new ArrayList<>(BATCH_SIZE);
   private static PrintWriter playerWriter;
   private static PrintWriter gameIndexWriter;
-  private static final Map<String, ChessPlayer> playerCache = new HashMap<>();
   private static final Set<String> writtenPlayer = new HashSet<>();
+  private static long next_game_index_id = 0;
+
+  public static void resetProcessingState() {
+    pawnStructureCnt.clear();
+    gameIndexList.clear();
+    writtenPlayer.clear();
+    next_game_index_id = 0;
+  }
 
   public GameProcessor initialize(CustomGame game, ChessPlayer whitePlayer,
       ChessPlayer blackPlayer) {
@@ -86,42 +92,21 @@ public class GameProcessor {
   }
 
   public void writeGameIndexToCsv() {
-    GameIndex gi = generateGameIndex();
+    GameIndex gameIndex = generateGameIndex();
 
     // Column order: id, pawn_structure, piece_configuration, game_offset, move_index,
     // white_player_id, black_player_id, white_elo, black_elo, max_elo, total_elo
-    gameIndexWriter.print(
-        gi.getPawnStructure() + "," +
-            gi.getPieceConfiguration() + "," +
-            gi.getGameOffset() + "," +
-            gi.getMoveIndex() + "," +
-            gi.getWhitePlayer().getId() + "," +
-            gi.getBlackPlayer().getId() + "," +
-            gi.getWhiteElo() + "," +
-            gi.getBlackElo() + "," +
-            gi.getMaxElo() + "," +
-            gi.getTotalElo() + "\n");
-  }
-
-  private ChessPlayer getOrCreatePlayer(Player player) {
-    return playerCache.computeIfAbsent(player.getName(),
-        (name) -> {
-          ChessPlayer chessPlayer = new ChessPlayer(name, player.getElo());
-          chessPlayer.setId(playerCache.size());
-          return chessPlayer;
-        });
+    gameIndexWriter.println(gameIndex);
   }
 
   public void writeChessPlayerToCsv() {
 
     if (!writtenPlayer.contains(whitePlayer.getName())) {
-      playerWriter.println(
-          formatPlayer(whitePlayer));
+      playerWriter.println(whitePlayer);
     }
 
     if (!writtenPlayer.contains(blackPlayer.getName())) {
-      playerWriter.println(
-          formatPlayer(blackPlayer));
+      playerWriter.println(blackPlayer);
     }
 
     writtenPlayer.add(whitePlayer.getName());
@@ -129,17 +114,8 @@ public class GameProcessor {
 
   }
 
-  private String formatPlayer(ChessPlayer chessPlayer) {
-    return chessPlayer.getId() + ",\"" + chessPlayer.getName().replace("\"", "\"\"")
-        + ",\"" + chessPlayer.getRating();
-  }
 
   public boolean doMove(Move move) {
-    if (pawnStructureIsMeaningful()) {
-      visited.add(board.getPawnStructure());
-      pawnStructureCnt.merge(board.getPawnStructure(), 1,
-          (oldValue, newValue) -> Math.min(maxGame, oldValue + newValue));
-    }
     Piece piece = board.getPiece(move.getFrom());
     if (piece == Piece.WHITE_PAWN || piece == Piece.BLACK_PAWN) {
       pawnMoveCnt++;
@@ -159,7 +135,14 @@ public class GameProcessor {
   }
 
   public boolean boardHasNewPawnStructure() {
-    return visited.contains(board.getPawnStructure());
+    return !visited.contains(board.getPawnStructure());
+  }
+
+  public void recordCurrentPawnStructure() {
+    long pawnStructure = board.getPawnStructure();
+    visited.add(pawnStructure);
+    pawnStructureCnt.merge(pawnStructure, 1,
+        (oldValue, newValue) -> Math.min(maxGame, oldValue + newValue));
   }
 
   public boolean hasEnoughExampleGameWithPawnStructure() {
@@ -167,7 +150,9 @@ public class GameProcessor {
   }
 
   public GameIndex generateGameIndex() {
-    return new GameIndex(game, board, whitePlayer, blackPlayer);
+    GameIndex gameIndex = new GameIndex(game, board, whitePlayer, blackPlayer);
+    gameIndex.setId(next_game_index_id++);
+    return gameIndex;
   }
 
   public void saveAndFlushGameIndexes() {

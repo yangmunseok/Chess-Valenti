@@ -33,6 +33,7 @@ public class GameIndex {
   int blackElo;
   int maxElo;
   int totalElo;
+  long moveIndex;
 
   public GameIndex() {
 
@@ -52,6 +53,21 @@ public class GameIndex {
     this.totalElo = whiteElo + blackElo;
   }
 
+  @Override
+  public String toString() {
+    return id + "," +
+        pawnStructure + "," +
+        pieceConfiguration + "," +
+        gameOffset + "," +
+        moveIndex + "," +
+        whitePlayer.getId() + "," +
+        blackPlayer.getId() + "," +
+        whiteElo + "," +
+        blackElo + "," +
+        maxElo + "," +
+        totalElo;
+  }
+
   public GameIndex(CustomGame game, ValentiBoard board, ChessPlayer whitePlayer,
       ChessPlayer blackPlayer) {
     this.pawnStructure = board.getPawnStructure();
@@ -62,7 +78,7 @@ public class GameIndex {
     this.blackPlayer = blackPlayer;
     this.whiteElo = whitePlayer.getRating();
     this.blackElo = blackPlayer.getRating();
+    this.maxElo = Math.max(whiteElo, blackElo);
+    this.totalElo = whiteElo + blackElo;
   }
-
-  long moveIndex;
 }

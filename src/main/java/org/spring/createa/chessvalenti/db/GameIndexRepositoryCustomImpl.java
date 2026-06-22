@@ -55,14 +55,14 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
 
   public List<GameIndex> findAllByPawnStructure(Board board) {
     System.out.println("hashed pawn");
-    System.out.println(chessHashHelper.hashPawnStructure(board));
+    System.out.println(ChessHashHelper.hashPawnStructure(board));
     return gameIndexRepository.findAllByPawnStructure(chessHashHelper.hashPawnStructure(board));
   }
 
   public List<GameIndex> findAllByPawnStructureAndPieceConfiguration(Board board, int wq, int wr,
       int wb, int wn, int bq, int br, int bb, int bn) {
-    long hashedPawnStructure = chessHashHelper.hashPawnStructure(board);
-    int hashedPieceConfiguration = chessHashHelper.hashPieceConfiguration(wq, wr, wb, wn, bq, br,
+    long hashedPawnStructure = ChessHashHelper.hashPawnStructure(board);
+    int hashedPieceConfiguration = ChessHashHelper.hashPieceConfiguration(wq, wr, wb, wn, bq, br,
         bb, bn);
     return gameIndexRepository.findAllByPawnStructureAndPieceConfiguration(hashedPawnStructure,
         hashedPieceConfiguration);
@@ -70,15 +70,15 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
 
   @Override
   public Page<GameIndex> findByPawnStructure(Board board, Pageable pageable) {
-    return gameIndexRepository.findAllByPawnStructure(chessHashHelper.hashPawnStructure(board),
+    return gameIndexRepository.findAllByPawnStructure(ChessHashHelper.hashPawnStructure(board),
         pageable);
   }
 
   @Override
   public Page<GameIndex> findByPawnStructureAndPieceConfiguration(Board board, int wq, int wr,
       int wb, int wn, int bq, int br, int bb, int bn, Pageable pageable) {
-    long hashedPawnStructure = chessHashHelper.hashPawnStructure(board);
-    int hashedPieceConfiguration = chessHashHelper.hashPieceConfiguration(wq, wr, wb, wn, bq, br,
+    long hashedPawnStructure = ChessHashHelper.hashPawnStructure(board);
+    int hashedPieceConfiguration = ChessHashHelper.hashPieceConfiguration(wq, wr, wb, wn, bq, br,
         bb, bn);
     return gameIndexRepository.findAllByPawnStructureAndPieceConfiguration(hashedPawnStructure,
         hashedPieceConfiguration, pageable);
@@ -126,7 +126,7 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
         "INTO TABLE game_index " +
         "FIELDS TERMINATED BY ',' " +
         "OPTIONALLY ENCLOSED BY '\"' " +
-        "(id, pawn_structure, piece_configuration, game_offset, move_index, " +
+        "(id,pawn_structure, piece_configuration, game_offset, move_index, " +
         "white_player_id, black_player_id, white_elo, black_elo, max_elo, total_elo)";
     jdbcTemplate.execute(sql);
   }

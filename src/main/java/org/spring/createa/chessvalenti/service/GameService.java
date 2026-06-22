@@ -9,6 +9,7 @@ import org.spring.createa.chessvalenti.db.GameIndexRepository;
 import org.spring.createa.chessvalenti.db.GameRepository;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.dto.game.GameInfo;
+import org.spring.createa.chessvalenti.util.ChessHashHelper;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -106,6 +107,7 @@ public class GameService {
     try {
       Board board = new Board();
       board.loadFromFen(fen);
+      log.info("hashed pawn structure: {}", ChessHashHelper.hashPawnStructure(board));
       return findGamesByPawnStructure(board, pageable);
     } catch (Exception ex) {
       log.error("Error loading board from FEN: {}", fen, ex);

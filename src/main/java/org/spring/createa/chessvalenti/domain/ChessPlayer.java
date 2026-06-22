@@ -36,4 +36,9 @@ public class ChessPlayer {
     this.rating = rating;
   }
 
+  @Override
+  public String toString() {
+    return id + ",\"" + name.replace("\"", "\"\"")
+        + "\"," + rating;
+  }
 }

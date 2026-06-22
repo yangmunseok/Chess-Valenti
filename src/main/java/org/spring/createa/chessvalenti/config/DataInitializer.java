@@ -135,6 +135,7 @@ public class DataInitializer implements CommandLineRunner {
         if (dataInitMode == DataInitMode.PGN_TO_CSV) {
           gameProcessor.writeGameIndexToCsv();
         }
+        gameProcessor.recordCurrentPawnStructure();
       }
     }
   }
@@ -145,6 +146,7 @@ public class DataInitializer implements CommandLineRunner {
 
     int cnt = 0;
     playerCache = new HashMap<>();
+    GameProcessor.resetProcessingState();
 
     //Ready for Export PGN to CSV
     if (mode == DataInitMode.PGN_TO_CSV) {
@@ -270,12 +272,5 @@ public class DataInitializer implements CommandLineRunner {
     return normalized;
   }
 
-  private Map<String, ChessPlayer> loadPlayerCache() {
-    Map<String, ChessPlayer> playerCache = new HashMap<>();
-    for (ChessPlayer chessPlayer : chessPlayerRepository.findAll()) {
-      playerCache.putIfAbsent(chessPlayer.getName(), chessPlayer);
-    }
-    return playerCache;
-  }
 
 }
