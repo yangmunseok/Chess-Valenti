@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom {
@@ -130,6 +131,24 @@ public class GameIndexRepositoryCustomImpl implements GameIndexRepositoryCustom 
     jdbcTemplate.execute(sql);
   }
 
+  @Override
+  @Transactional
+  public void insertAll(List<GameIndex> gameIndexList) {
+    if (gameIndexList.isEmpty()) {
+      return;
+    }
+    gameIndexRepository.saveAll(gameIndexList);
+    gameIndexRepository.flush();
+  }
+
+  @Override
+  public void truncateTable() {
+    if (isPostgreSQL()) {
+      jdbcTemplate.execute("TRUNCATE TABLE game_index RESTART IDENTITY");
+    } else {
+      jdbcTemplate.execute("TRUNCATE TABLE game_index");
+    }
+  }
 
   @Override
   public void finishBulkInsert() {

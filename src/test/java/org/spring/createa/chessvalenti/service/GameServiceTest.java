@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import com.github.bhlangonijr.chesslib.game.Game;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -68,7 +67,6 @@ public class GameServiceTest {
   }
 
   @Test
-  @Disabled
   void findGamesByPawnStructure_ShouldReturnFlux() {
     GameIndex index = new GameIndex();
     index.setGameOffset(100L);

@@ -28,8 +28,8 @@ public class InsightService {
 
   private final SimpMessagingTemplate simpMessagingTemplate;
   private final LichessService lichessService;
-  private final LichessApi lichessApi;
   private final ChessComService chessComService;
+  private final InsightGameProcessor insightGameProcessor;
   private final JobService jobService;
   private final InsightRepository insightRepository;
 
@@ -49,7 +49,7 @@ public class InsightService {
     Mono<Object> mono = Mono.create(sink -> {
       Disposable innerSubscription = loadInsightGames(request)
           .subscribe(game -> {
-            lichessService.loadGame(game, request.username(), result);
+            insightGameProcessor.loadGame(game, request.username(), result);
             int count = cnt.incrementAndGet();
             sendProgress(systemUsername, request.username(), count, "pending", "load", id, null);
           }, error -> {
@@ -66,7 +66,7 @@ public class InsightService {
             sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
             sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
 
-            lichessService.filterSimilarGame(result);
+            insightGameProcessor.filterSimilarGame(result);
             sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
             saveInsight(user, request, result);
             sink.success(result);
@@ -81,7 +81,7 @@ public class InsightService {
         sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
         sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
 
-        lichessService.filterSimilarGame(result);
+        insightGameProcessor.filterSimilarGame(result);
         sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
         saveInsight(user, request, result);
       });
@@ -101,21 +101,7 @@ public class InsightService {
     if ("chesscom".equals(platform(request))) {
       gameFlux = chessComService.loadGames(request.username(), request.perfType(), request.since());
     } else {
-      gameFlux = lichessApi.loadGames(request.username(), true, request.perfType(), request.since())
-          .map(response -> {
-            String whiteUsername = null;
-            String blackUsername = null;
-            if (response.players() != null) {
-              if (response.players().white() != null && response.players().white().user() != null) {
-                whiteUsername = response.players().white().user().name();
-              }
-              if (response.players().black() != null && response.players().black().user() != null) {
-                blackUsername = response.players().black().user().name();
-              }
-            }
-            return new InsightGame(response.winner(), response.pgn(), whiteUsername,
-                blackUsername, response.variant());
-          });
+      gameFlux = lichessService.loadGames(request.username(), request.perfType(), request.since());
     }
 
     return gameFlux.onErrorMap(WebClientResponseException.NotFound.class,

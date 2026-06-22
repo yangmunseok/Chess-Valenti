@@ -25,8 +25,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GameProcessor {
 
-  ChessPlayerRepository chessPlayerRepository;
-  GameIndexRepository gameIndexRepository;
+  private final ChessPlayerRepository chessPlayerRepository;
+  private final GameIndexRepository gameIndexRepository;
+  private final ChessBoardUtil chessBoardUtil;
 
   @Getter
   int moveIndex = 0;
@@ -35,7 +36,6 @@ public class GameProcessor {
   @Getter
   ValentiBoard board = new ValentiBoard();
   Set<Long> visited = new HashSet<>(128);
-  ChessBoardUtil chessBoardUtil;
   CustomGame game;
   ChessPlayer whitePlayer;
   ChessPlayer blackPlayer;
@@ -48,12 +48,14 @@ public class GameProcessor {
   private static final Map<String, ChessPlayer> playerCache = new HashMap<>();
   private static final Set<String> writtenPlayer = new HashSet<>();
 
-  public GameProcessor(ChessBoardUtil chessBoardUtil, CustomGame game, ChessPlayer whitePlayer,
+  public GameProcessor initialize(CustomGame game, ChessPlayer whitePlayer,
       ChessPlayer blackPlayer) {
-    this.chessBoardUtil = chessBoardUtil;
     this.game = game;
     this.whitePlayer = whitePlayer;
     this.blackPlayer = blackPlayer;
+    this.board = new ValentiBoard();
+    this.visited.clear();
+    return this;
   }
 
   public static void setPlayerWriter(PrintWriter playerWriter) {

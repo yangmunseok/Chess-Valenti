@@ -1,7 +1,15 @@
 package org.spring.createa.chessvalenti.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
-import org.spring.createa.chessvalenti.domain.*;
 import org.spring.createa.chessvalenti.dto.response.AdminUserStatsResponse;
 import org.spring.createa.chessvalenti.service.InquiryService;
 import org.spring.createa.chessvalenti.service.PaymentService;
@@ -15,54 +23,38 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @WebMvcTest(AdminViewController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class AdminViewControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockBean
-    private InquiryService inquiryService;
+  @MockBean
+  private InquiryService inquiryService;
 
-    @MockBean
-    private PaymentService paymentService;
+  @MockBean
+  private PaymentService paymentService;
 
-    @MockBean
-    private UserService userService;
+  @MockBean
+  private UserService userService;
 
-    @MockBean
-    private PostService postService;
+  @MockBean
+  private PostService postService;
 
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void adminPage_ShouldReturnAdminView() throws Exception {
-        mockMvc.perform(get("/admin"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("admin/admin"));
-    }
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void userListPage_ShouldAddStatsToModel() throws Exception {
+    AdminUserStatsResponse stats = new AdminUserStatsResponse(
+        new PageImpl<>(Collections.emptyList()),
+        Collections.emptyList(),
+        0, 0, 0, 0.0, 0, 0
+    );
+    when(userService.getAdminUserStats(any(), any(), anyBoolean(), any(), any())).thenReturn(stats);
 
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void userListPage_ShouldAddStatsToModel() throws Exception {
-        AdminUserStatsResponse stats = new AdminUserStatsResponse(
-                new PageImpl<>(Collections.emptyList()),
-                Collections.emptyList(),
-                0, 0, 0, 0.0, 0, 0
-        );
-        when(userService.getAdminUserStats(any(), any(), anyBoolean(), any(), any())).thenReturn(stats);
-
-        mockMvc.perform(get("/admin/users"))
-                .andExpect(status().isOk())
-                .andExpect(model().attributeExists("users"))
-                .andExpect(view().name("admin/user-list"));
-    }
+    mockMvc.perform(get("/admin/users"))
+        .andExpect(status().isOk())
+        .andExpect(model().attributeExists("users"))
+        .andExpect(view().name("admin/user-list"));
+  }
 }

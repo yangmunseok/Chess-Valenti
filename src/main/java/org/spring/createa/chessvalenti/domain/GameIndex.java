@@ -14,7 +14,7 @@ import org.spring.createa.chessvalenti.util.ValentiBoard;
 
 @Entity
 @Data
-@Table(indexes = @Index(name = "pawn_idx", columnList = "pawn_structure_idx"))
+@Table(indexes = @Index(name = "pawn_idx", columnList = "pawn_structure"))
 public class GameIndex {
 
   @Id

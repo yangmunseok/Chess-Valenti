@@ -2,7 +2,6 @@ package org.spring.createa.chessvalenti.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeastOnce;
@@ -18,7 +17,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
-import org.spring.createa.chessvalenti.dto.response.LichessGameResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import reactor.core.publisher.Flux;
 
@@ -32,10 +30,10 @@ public class InsightServiceTest {
   private LichessService lichessService;
 
   @Mock
-  private LichessApi lichessApi;
+  private ChessComService chessComService;
 
   @Mock
-  private ChessComService chessComService;
+  private InsightGameProcessor insightGameProcessor;
 
   @Mock
   private org.spring.createa.chessvalenti.db.InsightRepository insightRepository;
@@ -50,17 +48,18 @@ public class InsightServiceTest {
   void createInsight_ShouldProcessGamesAndSendProgress() {
     InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false,
         null);
-    LichessGameResponse response = new LichessGameResponse(null, null, null, null, null);
+    InsightGame game = new InsightGame("white", "[Event \"?\"]\n\n1. e4 e5 1-0", "user",
+        "opponent", "standard");
     org.spring.createa.chessvalenti.domain.User user = new org.spring.createa.chessvalenti.domain.User();
 
-    when(lichessApi.loadGames(eq("user"), eq(true), eq("blitz"), eq("123456789")))
-        .thenReturn(Flux.just(response));
+    when(lichessService.loadGames(eq("user"), eq("blitz"), eq("123456789")))
+        .thenReturn(Flux.just(game));
     when(insightRepository.findByUser(any())).thenReturn(java.util.Optional.empty());
 
     insightService.createInsight(request, user);
 
-    verify(lichessApi).loadGames(anyString(), anyBoolean(), anyString(), anyString());
-    verify(lichessService).loadGame(any(InsightGame.class), eq("user"), anyMap());
+    verify(lichessService).loadGames(eq("user"), eq("blitz"), eq("123456789"));
+    verify(insightGameProcessor).loadGame(any(InsightGame.class), eq("user"), anyMap());
     verify(simpMessagingTemplate, atLeastOnce()).convertAndSend(eq("/topic/insight"),
         any(Object.class));
     verify(jobService).work(any(), eq(0L));
@@ -70,11 +69,12 @@ public class InsightServiceTest {
   @Test
   void createInsight_WithCancel_ShouldDisposeJob() {
     InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false, 0L);
-    LichessGameResponse response = new LichessGameResponse(null, null, null, null, null);
+    InsightGame game = new InsightGame("white", "[Event \"?\"]\n\n1. e4 e5 1-0", "user",
+        "opponent", "standard");
     org.spring.createa.chessvalenti.domain.User user = new org.spring.createa.chessvalenti.domain.User();
 
-    when(lichessApi.loadGames(eq("user"), eq(true), eq("blitz"), eq("123456789")))
-        .thenReturn(Flux.just(response).delayElements(Duration.ofSeconds(5)));
+    when(lichessService.loadGames(eq("user"), eq("blitz"), eq("123456789")))
+        .thenReturn(Flux.just(game).delayElements(Duration.ofSeconds(5)));
     
     insightService.createInsight(request, user);
     
@@ -100,7 +100,7 @@ public class InsightServiceTest {
     insightService.createInsight(request, user);
 
     verify(chessComService).loadGames(eq("user"), eq("rapid"), eq("123456789"));
-    verify(lichessService).loadGame(eq(game), eq("user"), anyMap());
+    verify(insightGameProcessor).loadGame(eq(game), eq("user"), anyMap());
     verify(jobService).work(any(), eq(0L));
     verify(insightRepository).save(any());
   }

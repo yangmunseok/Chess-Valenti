@@ -13,12 +13,10 @@ import org.spring.createa.chessvalenti.db.ChessPlayerRepository;
 import org.spring.createa.chessvalenti.db.GameIndexRepository;
 import org.spring.createa.chessvalenti.db.UserRepository;
 import org.spring.createa.chessvalenti.domain.ChessPlayer;
-import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.spring.createa.chessvalenti.domain.Role;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.game.CustomGame;
 import org.spring.createa.chessvalenti.service.GameService;
-import org.spring.createa.chessvalenti.util.ChessBoardUtil;
 import org.spring.createa.chessvalenti.util.ChessHashHelper;
 import org.spring.createa.chessvalenti.util.GameProcessor;
 import org.spring.createa.chessvalenti.util.pgn.CustomPgnIterator;
@@ -42,9 +40,8 @@ public class DataInitializer implements CommandLineRunner {
   private final ChessPlayerRepository chessPlayerRepository;
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
-  private final ChessBoardUtil chessBoardUtil;
   private final GameService gameService;
-  ObjectProvider<GameProcessor> gameProcessorObjectProvider;
+  private final ObjectProvider<GameProcessor> gameProcessorObjectProvider;
 
   Map<String, ChessPlayer> playerCache;
 
@@ -111,8 +108,8 @@ public class DataInitializer implements CommandLineRunner {
     ChessPlayer whitePlayer = getOrCreatePlayer(game.getWhitePlayer());
     ChessPlayer blackPlayer = getOrCreatePlayer(game.getBlackPlayer());
 
-    GameProcessor gameProcessor = new GameProcessor(chessBoardUtil, game, whitePlayer,
-        blackPlayer);
+    GameProcessor gameProcessor = gameProcessorObjectProvider.getObject()
+        .initialize(game, whitePlayer, blackPlayer);
 
     if (dataInitMode == DataInitMode.PGN_TO_CSV) {
       gameProcessor.writeChessPlayerToCsv();
@@ -144,14 +141,13 @@ public class DataInitializer implements CommandLineRunner {
 
   private void processPgn(DataInitMode mode)
       throws Exception {
-    boolean toDb = mode == DataInitMode.PGN_TO_DB;
     String path = Path.of(pgnPath).toFile().getAbsolutePath();
 
     int cnt = 0;
-    playerCache = toDb ? loadPlayerCache() : new HashMap<>();
+    playerCache = new HashMap<>();
 
     //Ready for Export PGN to CSV
-    if (!toDb) {
+    if (mode == DataInitMode.PGN_TO_CSV) {
       Files.createDirectories(Path.of(csvDir));
       PrintWriter playerWriter = new PrintWriter(
           Files.newBufferedWriter(Path.of(csvDir, "players.csv")));
@@ -172,53 +168,17 @@ public class DataInitializer implements CommandLineRunner {
       saveGameIndexes(game, mode);
       cnt++;
     }
-    if (toDb) {
-      GameProcessor gameProcessor = new GameProcessor();
-      gameProcessor.saveAndFlushGameIndexes();
+    if (mode == DataInitMode.PGN_TO_DB) {
+      gameProcessorObjectProvider.getObject().saveAndFlushGameIndexes();
     }
     games.close();
 
-    if (toDb) {
+    if (mode == DataInitMode.PGN_TO_DB) {
       gameIndexRepository.finishBulkInsert();
     } else {
       GameProcessor.close();
     }
     log.info("Data processing completed. Total game indexes: {}", cnt);
-  }
-
-  //플레이어를 캐시해서 찾아보고 없으면 생성한뒤 파일에 넣는다.
-  private ChessPlayer getOrAssignPlayer(String name, Map<String, ChessPlayer> playerCache,
-      PrintWriter writer, long nextId) {
-    ChessPlayer player = playerCache.get(name);
-    if (player == null) {
-      player = new ChessPlayer(name);
-      player.setId(nextId);
-      playerCache.put(name, player);
-      writer.print(player.getId() + ",\"" + name.replace("\"", "\"\"") + "\"\n");
-    }
-    return player;
-  }
-
-  private void writeGameIndexToCsv(GameIndex gi, PrintWriter writer) {
-    // Column order: id, pawn_structure, piece_configuration, game_offset, move_index, 
-    // white_player_id, black_player_id, white_elo, black_elo, max_elo, total_elo
-    writer.print(
-        gi.getPawnStructure() + "," +
-            gi.getPieceConfiguration() + "," +
-            gi.getGameOffset() + "," +
-            gi.getMoveIndex() + "," +
-            gi.getWhitePlayer().getId() + "," +
-            gi.getBlackPlayer().getId() + "," +
-            gi.getWhiteElo() + "," +
-            gi.getBlackElo() + "," +
-            gi.getMaxElo() + "," +
-            gi.getTotalElo() + "\n");
-  }
-
-  private void writeChessPlayerToCsv(ChessPlayer player, PrintWriter writer) {
-    writer.print(
-        player.getId() + ",\"" + player.getName().replace("\"", "\"\"")
-            + ",\"" + player.getRating() + "\"\n");
   }
 
   private void importFromCsv() {
@@ -316,21 +276,6 @@ public class DataInitializer implements CommandLineRunner {
       playerCache.putIfAbsent(chessPlayer.getName(), chessPlayer);
     }
     return playerCache;
-  }
-
-  //플레이어를 캐시해서 찾아보고 없으면 생성한뒤 캐시에 넣는다.
-  private ChessPlayer savePlayer(Player player,
-      Map<String, ChessPlayer> playerCache) {
-    String name = player.getName();
-    String key = name;
-    ChessPlayer cached = playerCache.get(key);
-    if (cached != null) {
-      return cached;
-    }
-
-    ChessPlayer chessPlayer = new ChessPlayer(name);
-    playerCache.put(key, chessPlayer);
-    return chessPlayer;
   }
 
 }
