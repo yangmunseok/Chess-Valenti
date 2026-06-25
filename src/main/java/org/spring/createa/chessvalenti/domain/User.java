@@ -84,7 +84,6 @@ public class User {
         ", donation=" + donation +
         ", lastLogin=" + lastLogin +
         ", createdAt=" + createdAt +
-        ", payments=" + payments +
         '}';
   }
 }

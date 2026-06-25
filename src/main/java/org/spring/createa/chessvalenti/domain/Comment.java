@@ -10,13 +10,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Data
+@ToString(exclude = {"writer", "post", "parent", "children"})
 public class Comment {
 
   @Id
@@ -39,7 +43,7 @@ public class Comment {
   private Comment parent;
 
   @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-  private java.util.List<Comment> children = new java.util.ArrayList<>();
+  private List<Comment> children = new ArrayList<>();
 
   public Comment() {
   }

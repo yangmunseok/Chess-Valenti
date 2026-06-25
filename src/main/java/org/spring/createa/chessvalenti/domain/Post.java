@@ -33,6 +33,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
     @UniqueConstraint(name = "uk_post_title", columnNames = "title")
 })
 @Data
+@ToString(exclude = {"writer", "comments"})
 public abstract class Post {
 
   @Id
@@ -59,7 +60,6 @@ public abstract class Post {
   PostType type;
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-  @ToString.Exclude
   List<Comment> comments = new ArrayList<>();
 
   public String getPlainTextContent() {

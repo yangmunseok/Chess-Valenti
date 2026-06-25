@@ -10,10 +10,12 @@ import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"user"})
 public class PasswordResetToken {
 
   private static final int EXPIRATION = 60 * 24;

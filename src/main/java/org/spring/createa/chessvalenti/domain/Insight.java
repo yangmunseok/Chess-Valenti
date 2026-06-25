@@ -12,11 +12,13 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
 
 @Entity
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"user"})
 public class Insight {
 
   @Id
