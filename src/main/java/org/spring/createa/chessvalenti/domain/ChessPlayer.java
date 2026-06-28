@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 
@@ -21,6 +22,7 @@ public class ChessPlayer {
   @Column(unique = true)
   String name;
 
+  @Transient
   int rating;
 
   public ChessPlayer() {
