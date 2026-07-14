@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: chess-valenti
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 1000
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          connectiontimeout: 5000
+          writetimeout: 5000
+          starttls:
+            enable: true
+
+stockfish:
+  depth: 20
+  timeout-seconds: 8
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs

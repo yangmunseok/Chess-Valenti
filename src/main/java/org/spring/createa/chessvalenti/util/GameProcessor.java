@@ -39,7 +39,7 @@ public class GameProcessor {
   ChessPlayer whitePlayer;
   ChessPlayer blackPlayer;
   private static final Map<Long, Integer> pawnStructureCnt = new HashMap<>();
-  private final int maxGame = 20;
+  private final int maxGame = 50;
   private static final int BATCH_SIZE = 10000;
   private static final List<GameIndex> gameIndexList = new ArrayList<>(BATCH_SIZE);
   private static PrintWriter playerWriter;

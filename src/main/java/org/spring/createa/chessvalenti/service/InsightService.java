@@ -1,5 +1,8 @@
 package org.spring.createa.chessvalenti.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Map;
@@ -32,6 +35,10 @@ public class InsightService {
   private final InsightGameProcessor insightGameProcessor;
   private final JobService jobService;
   private final InsightRepository insightRepository;
+  private final Counter successCounter = Metrics.counter("function.count",
+      Tags.of("state", "success", "class", "insightService", "function", "createInsight"));
+  private final Counter failCounter = Metrics.counter("function.count",
+      Tags.of("state", "fail", "class", "insightService", "function", "createInsight"));
 
   public void createInsight(InsightRequestMessage request, User user) {
     if (Boolean.TRUE.equals(request.cancel())) {
@@ -59,6 +66,7 @@ public class InsightService {
               errorMessage = "존재하지 않는 사용자 아이디입니다.";
             }
             sendProgress(systemUsername, request.username(), 0, "error", errorMessage, id, null);
+            failCounter.increment();
             sink.error(error);
           }, () -> {
             int count = cnt.get();
@@ -69,6 +77,7 @@ public class InsightService {
             insightGameProcessor.filterSimilarGame(result);
             sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
             saveInsight(user, request, result);
+            successCounter.increment();
             sink.success(result);
           });
 
@@ -84,6 +93,7 @@ public class InsightService {
         insightGameProcessor.filterSimilarGame(result);
         sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
         saveInsight(user, request, result);
+        successCounter.increment();
       });
     });
 
@@ -119,7 +129,6 @@ public class InsightService {
     if (user == null) {
       return;
     }
-
     Insight insight = insightRepository.findByUser(user)
         .orElse(new Insight());
 

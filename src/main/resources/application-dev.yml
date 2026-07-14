@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  mail:
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+  batch:
+    jdbc:
+      initialize-schema: always
+chess:
+  pgn:
+    path: data/AJ-OTB-PGN-001.pgn
+  data-init:
+    mode: "OFF"
+    csv-dir: ./data/csv
+admin:
+  username: admin
+  password: 1234s
+  email: ${ROOT_EMAIL_ADRESS}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  observations:
+    annotations:
+      enabled: true
+logging:
+  level:
+    org:
+      springframework:
+        web: info
+        security: info
+toss:
+  payment:
+    secret-key: ${TOSS_API_KEY}
+render:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${RENDER_DB_URL}
+    username: ${RENDER_DB_USER}
+    password: ${RENDER_DB_PASSWORD}
+

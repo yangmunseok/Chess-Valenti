@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  web:
+    error:
+      include-message: never
+      include-binding-errors: never
+      include-stacktrace: never
+
+  mail:
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+
+logging:
+  level:
+    org.springframework.web: info
+    org.springframework.security: warn
+
+toss:
+  payment:
+    secret-key: ${TOSS_PAYMENT_SECRET_KEY}
+
+stockfish:
+  path: ${STOCKFISH_PATH:/app/data/stockfish}
+
+chess:
+  pgn:
+    path: ${CHESS_PGN_PATH:/app/data/AJ-OTB-PGN-001.pgn}
+  data-init:
+    mode: CSV_TO_DB
+    csv-dir: ${CHESS_CSV_PATH:/app/data/csv}
+
+admin:
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+  email: ${ADMIN_EMAIL}

@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -82,6 +81,7 @@ public class DataInitializer implements CommandLineRunner {
 
     initializeAdminUser();
     DataInitMode mode = DataInitMode.from(initMode);
+    log.info(String.valueOf(mode));
     if (mode == DataInitMode.OFF) {
       log.info("Data initialization is OFF.");
       return;
@@ -216,7 +216,6 @@ public class DataInitializer implements CommandLineRunner {
     log.info("Total CSV import completed in {} ms.", System.currentTimeMillis() - startTime);
   }
 
-  @Transactional
   protected void initializeAdminUser() {
     String username = normalizePropertyValue(adminUsername);
     String password = normalizePropertyValue(adminPassword);
