@@ -13,7 +13,7 @@ RUN mkdir -p /app/data \
     && test -n "$pgn_file" \
     && if [ "$pgn_file" != "/app/data/AJ-OTB-PGN-001.pgn" ]; then cp "$pgn_file" /app/data/AJ-OTB-PGN-001.pgn; fi \
     && curl -fL "https://drive.google.com/uc?export=download&id=1VdfyjAT-MDAC558Kh2JjiPPkS-X_lAWN" -o csv_data.7z \
-    && 7z x csv_data.7z -o/app/data -y \
+    && 7z x csv_data.7z -o/app/data -y
 
 
 FROM maven:3.9.15-eclipse-temurin-25 AS build
