@@ -4,7 +4,6 @@ let totalLoaded = 0;
 let totalFiltered = 0;
 let selectedPlatform = 'lichess';
 let jobId = 0;
-let systemUsername = '';
 
 const elements = {};
 
@@ -57,8 +56,8 @@ function onServerUpdate(message) {
     if (status === 'done') {
       elements.stepLoad.classList.remove('active');
       elements.stepFilter.classList.add('active');
-      if (message.data) {
-        totalFiltered = Object.keys(message.data).length;
+      if (message.structureCount != null) {
+        totalFiltered = message.structureCount;
         elements.filterCount.innerText = `${totalFiltered}`;
       }
     }
@@ -85,11 +84,9 @@ const stompClient = new StompJs.Client({
 });
 
 stompClient.onConnect = (frame) => {
-  stompClient.subscribe('/topic/insight', (res) => {
-    const message = JSON.parse(res.body);
-    if (message.systemUsername === systemUsername) {
-      onServerUpdate(message);
-    }
+  // 서버가 이 연결(세션)에게만 보내는 메시지라서 따로 거를 필요가 없음
+  stompClient.subscribe('/user/queue/insight', (res) => {
+    onServerUpdate(JSON.parse(res.body));
   });
 };
 
@@ -365,7 +362,6 @@ function renderResultPage(map) {
 
 export function initInsight(config) {
   initElements();
-  systemUsername = config.username || '';
 
   connect();
 

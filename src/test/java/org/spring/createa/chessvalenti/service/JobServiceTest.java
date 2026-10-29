@@ -134,6 +134,81 @@ class JobServiceTest {
     assertThat(observed.await(5, TimeUnit.SECONDS)).isTrue();
   }
 
+  private long submitCancellable(String owner, CountDownLatch cancelled) {
+    CountDownLatch started = new CountDownLatch(1);
+    long id = jobService.getAvailableId();
+    jobService.work(id, owner, handle -> {
+      started.countDown();
+      long deadline = System.currentTimeMillis() + 1_000;
+      while (!handle.isCancelled() && System.currentTimeMillis() < deadline) {
+        Thread.onSpinWait();
+      }
+      if (handle.isCancelled()) {
+        cancelled.countDown();
+      }
+    });
+    await(started);
+    return id;
+  }
+
+  @Test
+  void dispose_FromAnotherSession_ShouldBeIgnored() throws InterruptedException {
+    CountDownLatch cancelled = new CountDownLatch(1);
+    long id = submitCancellable("owner", cancelled);
+
+    jobService.dispose(id, "intruder");
+
+    assertThat(cancelled.await(1_500, TimeUnit.MILLISECONDS)).isFalse();
+  }
+
+  @Test
+  void disposeAllOf_ShouldCancelOnlyThatSessionsJobs() throws InterruptedException {
+    CountDownLatch mineCancelled = new CountDownLatch(2);
+    CountDownLatch otherCancelled = new CountDownLatch(1);
+    submitCancellable("me", mineCancelled);
+    submitCancellable("me", mineCancelled);
+    submitCancellable("other", otherCancelled);
+
+    jobService.disposeAllOf("me");
+
+    assertThat(mineCancelled.await(5, TimeUnit.SECONDS)).isTrue();
+    assertThat(otherCancelled.await(1_500, TimeUnit.MILLISECONDS)).isFalse();
+  }
+
+  @Test
+  void disposeAllOf_ShouldDiscardResult_ButDisposeShouldKeepIt() throws InterruptedException {
+    CountDownLatch started = new CountDownLatch(2);
+    CountDownLatch finished = new CountDownLatch(2);
+    AtomicBoolean cancelledDiscarded = new AtomicBoolean(true);
+    AtomicBoolean disconnectedDiscarded = new AtomicBoolean(false);
+
+    long cancelled = jobService.getAvailableId();
+    jobService.work(cancelled, "a", handle -> {
+      started.countDown();
+      while (!handle.isCancelled()) {
+        Thread.onSpinWait();
+      }
+      cancelledDiscarded.set(handle.isResultDiscarded());
+      finished.countDown();
+    });
+    jobService.work(jobService.getAvailableId(), "b", handle -> {
+      started.countDown();
+      while (!handle.isCancelled()) {
+        Thread.onSpinWait();
+      }
+      disconnectedDiscarded.set(handle.isResultDiscarded());
+      finished.countDown();
+    });
+    assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+
+    jobService.dispose(cancelled, "a");
+    jobService.disposeAllOf("b");
+
+    assertThat(finished.await(5, TimeUnit.SECONDS)).isTrue();
+    assertThat(cancelledDiscarded).isFalse();
+    assertThat(disconnectedDiscarded).isTrue();
+  }
+
   @Test
   void work_WhenTaskThrows_ShouldKeepRunningOtherJobs() throws InterruptedException {
     for (int i = 0; i < 5; i++) {

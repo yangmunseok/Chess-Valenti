@@ -40,7 +40,11 @@ public class JobService {
       Executors.newSingleThreadScheduledExecutor(namedThreadFactory("insight-watchdog-"));
 
   public void work(long id, Consumer<JobHandle> task) {
-    JobHandle handle = new JobHandle();
+    work(id, null, task);
+  }
+
+  public void work(long id, String owner, Consumer<JobHandle> task) {
+    JobHandle handle = new JobHandle(owner);
     if (jobs.putIfAbsent(id, handle) != null) {
       throw new RuntimeException("invalid job id");
     }
@@ -76,12 +80,36 @@ public class JobService {
   }
 
   public void dispose(long id) {
+    dispose(id, null);
+  }
+
+  public void dispose(long id, String requester) {
     JobHandle handle = jobs.get(id);
     if (handle == null) {
       return;
     }
+    if (requester != null && !handle.isOwnedBy(requester)) {
+      log.warn("Session {} tried to cancel job {} owned by another session", requester, id);
+      return;
+    }
+    cancel(id, handle, false);
+  }
 
-    handle.cancel();
+  // 연결이 끊긴 세션의 job은 결과를 받을 사람이 없으므로 모두 취소하고, 부분 결과도 저장하지 않음
+  public void disposeAllOf(String owner) {
+    jobs.forEach((id, handle) -> {
+      if (owner != null && owner.equals(handle.getOwner())) {
+        cancel(id, handle, true);
+      }
+    });
+  }
+
+  private void cancel(long id, JobHandle handle, boolean discardResult) {
+    if (discardResult) {
+      handle.cancelAndDiscard();
+    } else {
+      handle.cancel();
+    }
     // 아직 대기열에 있던 job은 실행되지 않으므로 여기서 정리
     Future<?> future = handle.getFuture();
     if (future != null && executor.remove((Runnable) future)) {
@@ -96,7 +124,8 @@ public class JobService {
 
   @PreDestroy
   void shutdown() {
-    jobs.values().forEach(JobHandle::cancel);
+    // 서버 종료 중에 부분 결과로 기존 분석을 덮어쓰지 않도록 버림
+    jobs.values().forEach(JobHandle::cancelAndDiscard);
     executor.shutdownNow();
     watchdog.shutdownNow();
   }

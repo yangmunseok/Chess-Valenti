@@ -1,5 +1,6 @@
 package org.spring.createa.chessvalenti.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -12,11 +13,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +30,9 @@ import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
 import org.spring.createa.chessvalenti.exception.UserNotFoundException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 @ExtendWith(MockitoExtension.class)
 public class InsightServiceTest {
@@ -52,6 +58,8 @@ public class InsightServiceTest {
   @InjectMocks
   private InsightService insightService;
 
+  private static final String SESSION = "session-1";
+
   private final JobHandle handle = new JobHandle();
   private final InsightGame game = new InsightGame("white", "[Event \"?\"]\n\n1. e4 e5 1-0",
       "user", "opponent", "standard");
@@ -61,10 +69,10 @@ public class InsightServiceTest {
   void setUp() {
     // 작업 스레드 대신 호출한 스레드에서 바로 실행해 결과를 동기적으로 검증
     lenient().doAnswer(invocation -> {
-      Consumer<JobHandle> task = invocation.getArgument(1);
+      Consumer<JobHandle> task = invocation.getArgument(2);
       task.accept(handle);
       return null;
-    }).when(jobService).work(anyLong(), any());
+    }).when(jobService).work(anyLong(), eq(SESSION), any());
   }
 
   @SuppressWarnings("unchecked")
@@ -88,12 +96,12 @@ public class InsightServiceTest {
     }).when(lichessService).loadGames(eq("user"), eq("blitz"), eq("123456789"), any(), any());
     when(insightRepository.findByUser(any())).thenReturn(Optional.empty());
 
-    insightService.createInsight(request, user);
+    insightService.createInsight(request, user, SESSION);
 
     verify(insightGameProcessor).loadGame(eq(game), eq("user"), anyMap());
     verify(insightGameProcessor).filterSimilarGame(anyMap());
-    verify(simpMessagingTemplate, atLeastOnce()).convertAndSend(eq("/topic/insight"),
-        any(Object.class));
+    verify(simpMessagingTemplate, atLeastOnce()).convertAndSendToUser(eq(SESSION),
+        eq("/queue/insight"), any(Object.class), anyMap());
     verify(insightRepository).save(any());
   }
 
@@ -103,10 +111,10 @@ public class InsightServiceTest {
         null);
     when(insightRepository.findByUser(any())).thenThrow(new IllegalStateException("db down"));
 
-    insightService.createInsight(request, user);
+    insightService.createInsight(request, user, SESSION);
 
-    verify(simpMessagingTemplate).convertAndSend(eq("/topic/insight"),
-        argThat((Object payload) -> isError(payload, "분석 중 오류")));
+    verify(simpMessagingTemplate).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
+        argThat((Object payload) -> isError(payload, "분석 중 오류")), anyMap());
   }
 
   @Test
@@ -117,10 +125,10 @@ public class InsightServiceTest {
       throw new UserNotFoundException("not found");
     }).when(lichessService).loadGames(eq("nobody"), any(), any(), any(), any());
 
-    insightService.createInsight(request, user);
+    insightService.createInsight(request, user, SESSION);
 
-    verify(simpMessagingTemplate).convertAndSend(eq("/topic/insight"),
-        argThat((Object payload) -> isError(payload, "존재하지 않는 사용자")));
+    verify(simpMessagingTemplate).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
+        argThat((Object payload) -> isError(payload, "존재하지 않는 사용자")), anyMap());
     verify(insightRepository, never()).save(any());
   }
 
@@ -136,13 +144,33 @@ public class InsightServiceTest {
     }).when(lichessService).loadGames(any(), any(), any(), any(), any());
     when(insightRepository.findByUser(any())).thenReturn(Optional.empty());
 
-    insightService.createInsight(request, user);
+    insightService.createInsight(request, user, SESSION);
 
     verify(insightGameProcessor).loadGame(eq(game), eq("user"), anyMap());
     verify(insightRepository).save(any());
-    verify(simpMessagingTemplate, never()).convertAndSend(eq("/topic/insight"),
+    verify(simpMessagingTemplate, never()).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
         argThat((Object payload) -> payload instanceof InsightProgressResponse response
-            && "error".equals(response.status())));
+            && "error".equals(response.status())), anyMap());
+  }
+
+  @Test
+  void createInsight_WhenDisconnectedWhileLoading_ShouldNotSaveOrSend() {
+    InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false,
+        null);
+    doAnswer(invocation -> {
+      emit(invocation.getArgument(4), game);
+      handle.cancelAndDiscard();
+      throw new IllegalStateException("stream closed");
+    }).when(lichessService).loadGames(any(), any(), any(), any(), any());
+
+    insightService.createInsight(request, user, SESSION);
+
+    verify(insightGameProcessor, never()).filterSimilarGame(anyMap());
+    verify(insightRepository, never()).save(any());
+    verify(simpMessagingTemplate, never()).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
+        argThat((Object payload) -> payload instanceof InsightProgressResponse response
+            && "done".equals(response.status()) && !"register".equals(response.goal())),
+        anyMap());
   }
 
   @Test
@@ -151,22 +179,22 @@ public class InsightServiceTest {
         null);
     doAnswer(invocation -> {
       throw new RuntimeException("현재 분석 요청이 많습니다.");
-    }).when(jobService).work(anyLong(), any());
+    }).when(jobService).work(anyLong(), eq(SESSION), any());
 
-    insightService.createInsight(request, user);
+    insightService.createInsight(request, user, SESSION);
 
-    verify(simpMessagingTemplate).convertAndSend(eq("/topic/insight"),
-        argThat((Object payload) -> isError(payload, "요청이 많습니다")));
+    verify(simpMessagingTemplate).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
+        argThat((Object payload) -> isError(payload, "요청이 많습니다")), anyMap());
   }
 
   @Test
   void createInsight_WithCancel_ShouldDisposeJob() {
     InsightRequestMessage cancel = new InsightRequestMessage("user", null, null, true, 7L);
 
-    insightService.createInsight(cancel, user);
+    insightService.createInsight(cancel, user, SESSION);
 
-    verify(jobService).dispose(7L);
-    verify(jobService, never()).work(anyLong(), any());
+    verify(jobService).dispose(7L, SESSION);
+    verify(jobService, never()).work(anyLong(), any(), any());
   }
 
   @Test
@@ -181,10 +209,52 @@ public class InsightServiceTest {
     }).when(chessComService).loadGames(eq("user"), eq("rapid"), eq("123456789"), any(), any());
     when(insightRepository.findByUser(any())).thenReturn(Optional.empty());
 
-    insightService.createInsight(request, user);
+    insightService.createInsight(request, user, SESSION);
 
     verify(insightGameProcessor).loadGame(eq(chessComGame), eq("user"), anyMap());
     verify(lichessService, never()).loadGames(any(), any(), any(), any(), any());
     verify(insightRepository).save(any());
+  }
+
+  @Test
+  void createInsight_ShouldThrottleProgressAndSendFullResultOnce() {
+    InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false,
+        null);
+    doAnswer(invocation -> {
+      for (int i = 0; i < 1000; i++) {
+        emit(invocation.getArgument(4), game);
+      }
+      return null;
+    }).when(lichessService).loadGames(any(), any(), any(), any(), any());
+    when(insightRepository.findByUser(any())).thenReturn(Optional.empty());
+
+    insightService.createInsight(request, user, SESSION);
+
+    ArgumentCaptor<Object> payloads = ArgumentCaptor.forClass(Object.class);
+    verify(simpMessagingTemplate, atLeastOnce()).convertAndSendToUser(eq(SESSION),
+        eq("/queue/insight"), payloads.capture(), anyMap());
+    List<InsightProgressResponse> responses = payloads.getAllValues().stream()
+        .map(InsightProgressResponse.class::cast)
+        .toList();
+
+    long loadProgress = responses.stream()
+        .filter(r -> "pending".equals(r.status()) && "load".equals(r.goal()))
+        .count();
+    assertThat(loadProgress).isLessThan(10);
+    assertThat(responses).filteredOn(r -> r.data() != null).hasSize(1)
+        .allMatch(r -> "filter".equals(r.goal()) && "done".equals(r.status()));
+    assertThat(responses).filteredOn(r -> "load".equals(r.goal()) && "done".equals(r.status()))
+        .singleElement().extracting(InsightProgressResponse::structureCount).isNotNull();
+    verify(simpMessagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+  }
+
+  @Test
+  void onDisconnect_ShouldCancelJobsOfThatSession() {
+    SessionDisconnectEvent event = new SessionDisconnectEvent(this,
+        MessageBuilder.withPayload(new byte[0]).build(), SESSION, CloseStatus.NORMAL);
+
+    insightService.onDisconnect(event);
+
+    verify(jobService).disposeAllOf(SESSION);
   }
 }

@@ -12,10 +12,30 @@ import java.util.concurrent.Future;
  */
 public class JobHandle {
 
+  // job을 요청한 STOMP 세션. 이 세션만 job을 취소할 수 있다.
+  private final String owner;
   private volatile boolean cancelled;
+  // true면 취소 후 부분 결과를 저장하지도 보내지도 않는다 (연결 끊김, 서버 종료)
+  private volatile boolean discardResult;
   private volatile Future<?> future;
   private Thread fetchThread;
   private Closeable stream;
+
+  public JobHandle() {
+    this(null);
+  }
+
+  public JobHandle(String owner) {
+    this.owner = owner;
+  }
+
+  String getOwner() {
+    return owner;
+  }
+
+  boolean isOwnedBy(String sessionId) {
+    return owner == null || owner.equals(sessionId);
+  }
 
   public boolean isCancelled() {
     return cancelled;
@@ -27,6 +47,15 @@ public class JobHandle {
 
   Future<?> getFuture() {
     return future;
+  }
+
+  public boolean isResultDiscarded() {
+    return discardResult;
+  }
+
+  public void cancelAndDiscard() {
+    discardResult = true;
+    cancel();
   }
 
   public synchronized void cancel() {

@@ -12,7 +12,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
-    registry.enableSimpleBroker("/topic");
+    // /queue: 특정 세션에게만 보내는 메시지 (클라이언트는 /user/queue/... 를 구독)
+    registry.enableSimpleBroker("/topic", "/queue");
     registry.setApplicationDestinationPrefixes("/app");
   }
 
