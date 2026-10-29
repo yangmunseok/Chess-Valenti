@@ -1,9 +1,13 @@
 package org.spring.createa.chessvalenti.service;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,8 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.response.LichessGameResponse;
-import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 public class LichessServiceTest {
@@ -36,20 +38,25 @@ public class LichessServiceTest {
     LichessGameResponse.LichessPlayerSide black = new LichessGameResponse.LichessPlayerSide(blackUser);
     LichessGameResponse.LichessPlayers players = new LichessGameResponse.LichessPlayers(white, black);
     LichessGameResponse gameResponse = new LichessGameResponse("white", "1. e4", "normal", players, "standard");
+    JobHandle handle = new JobHandle();
 
-    when(lichessApi.loadGames(anyString(), anyBoolean(), anyString(), anyString()))
-        .thenReturn(Flux.just(gameResponse));
+    doAnswer(invocation -> {
+      Consumer<LichessGameResponse> consumer = invocation.getArgument(4);
+      consumer.accept(gameResponse);
+      return null;
+    }).when(lichessApi).loadGames(eq("user"), eq("blitz"), eq("123456"), eq(handle), any());
 
     // When
-    Flux<InsightGame> result = lichessService.loadGames("user", "blitz", "123456");
+    List<InsightGame> result = new ArrayList<>();
+    lichessService.loadGames("user", "blitz", "123456", handle, result::add);
 
     // Then
-    StepVerifier.create(result)
-        .expectNextMatches(game -> "white".equals(game.winner())
-            && "1. e4".equals(game.pgn())
-            && "whiteName".equals(game.whiteUsername())
-            && "blackName".equals(game.blackUsername())
-            && "standard".equals(game.variant()))
-        .verifyComplete();
+    assertThat(result).singleElement().satisfies(game -> {
+      assertThat(game.winner()).isEqualTo("white");
+      assertThat(game.pgn()).isEqualTo("1. e4");
+      assertThat(game.whiteUsername()).isEqualTo("whiteName");
+      assertThat(game.blackUsername()).isEqualTo("blackName");
+      assertThat(game.variant()).isEqualTo("standard");
+    });
   }
 }

@@ -4,21 +4,20 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
+import org.spring.createa.chessvalenti.dto.response.ChessComArchivesResponse;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,8 @@ public class ChessComService {
 
   private final ChessComApi chessComApi;
 
-  public Flux<InsightGame> loadGames(String username, String perfType, String since) {
+  public void loadGames(String username, String perfType, String since, JobHandle handle,
+      Consumer<InsightGame> consumer) {
     String normalizedUsername = username.toLowerCase(Locale.ROOT);
     log.info("Loading Chess.com games for {}", normalizedUsername);
     long sinceMillis = parseSince(since);
@@ -41,15 +41,27 @@ public class ChessComService {
         .query(YearMonth::from);
     Set<String> requestedTimeClasses = parsePerfTypes(perfType);
 
-    return chessComApi.loadArchives(normalizedUsername)
-        .flatMapMany(response -> Flux.fromIterable(
-            response.archives() == null ? List.of() : response.archives()))
-        .map(this::toArchiveMonth)
-        .filter(archive -> !archive.yearMonth().isBefore(sinceMonth))
-        .concatMap(archive -> chessComApi.loadMonthlyPgn(normalizedUsername, archive.year(),
-            archive.month()))
-        .flatMapIterable(this::parsePgnGames)
-        .filter(game -> isSupportedGame(game, requestedTimeClasses, sinceMillis));
+    ChessComArchivesResponse archives = chessComApi.loadArchives(normalizedUsername);
+    if (archives == null || archives.archives() == null) {
+      return;
+    }
+
+    for (String archiveUrl : archives.archives()) {
+      if (handle.isCancelled()) {
+        return;
+      }
+      ArchiveMonth archive = toArchiveMonth(archiveUrl);
+      if (archive.yearMonth().isBefore(sinceMonth)) {
+        continue;
+      }
+      chessComApi.loadMonthlyPgn(normalizedUsername, archive.year(), archive.month(), handle,
+          pgn -> {
+            InsightGame game = toInsightGame(pgn);
+            if (isSupportedGame(game, requestedTimeClasses, sinceMillis)) {
+              consumer.accept(game);
+            }
+          });
+    }
   }
 
   private boolean isSupportedGame(InsightGame game, Set<String> requestedTimeClasses,
@@ -60,35 +72,10 @@ public class ChessComService {
         && getGameDateMillis(headers) >= sinceMillis;
   }
 
-  private List<InsightGame> parsePgnGames(String monthlyPgn) {
-    if (monthlyPgn == null || monthlyPgn.isBlank()) {
-      return List.of();
-    }
-
-    List<InsightGame> games = new ArrayList<>();
-    // [Event " 태그로 시작하는 지점을 찾아서 게임을 분리
-    String delimiter = "[Event \"";
-    int lastIdx = 0;
-    int currentIdx = monthlyPgn.indexOf(delimiter);
-
-    while (currentIdx != -1) {
-      int nextIdx = monthlyPgn.indexOf(delimiter, currentIdx + delimiter.length());
-      String pgn;
-      if (nextIdx != -1) {
-        pgn = monthlyPgn.substring(currentIdx, nextIdx).trim();
-      } else {
-        pgn = monthlyPgn.substring(currentIdx).trim();
-      }
-
-      if (!pgn.isEmpty()) {
-        Map<String, String> headers = parseHeaders(pgn);
-        games.add(new InsightGame(getWinner(headers), pgn, headers.get("White"), headers.get("Black"),
-            headers.getOrDefault("Variant", "Chess").toLowerCase(Locale.ROOT)));
-      }
-      currentIdx = nextIdx;
-    }
-
-    return games;
+  private InsightGame toInsightGame(String pgn) {
+    Map<String, String> headers = parseHeaders(pgn);
+    return new InsightGame(getWinner(headers), pgn, headers.get("White"), headers.get("Black"),
+        headers.getOrDefault("Variant", "Chess").toLowerCase(Locale.ROOT));
   }
 
   private Map<String, String> parseHeaders(String pgn) {

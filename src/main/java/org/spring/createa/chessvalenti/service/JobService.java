@@ -1,53 +1,112 @@
 package org.spring.createa.chessvalenti.service;
 
+import jakarta.annotation.PreDestroy;
+import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
 public class JobService {
 
-  private final Map<Long, Disposable> jobs = new ConcurrentHashMap<>();
-  private final AtomicLong cnt = new AtomicLong(0);
-  private final Semaphore semaphore = new Semaphore(3);
+  // 동시에 실행되는 분석 수. 나머지는 대기열에서 순서대로 기다린다.
+  private static final int MAX_RUNNING = 3;
+  private static final int MAX_WAITING = 50;
+  // 외부 API가 응답 없이 멈춰도 작업 스레드가 영원히 묶이지 않도록 하는 상한
+  private static final Duration JOB_TIMEOUT = Duration.ofMinutes(10);
 
-  public void work(Mono<Object> job, long id) {
-    if (jobs.containsKey(id)) {
+  private final Map<Long, JobHandle> jobs = new ConcurrentHashMap<>();
+  private final AtomicLong cnt = new AtomicLong(0);
+  private final ThreadPoolExecutor executor = new ThreadPoolExecutor(
+      MAX_RUNNING, MAX_RUNNING, 0L, TimeUnit.MILLISECONDS,
+      new ArrayBlockingQueue<>(MAX_WAITING),
+      namedThreadFactory("insight-"),
+      new ThreadPoolExecutor.AbortPolicy());
+  private final ScheduledExecutorService watchdog =
+      Executors.newSingleThreadScheduledExecutor(namedThreadFactory("insight-watchdog-"));
+
+  public void work(long id, Consumer<JobHandle> task) {
+    JobHandle handle = new JobHandle();
+    if (jobs.putIfAbsent(id, handle) != null) {
       throw new RuntimeException("invalid job id");
     }
 
-    if (!semaphore.tryAcquire()) {
-      throw new RuntimeException("현재 서버의 분석 자원이 부족합니다. 잠시 후 다시 시도해주세요.");
+    try {
+      handle.setFuture(executor.submit(() -> run(id, handle, task)));
+    } catch (RejectedExecutionException e) {
+      jobs.remove(id, handle);
+      log.warn("Job {} rejected (running: {}, waiting: {})", id, executor.getActiveCount(),
+          executor.getQueue().size());
+      throw new RuntimeException("현재 분석 요청이 많습니다. 잠시 후 다시 시도해주세요.");
     }
+    log.info("Job {} queued (running: {}, waiting: {})", id, executor.getActiveCount(),
+        executor.getQueue().size());
+  }
 
-    Disposable disposable = job
-        .doFinally(signalType -> {
-          semaphore.release();
-          jobs.remove(id);
-          log.info("Job {} finished with signal {}", id, signalType);
-        })
-        .subscribe(
-            result -> log.debug("Job {} completed successfully", id),
-            error -> log.error("Job {} failed", id, error)
-        );
+  private void run(long id, JobHandle handle, Consumer<JobHandle> task) {
+    log.info("Job {} started", id);
+    ScheduledFuture<?> timeout = watchdog.schedule(() -> {
+      log.warn("Job {} timed out after {}", id, JOB_TIMEOUT);
+      handle.cancel();
+    }, JOB_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
 
-    jobs.put(id, disposable);
+    try {
+      task.accept(handle);
+    } catch (RuntimeException e) {
+      log.error("Job {} failed", id, e);
+    } finally {
+      timeout.cancel(false);
+      jobs.remove(id, handle);
+      log.info("Job {} finished (cancelled: {})", id, handle.isCancelled());
+    }
   }
 
   public void dispose(long id) {
-    Disposable disposable = jobs.get(id);
-    if (disposable != null) {
-      disposable.dispose();
+    JobHandle handle = jobs.get(id);
+    if (handle == null) {
+      return;
+    }
+
+    handle.cancel();
+    // 아직 대기열에 있던 job은 실행되지 않으므로 여기서 정리
+    Future<?> future = handle.getFuture();
+    if (future != null && executor.remove((Runnable) future)) {
+      jobs.remove(id, handle);
+      log.info("Job {} removed from queue", id);
     }
   }
 
   public long getAvailableId() {
     return cnt.getAndIncrement();
+  }
+
+  @PreDestroy
+  void shutdown() {
+    jobs.values().forEach(JobHandle::cancel);
+    executor.shutdownNow();
+    watchdog.shutdownNow();
+  }
+
+  private static ThreadFactory namedThreadFactory(String prefix) {
+    AtomicInteger seq = new AtomicInteger(1);
+    return runnable -> {
+      Thread thread = new Thread(runnable, prefix + seq.getAndIncrement());
+      thread.setDaemon(true);
+      return thread;
+    };
   }
 }

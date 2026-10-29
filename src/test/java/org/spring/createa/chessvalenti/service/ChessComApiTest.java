@@ -1,9 +1,11 @@
 package org.spring.createa.chessvalenti.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -11,12 +13,10 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.spring.createa.chessvalenti.config.HttpConfig;
 import org.spring.createa.chessvalenti.dto.response.ChessComArchivesResponse;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.support.WebClientAdapter;
-import org.springframework.web.service.invoker.HttpServiceProxyFactory;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
+import org.spring.createa.chessvalenti.exception.UserNotFoundException;
+import org.springframework.web.client.RestClient;
 
 public class ChessComApiTest {
 
@@ -28,15 +28,12 @@ public class ChessComApiTest {
     mockWebServer = new MockWebServer();
     mockWebServer.start();
 
-    WebClient webClient = WebClient.builder()
+    RestClient restClient = RestClient.builder()
         .baseUrl(mockWebServer.url("/").toString())
+        .requestFactory(HttpConfig.requestFactory())
         .build();
 
-    HttpServiceProxyFactory factory = HttpServiceProxyFactory
-        .builderFor(WebClientAdapter.create(webClient))
-        .build();
-
-    chessComApi = factory.createClient(ChessComApi.class);
+    chessComApi = new ChessComApi(restClient);
   }
 
   @AfterEach
@@ -46,48 +43,45 @@ public class ChessComApiTest {
 
   @Test
   void loadArchives_shouldCallCorrectUriAndParseJson() throws InterruptedException {
-    // Given
     String jsonResponse = "{\"archives\":[\"https://api.chess.com/pub/player/testuser/games/2026/05\",\"https://api.chess.com/pub/player/testuser/games/2026/06\"]}";
     mockWebServer.enqueue(new MockResponse()
         .setHeader("Content-Type", "application/json")
         .setBody(jsonResponse));
 
-    // When
-    Mono<ChessComArchivesResponse> responseMono = chessComApi.loadArchives("testuser");
+    ChessComArchivesResponse response = chessComApi.loadArchives("testuser");
 
-    // Then
-    StepVerifier.create(responseMono)
-        .expectNextMatches(response -> {
-          List<String> list = response.archives();
-          return list != null && list.size() == 2
-              && list.get(0).endsWith("2026/05")
-              && list.get(1).endsWith("2026/06");
-        })
-        .verifyComplete();
+    assertThat(response.archives()).hasSize(2);
+    assertThat(response.archives().get(0)).endsWith("2026/05");
+    assertThat(response.archives().get(1)).endsWith("2026/06");
 
-    // Verify request
     RecordedRequest recordedRequest = mockWebServer.takeRequest();
     assertEquals("GET", recordedRequest.getMethod());
     assertEquals("/player/testuser/games/archives/", recordedRequest.getPath());
   }
 
   @Test
-  void loadMonthlyPgn_shouldCallCorrectUriAndReturnText() throws InterruptedException {
-    // Given
-    String pgnContent = "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n1. e4 e5 1-0\n";
+  void loadArchives_whenUserDoesNotExist_shouldThrowUserNotFound() {
+    mockWebServer.enqueue(new MockResponse().setResponseCode(404));
+
+    assertThatThrownBy(() -> chessComApi.loadArchives("nobody"))
+        .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  void loadMonthlyPgn_shouldSplitIntoGames() throws InterruptedException {
+    String pgnContent = "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n\n1. e4 e5 1-0\n\n"
+        + "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n\n1. d4 d5 0-1\n";
     mockWebServer.enqueue(new MockResponse()
         .setHeader("Content-Type", "text/plain")
         .setBody(pgnContent));
+    List<String> games = new ArrayList<>();
 
-    // When
-    Mono<String> responseMono = chessComApi.loadMonthlyPgn("testuser", "2026", "06");
+    chessComApi.loadMonthlyPgn("testuser", "2026", "06", new JobHandle(), games::add);
 
-    // Then
-    StepVerifier.create(responseMono)
-        .expectNext(pgnContent)
-        .verifyComplete();
+    assertThat(games).containsExactly(
+        "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n\n1. e4 e5 1-0",
+        "[Event \"Live Chess\"]\n[Site \"Chess.com\"]\n\n1. d4 d5 0-1");
 
-    // Verify request
     RecordedRequest recordedRequest = mockWebServer.takeRequest();
     assertEquals("GET", recordedRequest.getMethod());
     assertEquals("/player/testuser/games/2026/06/pgn", recordedRequest.getPath());

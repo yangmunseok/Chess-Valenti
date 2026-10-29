@@ -4,9 +4,11 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.InsightRepository;
@@ -19,10 +21,6 @@ import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
 import org.spring.createa.chessvalenti.exception.UserNotFoundException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
@@ -49,73 +47,79 @@ public class InsightService {
     }
 
     String systemUsername = (user != null) ? user.getUsername() : "Guest";
-    Map<String, GameResults> result = new java.util.concurrent.ConcurrentHashMap<>();
-    AtomicInteger cnt = new AtomicInteger();
     long id = jobService.getAvailableId();
 
-    Mono<Object> mono = Mono.create(sink -> {
-      Disposable innerSubscription = loadInsightGames(request)
-          .subscribe(game -> {
-            insightGameProcessor.loadGame(game, request.username(), result);
-            int count = cnt.incrementAndGet();
-            sendProgress(systemUsername, request.username(), count, "pending", "load", id, null);
-          }, error -> {
-            log.error("Error loading games from {}", platform(request), error);
-            String errorMessage = "분석 중 오류가 발생했습니다.";
-            if (error instanceof UserNotFoundException) {
-              errorMessage = "존재하지 않는 사용자 아이디입니다.";
-            }
-            sendProgress(systemUsername, request.username(), 0, "error", errorMessage, id, null);
-            failCounter.increment();
-            sink.error(error);
-          }, () -> {
-            int count = cnt.get();
-            log.info("Finished loading {} games for user {}", count, request.username());
-            sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
-            sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
-
-            insightGameProcessor.filterSimilarGame(result);
-            sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
-            saveInsight(user, request, result);
-            successCounter.increment();
-            sink.success(result);
-          });
-
-      sink.onCancel(() -> {
-        log.info("Analysis job {} cancelled for user {}. Stopping {} fetch.", id,
-            request.username(), platform(request));
-        innerSubscription.dispose();
-
-        int count = cnt.get();
-        sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
-        sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
-
-        insightGameProcessor.filterSimilarGame(result);
-        sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
-        saveInsight(user, request, result);
-        successCounter.increment();
-      });
-    });
-
     try {
-      jobService.work(mono, id);
+      jobService.work(id, handle -> analyze(request, user, systemUsername, id, handle));
       sendProgress(systemUsername, request.username(), 0, "done", "register", id, null);
     } catch (RuntimeException e) {
-      log.error("Failed to register analysis job", e);
+      log.warn("Failed to register analysis job {}: {}", id, e.getMessage());
       sendProgress(systemUsername, request.username(), 0, "error", e.getMessage(), id, null);
     }
   }
 
-  private Flux<InsightGame> loadInsightGames(InsightRequestMessage request) {
-    Flux<InsightGame> gameFlux;
-    if ("chesscom".equals(platform(request))) {
-      gameFlux = chessComService.loadGames(request.username(), request.perfType(), request.since());
-    } else {
-      gameFlux = lichessService.loadGames(request.username(), request.perfType(), request.since());
+  // insight-N 작업 스레드에서 실행된다. 게임을 한 판씩 받아 처리한 뒤 필터링하고 저장한다.
+  private void analyze(InsightRequestMessage request, User user, String systemUsername, long id,
+      JobHandle handle) {
+    Map<String, GameResults> result = new HashMap<>();
+    AtomicInteger cnt = new AtomicInteger();
+
+    handle.beginFetch();
+    try {
+      loadInsightGames(request, handle, game -> {
+        insightGameProcessor.loadGame(game, request.username(), result);
+        int count = cnt.incrementAndGet();
+        sendProgress(systemUsername, request.username(), count, "pending", "load", id, null);
+      });
+    } catch (RuntimeException e) {
+      // 취소로 스트림이 끊긴 경우는 에러가 아니라 지금까지의 결과로 마무리한다
+      if (!handle.isCancelled()) {
+        log.error("Error loading games from {}", platform(request), e);
+        String errorMessage = "분석 중 오류가 발생했습니다.";
+        if (e instanceof UserNotFoundException) {
+          errorMessage = "존재하지 않는 사용자 아이디입니다.";
+        }
+        sendProgress(systemUsername, request.username(), 0, "error", errorMessage, id, null);
+        failCounter.increment();
+        return;
+      }
+    } finally {
+      handle.endFetch();
     }
 
-    return gameFlux.onErrorMap(WebClientResponseException.NotFound.class,
-        e -> new UserNotFoundException("존재하지 않는 사용자입니다: " + request.username()));
+    int count = cnt.get();
+    if (handle.isCancelled()) {
+      log.info("Analysis job {} cancelled for user {}. Saving {} loaded games.", id,
+          request.username(), count);
+    } else {
+      log.info("Finished loading {} games for user {}", count, request.username());
+    }
+
+    try {
+      sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
+      sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
+
+      insightGameProcessor.filterSimilarGame(result);
+      sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
+      saveInsight(user, request, result);
+      successCounter.increment();
+    } catch (RuntimeException e) {
+      log.error("Failed to finish analysis job {}", id, e);
+      failCounter.increment();
+      sendProgress(systemUsername, request.username(), 0, "error", "분석 중 오류가 발생했습니다.", id,
+          null);
+    }
+  }
+
+  private void loadInsightGames(InsightRequestMessage request, JobHandle handle,
+      Consumer<InsightGame> consumer) {
+    if ("chesscom".equals(platform(request))) {
+      chessComService.loadGames(request.username(), request.perfType(), request.since(), handle,
+          consumer);
+    } else {
+      lichessService.loadGames(request.username(), request.perfType(), request.since(), handle,
+          consumer);
+    }
   }
 
   private String platform(InsightRequestMessage request) {
