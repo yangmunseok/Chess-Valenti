@@ -7,10 +7,10 @@ import java.util.concurrent.Future;
 /**
  * 분석 job 하나의 취소 상태를 관리한다.
  *
- * <p>외부 API를 읽는 구간(beginFetch ~ endFetch)에서만 스레드를 인터럽트하고 스트림을 닫는다.
+ * <p>외부 API를 읽는 구간({@link #fetch(Runnable)})에서만 스레드를 인터럽트하고 스트림을 닫는다.
  * 그 밖의 구간(필터링, DB 저장)은 취소되어도 끝까지 실행되어 부분 결과가 저장된다.
  */
-public class JobHandle {
+public class JobHandle implements CancellationToken {
 
   // job을 요청한 STOMP 세션. 이 세션만 job을 취소할 수 있다.
   private final String owner;
@@ -37,6 +37,7 @@ public class JobHandle {
     return owner == null || owner.equals(sessionId);
   }
 
+  @Override
   public boolean isCancelled() {
     return cancelled;
   }
@@ -66,21 +67,31 @@ public class JobHandle {
     }
   }
 
-  public synchronized void beginFetch() {
+  /**
+   * 외부 API를 읽는 작업을 실행한다. 실행 중에 취소되면 스트림을 닫고 스레드를 인터럽트한다.
+   * 끝나면 인터럽트 상태를 지워 이후의 DB 저장 같은 작업이 영향을 받지 않게 한다.
+   */
+  public void fetch(Runnable action) {
+    beginFetch();
+    try {
+      action.run();
+    } finally {
+      endFetch();
+    }
+  }
+
+  private synchronized void beginFetch() {
     fetchThread = Thread.currentThread();
   }
 
-  public synchronized void endFetch() {
+  private synchronized void endFetch() {
     fetchThread = null;
     stream = null;
-    // 읽기 구간에서 받은 인터럽트가 DB 저장 같은 이후 작업을 깨뜨리지 않도록 지움
     Thread.interrupted();
   }
 
-  /**
-   * 지금 읽고 있는 응답 스트림을 등록한다. 취소되면 이 스트림을 닫아 블로킹된 읽기를 깨운다.
-   */
-  public synchronized void attachStream(Closeable stream) {
+  @Override
+  public synchronized void onCancel(Closeable stream) {
     this.stream = stream;
     if (cancelled) {
       closeQuietly(stream);

@@ -104,14 +104,11 @@ public class LichessApiTest {
     });
 
     long start = System.nanoTime();
-    handle.beginFetch();
     canceller.start();
     try {
-      lichessApi.loadGames("user1", "blitz", "123456", handle, games::add);
+      handle.fetch(() -> lichessApi.loadGames("user1", "blitz", "123456", handle, games::add));
     } catch (RuntimeException expected) {
       // 스트림이 닫혀서 읽기가 예외로 끝나는 것이 정상
-    } finally {
-      handle.endFetch();
     }
     long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
 

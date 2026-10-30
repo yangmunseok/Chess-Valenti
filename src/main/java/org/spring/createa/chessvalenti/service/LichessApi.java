@@ -27,7 +27,7 @@ public class LichessApi {
   /**
    * 게임을 한 줄(ndjson)씩 읽어 consumer에 넘긴다. 메모리에는 항상 게임 한 판만 올라간다.
    */
-  public void loadGames(String username, String perfType, String since, JobHandle handle,
+  public void loadGames(String username, String perfType, String since, CancellationToken token,
       Consumer<LichessGameResponse> consumer) {
     restClient.get()
         .uri(builder -> builder.path("games/user/{username}")
@@ -45,11 +45,11 @@ public class LichessApi {
           }
 
           InputStream body = response.getBody();
-          handle.attachStream(body);
+          token.onCancel(body);
           BufferedReader reader = new BufferedReader(
               new InputStreamReader(body, StandardCharsets.UTF_8));
           String line;
-          while (!handle.isCancelled() && (line = reader.readLine()) != null) {
+          while (!token.isCancelled() && (line = reader.readLine()) != null) {
             if (!line.isBlank()) {
               consumer.accept(objectMapper.readValue(line, LichessGameResponse.class));
             }

@@ -29,7 +29,7 @@ public class ChessComService {
 
   private final ChessComApi chessComApi;
 
-  public void loadGames(String username, String perfType, String since, JobHandle handle,
+  public void loadGames(String username, String perfType, String since, CancellationToken token,
       Consumer<InsightGame> consumer) {
     String normalizedUsername = username.toLowerCase(Locale.ROOT);
     log.info("Loading Chess.com games for {}", normalizedUsername);
@@ -47,14 +47,14 @@ public class ChessComService {
     }
 
     for (String archiveUrl : archives.archives()) {
-      if (handle.isCancelled()) {
+      if (token.isCancelled()) {
         return;
       }
       ArchiveMonth archive = toArchiveMonth(archiveUrl);
       if (archive.yearMonth().isBefore(sinceMonth)) {
         continue;
       }
-      chessComApi.loadMonthlyPgn(normalizedUsername, archive.year(), archive.month(), handle,
+      chessComApi.loadMonthlyPgn(normalizedUsername, archive.year(), archive.month(), token,
           pgn -> {
             InsightGame game = toInsightGame(pgn);
             if (isSupportedGame(game, requestedTimeClasses, sinceMillis)) {

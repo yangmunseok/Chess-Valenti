@@ -13,10 +13,10 @@ public class LichessService {
 
   private final LichessApi lichessApi;
 
-  public void loadGames(String username, String perfType, String since, JobHandle handle,
+  public void loadGames(String username, String perfType, String since, CancellationToken token,
       Consumer<InsightGame> consumer) {
     log.info("Loading Lichess games for {}", username);
-    lichessApi.loadGames(username, perfType, since, handle, response -> {
+    lichessApi.loadGames(username, perfType, since, token, response -> {
       String whiteUsername = null;
       String blackUsername = null;
       if (response.players() != null) {

@@ -83,9 +83,8 @@ public class InsightService {
     AtomicInteger cnt = new AtomicInteger();
     AtomicLong lastSentAt = new AtomicLong(0);
 
-    handle.beginFetch();
     try {
-      loadInsightGames(request, handle, game -> {
+      handle.fetch(() -> loadInsightGames(request, handle, game -> {
         insightGameProcessor.loadGame(game, request.username(), result);
         int count = cnt.incrementAndGet();
         // 게임마다 보내면 메시지가 너무 많으므로 일정 간격으로만 보냄
@@ -94,7 +93,7 @@ public class InsightService {
           lastSentAt.set(now);
           sendProgress(progress, count, "pending", "load");
         }
-      });
+      }));
     } catch (RuntimeException e) {
       // 취소로 스트림이 끊긴 경우는 에러가 아니라 지금까지의 결과로 마무리한다
       if (!handle.isCancelled()) {
@@ -107,8 +106,6 @@ public class InsightService {
         failCounter.increment();
         return;
       }
-    } finally {
-      handle.endFetch();
     }
 
     int count = cnt.get();
@@ -149,13 +146,13 @@ public class InsightService {
     return top;
   }
 
-  private void loadInsightGames(InsightRequestMessage request, JobHandle handle,
+  private void loadInsightGames(InsightRequestMessage request, CancellationToken token,
       Consumer<InsightGame> consumer) {
     if ("chesscom".equals(platform(request))) {
-      chessComService.loadGames(request.username(), request.perfType(), request.since(), handle,
+      chessComService.loadGames(request.username(), request.perfType(), request.since(), token,
           consumer);
     } else {
-      lichessService.loadGames(request.username(), request.perfType(), request.since(), handle,
+      lichessService.loadGames(request.username(), request.perfType(), request.since(), token,
           consumer);
     }
   }

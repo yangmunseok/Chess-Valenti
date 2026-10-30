@@ -34,7 +34,7 @@ public class ChessComApi {
    * 한 달치 PGN을 줄 단위로 읽다가 게임 하나가 끝날 때마다 consumer에 넘긴다.
    * 한 달 전체를 문자열 하나로 들고 있지 않는다.
    */
-  public void loadMonthlyPgn(String username, String year, String month, JobHandle handle,
+  public void loadMonthlyPgn(String username, String year, String month, CancellationToken token,
       Consumer<String> consumer) {
     restClient.get()
         .uri("player/{username}/games/{year}/{month}/pgn", username, year, month)
@@ -44,18 +44,18 @@ public class ChessComApi {
           }
 
           InputStream body = response.getBody();
-          handle.attachStream(body);
+          token.onCancel(body);
           BufferedReader reader = new BufferedReader(
               new InputStreamReader(body, StandardCharsets.UTF_8));
           StringBuilder game = new StringBuilder();
           String line;
-          while (!handle.isCancelled() && (line = reader.readLine()) != null) {
+          while (!token.isCancelled() && (line = reader.readLine()) != null) {
             if (line.startsWith(GAME_START) && !game.isEmpty()) {
               emit(game, consumer);
             }
             game.append(line).append('\n');
           }
-          if (!handle.isCancelled()) {
+          if (!token.isCancelled()) {
             emit(game, consumer);
           }
           return null;
