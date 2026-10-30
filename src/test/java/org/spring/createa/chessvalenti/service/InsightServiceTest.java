@@ -34,6 +34,7 @@ import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.insight.PawnKey;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
+import org.spring.createa.chessvalenti.exception.RateLimitedException;
 import org.spring.createa.chessvalenti.exception.UserNotFoundException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.support.MessageBuilder;
@@ -135,6 +136,21 @@ public class InsightServiceTest {
 
     verify(simpMessagingTemplate).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
         argThat((Object payload) -> isError(payload, "존재하지 않는 사용자")), anyMap());
+    verify(insightRepository, never()).save(any());
+  }
+
+  @Test
+  void createInsight_WhenRateLimited_ShouldSendRateLimitError() {
+    InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false,
+        null);
+    doAnswer(invocation -> {
+      throw new RateLimitedException("Lichess 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.");
+    }).when(lichessService).loadGames(any(), any(), any(), any(), any());
+
+    insightService.createInsight(request, user, SESSION);
+
+    verify(simpMessagingTemplate).convertAndSendToUser(eq(SESSION), eq("/queue/insight"),
+        argThat((Object payload) -> isError(payload, "요청 한도")), anyMap());
     verify(insightRepository, never()).save(any());
   }
 

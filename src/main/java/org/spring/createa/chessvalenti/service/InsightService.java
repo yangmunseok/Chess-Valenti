@@ -21,6 +21,7 @@ import org.spring.createa.chessvalenti.dto.insight.InsightGame;
 import org.spring.createa.chessvalenti.dto.insight.PawnKey;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
+import org.spring.createa.chessvalenti.exception.RateLimitedException;
 import org.spring.createa.chessvalenti.exception.UserNotFoundException;
 import org.spring.createa.chessvalenti.util.InsightRanking;
 import org.springframework.context.event.EventListener;
@@ -99,11 +100,17 @@ public class InsightService {
       if (!handle.isCancelled()) {
         log.error("Error loading games from {}", platform(request), e);
         String errorMessage = "분석 중 오류가 발생했습니다.";
+        String outcome = "error";
         if (e instanceof UserNotFoundException) {
           errorMessage = "존재하지 않는 사용자 아이디입니다.";
+          outcome = "user_not_found";
+        } else if (e instanceof RateLimitedException) {
+          errorMessage = e.getMessage();
+          outcome = "rate_limited";
         }
         sendProgress(progress, 0, "error", errorMessage);
         failCounter.increment();
+        recordResult(outcome);
         return;
       }
     }
@@ -112,6 +119,7 @@ public class InsightService {
     if (handle.isResultDiscarded()) {
       log.info("Analysis job {} abandoned for user {}. Discarding {} loaded games.",
           progress.jobId(), request.username(), count);
+      recordResult("discarded");
       return;
     }
     if (handle.isCancelled()) {
@@ -133,9 +141,11 @@ public class InsightService {
           count, "done", "filter", progress.jobId(), top, result.size()));
       saveInsight(user, request, top);
       successCounter.increment();
+      recordResult(handle.isCancelled() ? "cancelled" : "success");
     } catch (RuntimeException e) {
       log.error("Failed to finish analysis job {}", progress.jobId(), e);
       failCounter.increment();
+      recordResult("error");
       sendProgress(progress, 0, "error", "분석 중 오류가 발생했습니다.");
     }
   }
@@ -183,6 +193,11 @@ public class InsightService {
     insight.setCreatedAt(LocalDateTime.now());
 
     insightRepository.save(insight);
+  }
+
+  // 분석 하나가 어떻게 끝났는지 기록한다 (success, cancelled, discarded, user_not_found, rate_limited, error)
+  private static void recordResult(String result) {
+    Metrics.counter("insight.job.result", "result", result).increment();
   }
 
   private void sendProgress(Progress progress, int loadedGame, String status, String goal) {

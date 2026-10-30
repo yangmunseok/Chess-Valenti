@@ -119,6 +119,24 @@ class JobServiceTest {
   }
 
   @Test
+  void metrics_ShouldRecordWaitAndDurationOfEveryJob() throws InterruptedException {
+    CountDownLatch done = new CountDownLatch(5);
+    for (int i = 0; i < 5; i++) {
+      jobService.work(jobService.getAvailableId(), handle -> done.countDown());
+    }
+    assertThat(done.await(5, TimeUnit.SECONDS)).isTrue();
+
+    // 기록은 task 가 끝난 뒤 finally 에서 하므로 잠깐 기다린다
+    long deadline = System.currentTimeMillis() + 2_000;
+    while (registry.get("insight.job.duration").timer().count() < 5
+        && System.currentTimeMillis() < deadline) {
+      Thread.sleep(10);
+    }
+    assertThat(registry.get("insight.job.wait").timer().count()).isEqualTo(5);
+    assertThat(registry.get("insight.job.duration").timer().count()).isEqualTo(5);
+  }
+
+  @Test
   void dispose_WhenJobIsWaiting_ShouldRemoveItFromQueue() throws InterruptedException {
     for (int i = 0; i < 3; i++) {
       submitBlocking(new CountDownLatch(1));

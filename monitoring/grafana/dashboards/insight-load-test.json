@@ -6,7 +6,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": true,
   "refresh": "5s",
   "time": {
@@ -116,7 +116,135 @@
       ]
     },
     {
-      "id": 3,
+      "type": "timeseries",
+      "title": "대기 시간",
+      "description": "분석 요청이 대기열에서 실행을 기다린 시간. job마다 기록하므로 수집 간격(5초)보다 짧게 끝난 job도 빠지지 않는다. max는 최근 약 2분 동안의 최댓값.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(insight_job_wait_seconds_bucket[1m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "insight_job_wait_seconds_max",
+          "legendFormat": "max"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "rate(insight_job_wait_seconds_sum[1m]) / rate(insight_job_wait_seconds_count[1m])",
+          "legendFormat": "avg"
+        }
+      ],
+      "id": 3
+    },
+    {
+      "type": "timeseries",
+      "title": "분석 시간",
+      "description": "분석이 시작돼서 끝날 때까지 걸린 시간. Lichess 차례를 기다린 시간과 429 후 쉰 시간도 포함된다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(insight_job_duration_seconds_bucket[1m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "insight_job_duration_seconds_max",
+          "legendFormat": "max"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "rate(insight_job_duration_seconds_sum[1m]) / rate(insight_job_duration_seconds_count[1m])",
+          "legendFormat": "avg"
+        }
+      ],
+      "id": 4
+    },
+    {
+      "id": 5,
       "type": "timeseries",
       "title": "힙 메모리",
       "description": "used: 지금 쓰는 힙(쓰레기 포함, 톱니 모양). live: GC 후에도 남은 데이터(톱니의 바닥, 실제 사용량). max: 힙 한도. live가 max에 가까워지면 OOM이 난다.",
@@ -126,7 +254,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 8,
+        "y": 16,
         "w": 12,
         "h": 8
       },
@@ -180,7 +308,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": 6,
       "type": "timeseries",
       "title": "할당 속도",
       "description": "초당 새로 만드는 객체 크기. 문자열 같은 임시 객체가 줄면 이 값이 내려간다.",
@@ -190,7 +318,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 8,
+        "y": 16,
         "w": 12,
         "h": 8
       },
@@ -226,7 +354,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 7,
       "type": "timeseries",
       "title": "GC 멈춤 시간",
       "description": "1초 동안 GC 때문에 멈춘 시간. 메모리가 빠듯하면 GC가 자주, 오래 돈다.",
@@ -236,7 +364,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 24,
         "w": 12,
         "h": 8
       },
@@ -272,17 +400,17 @@
       ]
     },
     {
-      "id": 6,
+      "id": 8,
       "type": "timeseries",
       "title": "분석 결과",
-      "description": "1분 동안 끝난 분석 수. fail은 외부 API 에러(429 등), 존재하지 않는 사용자, 저장 실패를 포함한다.",
+      "description": "1분 동안 끝난 분석 수를 결과별로 센다. success: 완료, cancelled: 사용자 취소·타임아웃(부분 저장), discarded: 연결 끊김, rate_limited: Lichess 429, user_not_found, error: 그 밖의 실패.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
-        "y": 16,
+        "y": 24,
         "w": 12,
         "h": 8
       },
@@ -312,13 +440,13 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "sum by (state) (increase(function_count_total{class=\"insightService\"}[1m]))",
-          "legendFormat": "{{state}}"
+          "expr": "sum by (result) (increase(insight_job_result_total[1m]))",
+          "legendFormat": "{{result}}"
         }
       ]
     },
     {
-      "id": 7,
+      "id": 9,
       "type": "timeseries",
       "title": "스레드",
       "description": "살아 있는 스레드 수. 분석이 몰려도 insight 스레드는 3개로 고정되어야 한다.",
@@ -328,7 +456,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 24,
+        "y": 32,
         "w": 12,
         "h": 8
       },
@@ -373,7 +501,7 @@
       ]
     },
     {
-      "id": 8,
+      "id": 10,
       "type": "timeseries",
       "title": "CPU",
       "description": "앱 프로세스와 시스템 전체의 CPU 사용률.",
@@ -383,7 +511,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 24,
+        "y": 32,
         "w": 12,
         "h": 8
       },

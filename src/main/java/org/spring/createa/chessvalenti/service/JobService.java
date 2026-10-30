@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
@@ -44,16 +45,29 @@ public class JobService {
   private final ScheduledExecutorService watchdog =
       Executors.newSingleThreadScheduledExecutor(namedThreadFactory("insight-watchdog-"));
   private final Counter rejectedCounter;
+  private final Timer waitTimer;
+  private final Timer durationTimer;
 
   public JobService() {
     this(Metrics.globalRegistry);
   }
 
-  // 실행 중(executor.active)·대기 중(executor.queued) job 수와 거절 수를 지표로 내보낸다
+  // 실행 중(executor.active)·대기 중(executor.queued) job 수와 거절 수를 지표로 내보낸다.
+  // 게이지는 수집하는 순간의 값만 보이므로, job마다 대기·실행 시간을 Timer로 빠짐없이 기록한다.
   JobService(MeterRegistry registry) {
     new ExecutorServiceMetrics(executor, "insight", Tags.empty()).bindTo(registry);
     rejectedCounter = Counter.builder("insight.jobs.rejected")
         .description("대기열이 꽉 차서 거절된 분석 요청 수")
+        .register(registry);
+    waitTimer = Timer.builder("insight.job.wait")
+        .description("분석 요청이 대기열에서 실행을 기다린 시간")
+        .publishPercentileHistogram()
+        .maximumExpectedValue(Duration.ofMinutes(30))
+        .register(registry);
+    durationTimer = Timer.builder("insight.job.duration")
+        .description("분석이 실행된 시간")
+        .publishPercentileHistogram()
+        .maximumExpectedValue(JOB_TIMEOUT.plusMinutes(1))
         .register(registry);
   }
 
@@ -67,8 +81,9 @@ public class JobService {
       throw new RuntimeException("invalid job id");
     }
 
+    long queuedAt = System.nanoTime();
     try {
-      handle.setFuture(executor.submit(() -> run(id, handle, task)));
+      handle.setFuture(executor.submit(() -> run(id, handle, task, queuedAt)));
     } catch (RejectedExecutionException e) {
       jobs.remove(id, handle);
       rejectedCounter.increment();
@@ -80,7 +95,9 @@ public class JobService {
         executor.getQueue().size());
   }
 
-  private void run(long id, JobHandle handle, Consumer<JobHandle> task) {
+  private void run(long id, JobHandle handle, Consumer<JobHandle> task, long queuedAt) {
+    long startedAt = System.nanoTime();
+    waitTimer.record(startedAt - queuedAt, TimeUnit.NANOSECONDS);
     log.info("Job {} started", id);
     ScheduledFuture<?> timeout = watchdog.schedule(() -> {
       log.warn("Job {} timed out after {}", id, JOB_TIMEOUT);
@@ -92,6 +109,7 @@ public class JobService {
     } catch (RuntimeException e) {
       log.error("Job {} failed", id, e);
     } finally {
+      durationTimer.record(System.nanoTime() - startedAt, TimeUnit.NANOSECONDS);
       timeout.cancel(false);
       jobs.remove(id, handle);
       log.info("Job {} finished (cancelled: {})", id, handle.isCancelled());
