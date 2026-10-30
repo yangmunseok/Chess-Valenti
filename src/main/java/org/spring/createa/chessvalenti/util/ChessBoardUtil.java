@@ -71,8 +71,11 @@ public class ChessBoardUtil {
   }
 
   public PawnStructureSummary summarizePawnStructure(Board board) {
-    long whitePawnBB = board.getBitboard(Piece.WHITE_PAWN);
-    long blackPawnBB = board.getBitboard(Piece.BLACK_PAWN);
+    return summarizePawnStructure(board.getBitboard(Piece.WHITE_PAWN),
+        board.getBitboard(Piece.BLACK_PAWN));
+  }
+
+  public PawnStructureSummary summarizePawnStructure(long whitePawnBB, long blackPawnBB) {
     int totalPawns = Long.bitCount(whitePawnBB) + Long.bitCount(blackPawnBB);
 
     whitePawnBB = excludeWingPawn(whitePawnBB);

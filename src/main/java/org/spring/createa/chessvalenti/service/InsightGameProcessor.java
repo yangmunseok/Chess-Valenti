@@ -17,9 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
+import org.spring.createa.chessvalenti.dto.insight.PawnKey;
 import org.spring.createa.chessvalenti.dto.insight.PawnStructureSummary;
 import org.spring.createa.chessvalenti.util.ChessBoardUtil;
-import org.spring.createa.chessvalenti.util.ChessHashHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,9 +35,8 @@ public class InsightGameProcessor {
   private static final Pattern MOVE_NUMBER_PATTERN = Pattern.compile("\\b\\d+\\.(\\.\\.)?");
 
   private final ChessBoardUtil chessBoardUtil;
-  private final ChessHashHelper chessHashHelper;
 
-  public void loadGame(InsightGame game, String user, Map<String, GameResults> result) {
+  public void loadGame(InsightGame game, String user, Map<PawnKey, GameResults> result) {
     if (!"standard".equals(game.variant()) && !"chess".equals(game.variant())) {
       log.debug("Skipping non-standard game variant: {}", game.variant());
       return;
@@ -93,7 +92,7 @@ public class InsightGameProcessor {
 
     Board board = new Board();
     int pawnMoveCnt = 0;
-    Set<Long> visitedPawnStructure = new HashSet<>();
+    Set<PawnKey> visitedPawnStructure = new HashSet<>();
 
     for (Move move : movelist) {
       Piece piece = board.getPiece(move.getFrom());
@@ -109,31 +108,28 @@ public class InsightGameProcessor {
         continue;
       }
 
-      long pawnStructure = chessHashHelper.hashPawnStructure(board);
-
-      if (visitedPawnStructure.contains(pawnStructure)) {
+      // 한 게임에서 같은 구조가 여러 번 나와도 한 번만 센다
+      PawnKey pawnStructure = PawnKey.of(board);
+      if (!visitedPawnStructure.add(pawnStructure)) {
         continue;
       }
 
-      visitedPawnStructure.add(pawnStructure);
-      String pawnOnlyFen = chessBoardUtil.pawnsOnlyFEN(board.getFen());
-      GameResults gameResults = result.computeIfAbsent(pawnOnlyFen, k -> new GameResults());
+      GameResults gameResults = result.computeIfAbsent(pawnStructure, k -> new GameResults());
       gameResults.addResult(playerColor, winner);
     }
   }
 
-  public void filterSimilarGame(Map<String, GameResults> map) {
-    List<String> keys = new ArrayList<>(map.keySet());
+  public void filterSimilarGame(Map<PawnKey, GameResults> map) {
+    List<PawnKey> keys = new ArrayList<>(map.keySet());
     List<PawnStructureSummary> summaries = new ArrayList<>(keys.size());
-    Set<String> removeKey = new HashSet<>();
+    Set<PawnKey> removeKey = new HashSet<>();
     List<Set<Integer>> groups = new ArrayList<>();
 
     for (int i = 0; i < keys.size(); i++) {
       boolean groupFound = false;
 
-      Board board = new Board();
-      board.loadFromFen(keys.get(i));
-      summaries.add(chessBoardUtil.summarizePawnStructure(board));
+      PawnKey key = keys.get(i);
+      summaries.add(chessBoardUtil.summarizePawnStructure(key.white(), key.black()));
 
       for (Set<Integer> group : groups) {
         for (int idx : group) {
@@ -160,7 +156,7 @@ public class InsightGameProcessor {
         int maxIdx = 0;
         int max = 0;
         for (int idx : group) {
-          String key = keys.get(idx);
+          PawnKey key = keys.get(idx);
           if (max < map.get(key).getTotal()) {
             max = map.get(key).getTotal();
             maxIdx = idx;
@@ -173,7 +169,7 @@ public class InsightGameProcessor {
       }
     }
 
-    for (String key : removeKey) {
+    for (PawnKey key : removeKey) {
       map.remove(key);
     }
   }

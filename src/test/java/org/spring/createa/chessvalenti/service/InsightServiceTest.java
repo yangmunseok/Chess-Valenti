@@ -1,6 +1,8 @@
 package org.spring.createa.chessvalenti.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.github.bhlangonijr.chesslib.Side;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -14,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +27,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.spring.createa.chessvalenti.db.InsightRepository;
+import org.spring.createa.chessvalenti.domain.Insight;
 import org.spring.createa.chessvalenti.domain.User;
+import org.spring.createa.chessvalenti.dto.game.GameResults;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
+import org.spring.createa.chessvalenti.dto.insight.PawnKey;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
 import org.spring.createa.chessvalenti.exception.UserNotFoundException;
@@ -246,6 +252,44 @@ public class InsightServiceTest {
     assertThat(responses).filteredOn(r -> "load".equals(r.goal()) && "done".equals(r.status()))
         .singleElement().extracting(InsightProgressResponse::structureCount).isNotNull();
     verify(simpMessagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+  }
+
+  @Test
+  void createInsight_ShouldSendAndSaveOnlyTopStructures() {
+    InsightRequestMessage request = new InsightRequestMessage("user", "blitz", "123456789", false,
+        null);
+    doAnswer(invocation -> {
+      emit(invocation.getArgument(4), game);
+      return null;
+    }).when(lichessService).loadGames(any(), any(), any(), any(), any());
+    // 한 게임에서 서로 다른 폰 구조 30개가 나온 것처럼 채움
+    doAnswer(invocation -> {
+      Map<PawnKey, GameResults> result = invocation.getArgument(2);
+      for (int i = 0; i < 30; i++) {
+        GameResults results = new GameResults();
+        results.addResult(Side.WHITE, "white");
+        result.put(new PawnKey(1L << (i + 8), 0L), results);
+      }
+      return null;
+    }).when(insightGameProcessor).loadGame(any(), any(), anyMap());
+    when(insightRepository.findByUser(any())).thenReturn(Optional.empty());
+
+    insightService.createInsight(request, user, SESSION);
+
+    ArgumentCaptor<Object> payloads = ArgumentCaptor.forClass(Object.class);
+    verify(simpMessagingTemplate, atLeastOnce()).convertAndSendToUser(eq(SESSION),
+        eq("/queue/insight"), payloads.capture(), anyMap());
+    InsightProgressResponse filterDone = payloads.getAllValues().stream()
+        .map(InsightProgressResponse.class::cast)
+        .filter(r -> "filter".equals(r.goal()) && "done".equals(r.status()))
+        .findFirst().orElseThrow();
+    assertThat(filterDone.structureCount()).isEqualTo(30);
+    assertThat(filterDone.data()).hasSizeLessThanOrEqualTo(16)
+        .allSatisfy((fen, results) -> assertThat(fen).endsWith(" w"));
+
+    ArgumentCaptor<Insight> saved = ArgumentCaptor.forClass(Insight.class);
+    verify(insightRepository).save(saved.capture());
+    assertThat(saved.getValue().getData()).hasSizeLessThanOrEqualTo(16);
   }
 
   @Test

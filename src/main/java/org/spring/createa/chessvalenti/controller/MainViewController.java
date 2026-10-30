@@ -9,6 +9,7 @@ import org.spring.createa.chessvalenti.domain.Post;
 import org.spring.createa.chessvalenti.domain.PostType;
 import org.spring.createa.chessvalenti.security.UserPrincipal;
 import org.spring.createa.chessvalenti.service.*;
+import org.spring.createa.chessvalenti.util.InsightRanking;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -124,7 +125,9 @@ public class MainViewController {
         model.addAttribute("url", "/insight");
         if (userPrincipal != null) {
             insightRepository.findByUser(userPrincipal.getUser()).ifPresent(insight -> {
-                model.addAttribute("savedInsightData", insight.getData());
+                // 예전에 전체 결과를 저장한 행도 화면에 나오는 구조만 넘긴다
+                model.addAttribute("savedInsightData", insight.getData() == null
+                        ? null : InsightRanking.selectTop(insight.getData()));
                 model.addAttribute("savedLichessUsername", insight.getLichessUsername());
                 model.addAttribute("savedPerfType", insight.getPerfType());
                 model.addAttribute("savedSince", insight.getSince());

@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,9 +18,11 @@ import org.spring.createa.chessvalenti.domain.Insight;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
+import org.spring.createa.chessvalenti.dto.insight.PawnKey;
 import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
 import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
 import org.spring.createa.chessvalenti.exception.UserNotFoundException;
+import org.spring.createa.chessvalenti.util.InsightRanking;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
@@ -76,7 +79,7 @@ public class InsightService {
   // insight-N 작업 스레드에서 실행된다. 게임을 한 판씩 받아 처리한 뒤 필터링하고 저장한다.
   private void analyze(InsightRequestMessage request, User user, Progress progress,
       JobHandle handle) {
-    Map<String, GameResults> result = new HashMap<>();
+    Map<PawnKey, GameResults> result = new HashMap<>();
     AtomicInteger cnt = new AtomicInteger();
     AtomicLong lastSentAt = new AtomicLong(0);
 
@@ -127,16 +130,23 @@ public class InsightService {
       sendProgress(progress, count, "pending", "filter");
 
       insightGameProcessor.filterSimilarGame(result);
-      // 결과 전체는 여기서 한 번만 보낸다
+      // 화면에 나오는 구조만 보내고 저장한다. structureCount 에는 필터링 후 전체 개수를 담는다.
+      Map<String, GameResults> top = selectTop(result);
       send(progress, new InsightProgressResponse(progress.systemUsername(), progress.username(),
-          count, "done", "filter", progress.jobId(), result, result.size()));
-      saveInsight(user, request, result);
+          count, "done", "filter", progress.jobId(), top, result.size()));
+      saveInsight(user, request, top);
       successCounter.increment();
     } catch (RuntimeException e) {
       log.error("Failed to finish analysis job {}", progress.jobId(), e);
       failCounter.increment();
       sendProgress(progress, 0, "error", "분석 중 오류가 발생했습니다.");
     }
+  }
+
+  private Map<String, GameResults> selectTop(Map<PawnKey, GameResults> result) {
+    Map<String, GameResults> top = new LinkedHashMap<>();
+    InsightRanking.selectTop(result).forEach((key, value) -> top.put(key.toFen(), value));
+    return top;
   }
 
   private void loadInsightGames(InsightRequestMessage request, JobHandle handle,

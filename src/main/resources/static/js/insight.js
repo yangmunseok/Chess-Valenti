@@ -67,8 +67,9 @@ function onServerUpdate(message) {
     elements.stepDone.classList.remove('active');
 
     if (status === 'done') {
-      if (message.data) {
-        totalFiltered = Object.keys(message.data).length;
+      // data 에는 화면에 보여 줄 구조만 오므로 개수는 structureCount 를 쓴다
+      if (message.structureCount != null) {
+        totalFiltered = message.structureCount;
         elements.filterCount.innerText = `${totalFiltered}`;
       }
       elements.stepFilter.classList.remove('active');

@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
 import org.spring.createa.chessvalenti.dto.insight.InsightGame;
+import org.spring.createa.chessvalenti.dto.insight.PawnKey;
 import org.spring.createa.chessvalenti.util.ChessBoardUtil;
-import org.spring.createa.chessvalenti.util.ChessHashHelper;
 
 @ExtendWith(MockitoExtension.class)
 public class InsightGameProcessorTest {
@@ -27,7 +27,7 @@ public class InsightGameProcessorTest {
 
   @BeforeEach
   void setUp() {
-    insightGameProcessor = new InsightGameProcessor(chessBoardUtil, new ChessHashHelper());
+    insightGameProcessor = new InsightGameProcessor(chessBoardUtil);
   }
 
   @Test
@@ -38,18 +38,21 @@ public class InsightGameProcessorTest {
     String pgn = "[Event \"?\"]\n[White \"testUser\"]\n[Black \"opponent\"]\n\n1. e4 e5 2. d4 d5 3. c4 c5 4. Nf3 Nc6 1-0";
     InsightGame game = new InsightGame("white", pgn, "testUser", "opponent", "standard");
 
-    Map<String, GameResults> result = new HashMap<>();
+    Map<PawnKey, GameResults> result = new HashMap<>();
 
     // Mocking utility methods to pass through some conditions in loadGame
     when(chessBoardUtil.isMaterialEven(any())).thenReturn(true);
     when(chessBoardUtil.countCenterPawns(any())).thenReturn(4);
-    when(chessBoardUtil.pawnsOnlyFEN(any())).thenReturn("pawnFEN");
 
     // When
     insightGameProcessor.loadGame(game, user, result);
 
     // Then
-    assertTrue(result.containsKey("pawnFEN"), "Result map should contain the pawn structure FEN");
-    assertEquals(1, result.get("pawnFEN").getWhite().getWhiteWon());
+    // 6번째 폰 이동(3...c5) 직후 구조부터 기록되고, 이후 4. Nf3 Nc6 은 폰 구조가 같아 한 번만 센다
+    assertEquals(1, result.size());
+    PawnKey key = result.keySet().iterator().next();
+    assertEquals("8/pp3ppp/8/2ppp3/2PPP3/8/PP3PPP/8 w", key.toFen());
+    assertTrue(result.containsKey(key));
+    assertEquals(1, result.get(key).getWhite().getWhiteWon());
   }
 }
