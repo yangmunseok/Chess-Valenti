@@ -2,6 +2,8 @@ import {initBoard, renderBoardFromFen} from "./board.js";
 import {InsightLoadError, loadChessComGames, loadLichessGames} from "./insightLoader.js";
 
 let selectedPlatform = 'lichess';
+// 로그인한 사용자만 결과를 서버에 저장한다
+let isLoggedIn = false;
 // 진행 중인 분석. 중단 버튼과 결과 처리에서 쓴다.
 let currentRun = null;
 
@@ -53,7 +55,7 @@ function setStep(step) {
   elements.stepDone.classList.toggle('active', step === 'done');
 }
 
-function showError(message) {
+function showModal(message) {
   const errorModal = document.getElementById('error-modal');
   if (errorModal) {
     document.getElementById('error-message').innerText = message;
@@ -61,8 +63,30 @@ function showError(message) {
   } else {
     alert(message);
   }
+}
+
+function showError(message) {
+  showModal(message);
   elements.progressSection.style.display = 'none';
   elements.insightFilters.style.display = 'block';
+}
+
+async function saveResult(request, top) {
+  const headers = {'Content-Type': 'application/json'};
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+  const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+  if (csrfHeader && csrfToken) {
+    headers[csrfHeader] = csrfToken;
+  }
+  const response = await fetch('/api/insight', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({...request, data: top}),
+  });
+  // 세션이 만료되면 로그인 안내 페이지로 리다이렉트되어 200 이 오므로 redirected 도 확인한다
+  if (!response.ok || response.redirected) {
+    throw new Error(`Failed to save insight: ${response.status}`);
+  }
 }
 
 /**
@@ -91,6 +115,12 @@ async function runAnalysis(request) {
       elements.filterCount.innerText = `${data.filteredCount}`;
       setStep('done');
       renderResultPage(data.top);
+      if (isLoggedIn) {
+        saveResult(request, data.top).catch(e => {
+          console.warn(e);
+          showModal("분석 결과를 저장하지 못했습니다. 다시 로그인한 뒤 분석해주세요.");
+        });
+      }
     } else if (data.type === 'error') {
       stop();
       showError("분석 중 오류가 발생했습니다.");
@@ -308,6 +338,7 @@ function renderResultPage(map) {
 
 export function initInsight(config) {
   initElements();
+  isLoggedIn = Boolean(config.isLoggedIn);
 
   const defaultStartDate = new Date();
   defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
