@@ -7,11 +7,15 @@ const RESOURCES = new URL('../resources/insight/', import.meta.url);
 
 // games.ndjson: Chess.com 공개 게임 300판 (Hikaru, 2024년 1월)
 // expected-*: 같은 게임을 기존 서버(Java) 분석에 넣어 만든 결과
+// Windows 에서 체크아웃하면 줄 끝이 CRLF 가 될 수 있다
+function readLines(name) {
+  return readFileSync(new URL(name, RESOURCES), 'utf-8')
+      .split(/\r?\n/)
+      .filter(line => line.trim() !== '');
+}
+
 function loadFixture() {
-  return readFileSync(new URL('games.ndjson', RESOURCES), 'utf-8')
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => JSON.parse(line));
+  return readLines('games.ndjson').map(line => JSON.parse(line));
 }
 
 function analyzeFixture() {
@@ -37,8 +41,7 @@ function game(moves, overrides = {}) {
 const OPEN_CENTER = '1. e4 e5 2. d4 d5 3. c4 c5 4. Nf3 Nc6 1-0';
 
 test('aggregated structures match the server implementation exactly', () => {
-  const expected = readFileSync(new URL('expected-aggregated.txt', RESOURCES), 'utf-8')
-      .split('\n').filter(line => line !== '');
+  const expected = readLines('expected-aggregated.txt');
 
   const actual = analyzeFixture().aggregated().map(([fen, r]) =>
       `${fen}|${r.white.whiteWon} ${r.white.blackWon} ${r.white.drawn} `
