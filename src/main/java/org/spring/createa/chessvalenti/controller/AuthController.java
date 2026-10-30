@@ -1,18 +1,12 @@
 package org.spring.createa.chessvalenti.controller;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.service.UserService;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +35,8 @@ public class AuthController {
   @PostMapping("/forgot-password")
   public String forgotPassword(@RequestParam("email") String email, HttpServletRequest request) {
     log.info("Password reset requested for email: {}", email);
-    String contextPath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+    String contextPath =
+        request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
     userService.sendPasswordResetEmail(email, contextPath);
     return "redirect:/login?resetRequested=true";
   }
@@ -57,7 +52,8 @@ public class AuthController {
   }
 
   @PostMapping("/reset-password")
-  public String resetPassword(@RequestParam("token") String token, @RequestParam("password") String password) {
+  public String resetPassword(@RequestParam("token") String token,
+      @RequestParam("password") String password) {
     String result = userService.validatePasswordResetToken(token);
     if (result != null) {
       return "redirect:/login?error=" + result;
@@ -73,10 +69,14 @@ public class AuthController {
   }
 
   @PostMapping("/signup")
-  public String signup(@ModelAttribute User user, HttpServletRequest request) {
+  public String signup(@ModelAttribute User user, HttpServletRequest request)
+      throws ServletException {
     log.info("User signup request: {}", user.getUsername());
+    // register 가 user 의 비밀번호를 암호화된 값으로 바꾸므로, 로그인에는 미리 꺼내 둔 평문을 쓴다
+    String password = user.getPassword();
     userService.register(user);
-    
+    request.login(user.getUsername(), password);
+    /*
     UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
     Authentication auth = new UsernamePasswordAuthenticationToken(
         userDetails,
@@ -93,7 +93,7 @@ public class AuthController {
         HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
         context
     );
-    
+    */
     log.info("User {} signed up and logged in automatically", user.getUsername());
     return "redirect:/";
   }
