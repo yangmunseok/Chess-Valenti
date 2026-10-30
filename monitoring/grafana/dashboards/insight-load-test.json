@@ -6,7 +6,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 3,
+  "version": 4,
   "editable": true,
   "refresh": "5s",
   "time": {
@@ -15,10 +15,9 @@
   },
   "panels": [
     {
-      "id": 1,
       "type": "timeseries",
-      "title": "분석 대기열",
-      "description": "running: 지금 분석 중인 job (최대 3). waiting: 대기열에서 기다리는 job (최대 50).",
+      "title": "인사이트 저장 요청",
+      "description": "1분 동안 POST /api/insight 요청 수를 응답 상태별로 센다. 분석은 브라우저에서 하므로 서버가 하는 일은 저장뿐이다.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -55,25 +54,16 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "executor_active_threads{name=\"insight\"}",
-          "legendFormat": "running"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "B",
-          "expr": "executor_queued_tasks{name=\"insight\"}",
-          "legendFormat": "waiting"
+          "expr": "sum by (status) (increase(http_server_requests_seconds_count{uri=\"/api/insight\"}[1m]))",
+          "legendFormat": "{{status}}"
         }
-      ]
+      ],
+      "id": 1
     },
     {
-      "id": 2,
       "type": "timeseries",
-      "title": "거절된 요청",
-      "description": "1분 동안 대기열이 꽉 차서 \"요청이 많습니다\"로 거절된 분석 요청 수.",
+      "title": "인사이트 저장 응답 시간",
+      "description": "POST /api/insight 의 평균과 최대 응답 시간.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -86,51 +76,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "increase(insight_jobs_rejected_total[1m])",
-          "legendFormat": "rejected"
-        }
-      ]
-    },
-    {
-      "type": "timeseries",
-      "title": "대기 시간",
-      "description": "분석 요청이 대기열에서 실행을 기다린 시간. job마다 기록하므로 수집 간격(5초)보다 짧게 끝난 job도 빠지지 않는다. max는 최근 약 2분 동안의 최댓값.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 8,
-        "w": 12,
-        "h": 8
-      },
-      "fieldConfig": {
-        "defaults": {
           "unit": "s",
           "custom": {
             "lineWidth": 2,
@@ -155,8 +100,8 @@
             "uid": "prometheus"
           },
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(insight_job_wait_seconds_bucket[1m])))",
-          "legendFormat": "p95"
+          "expr": "sum(rate(http_server_requests_seconds_sum{uri=\"/api/insight\"}[1m])) / sum(rate(http_server_requests_seconds_count{uri=\"/api/insight\"}[1m]))",
+          "legendFormat": "avg"
         },
         {
           "datasource": {
@@ -164,87 +109,14 @@
             "uid": "prometheus"
           },
           "refId": "B",
-          "expr": "insight_job_wait_seconds_max",
+          "expr": "max(http_server_requests_seconds_max{uri=\"/api/insight\"})",
           "legendFormat": "max"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "C",
-          "expr": "rate(insight_job_wait_seconds_sum[1m]) / rate(insight_job_wait_seconds_count[1m])",
-          "legendFormat": "avg"
         }
       ],
-      "id": 3
+      "id": 2
     },
     {
-      "type": "timeseries",
-      "title": "분석 시간",
-      "description": "분석이 시작돼서 끝날 때까지 걸린 시간. Lichess 차례를 기다린 시간과 429 후 쉰 시간도 포함된다.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 8,
-        "w": 12,
-        "h": 8
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(insight_job_duration_seconds_bucket[1m])))",
-          "legendFormat": "p95"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "B",
-          "expr": "insight_job_duration_seconds_max",
-          "legendFormat": "max"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "C",
-          "expr": "rate(insight_job_duration_seconds_sum[1m]) / rate(insight_job_duration_seconds_count[1m])",
-          "legendFormat": "avg"
-        }
-      ],
-      "id": 4
-    },
-    {
-      "id": 5,
+      "id": 3,
       "type": "timeseries",
       "title": "힙 메모리",
       "description": "used: 지금 쓰는 힙(쓰레기 포함, 톱니 모양). live: GC 후에도 남은 데이터(톱니의 바닥, 실제 사용량). max: 힙 한도. live가 max에 가까워지면 OOM이 난다.",
@@ -254,7 +126,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 8,
         "w": 12,
         "h": 8
       },
@@ -308,7 +180,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 4,
       "type": "timeseries",
       "title": "할당 속도",
       "description": "초당 새로 만드는 객체 크기. 문자열 같은 임시 객체가 줄면 이 값이 내려간다.",
@@ -318,7 +190,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 16,
+        "y": 8,
         "w": 12,
         "h": 8
       },
@@ -354,7 +226,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 5,
       "type": "timeseries",
       "title": "GC 멈춤 시간",
       "description": "1초 동안 GC 때문에 멈춘 시간. 메모리가 빠듯하면 GC가 자주, 오래 돈다.",
@@ -364,7 +236,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 24,
+        "y": 16,
         "w": 12,
         "h": 8
       },
@@ -400,53 +272,7 @@
       ]
     },
     {
-      "id": 8,
-      "type": "timeseries",
-      "title": "분석 결과",
-      "description": "1분 동안 끝난 분석 수를 결과별로 센다. success: 완료, cancelled: 사용자 취소·타임아웃(부분 저장), discarded: 연결 끊김, rate_limited: Lichess 429, user_not_found, error: 그 밖의 실패.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 24,
-        "w": 12,
-        "h": 8
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "refId": "A",
-          "expr": "sum by (result) (increase(insight_job_result_total[1m]))",
-          "legendFormat": "{{result}}"
-        }
-      ]
-    },
-    {
-      "id": 9,
+      "id": 6,
       "type": "timeseries",
       "title": "스레드",
       "description": "살아 있는 스레드 수. 분석이 몰려도 insight 스레드는 3개로 고정되어야 한다.",
@@ -455,8 +281,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 0,
-        "y": 32,
+        "x": 12,
+        "y": 16,
         "w": 12,
         "h": 8
       },
@@ -501,7 +327,7 @@
       ]
     },
     {
-      "id": 10,
+      "id": 7,
       "type": "timeseries",
       "title": "CPU",
       "description": "앱 프로세스와 시스템 전체의 CPU 사용률.",
@@ -510,8 +336,8 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 12,
-        "y": 32,
+        "x": 0,
+        "y": 24,
         "w": 12,
         "h": 8
       },

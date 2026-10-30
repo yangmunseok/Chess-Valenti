@@ -6,7 +6,8 @@ import {createInsightAnalysis, toFen} from '../../main/resources/static/js/insig
 const RESOURCES = new URL('../resources/insight/', import.meta.url);
 
 // games.ndjson: Chess.com 공개 게임 300판 (Hikaru, 2024년 1월)
-// expected-*: 같은 게임을 기존 서버(Java) 분석에 넣어 만든 결과
+// expected-*: 같은 게임을 이전 서버(Java) 분석 구현에 넣어 만든 결과. 옮긴 로직이 같은지 확인한다.
+
 // Windows 에서 체크아웃하면 줄 끝이 CRLF 가 될 수 있다
 function readLines(name) {
   return readFileSync(new URL(name, RESOURCES), 'utf-8')

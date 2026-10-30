@@ -7,10 +7,10 @@ import java.util.function.Predicate;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
 
 /**
- * 분석 결과 중 화면에 보여 줄 폰 구조만 고른다.
+ * 저장된 인사이트 중 화면에 보여 줄 폰 구조만 고른다.
  *
- * <p>insight.js 의 renderResultPage 가 보여 주는 세 목록과 같은 기준이다.
- * 나머지 구조는 화면에 나오지 않으므로 보내지도 저장하지도 않는다.
+ * <p>insight.js 의 renderResultPage 가 보여 주는 세 목록과 같은 기준이다(insightAnalysis.js 의 selectTop 과 같음).
+ * 지금은 브라우저가 상위 구조만 저장하지만, 예전에는 전체 결과를 저장했으므로 그런 행을 페이지에 넘길 때 자른다.
  */
 public final class InsightRanking {
 
