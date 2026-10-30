@@ -3,6 +3,7 @@ package org.spring.createa.chessvalenti.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -14,7 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class JobServiceTest {
 
-  private final JobService jobService = new JobService();
+  private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+  private final JobService jobService = new JobService(registry);
   private final CountDownLatch release = new CountDownLatch(1);
 
   @AfterEach
@@ -97,6 +99,23 @@ class JobServiceTest {
 
     assertThatThrownBy(() -> jobService.work(jobService.getAvailableId(), handle -> {
     })).isInstanceOf(RuntimeException.class).hasMessageContaining("요청이 많습니다");
+  }
+
+  @Test
+  void metrics_ShouldReportRunningWaitingAndRejectedJobs() throws InterruptedException {
+    CountDownLatch started = new CountDownLatch(3);
+    for (int i = 0; i < 3 + 50; i++) {
+      submitBlocking(started);
+    }
+    assertThatThrownBy(() -> jobService.work(jobService.getAvailableId(), handle -> {
+    }));
+    assertThat(started.await(5, TimeUnit.SECONDS)).isTrue();
+
+    assertThat(registry.get("executor.active").tag("name", "insight").gauge().value())
+        .isEqualTo(3);
+    assertThat(registry.get("executor.queued").tag("name", "insight").gauge().value())
+        .isEqualTo(50);
+    assertThat(registry.get("insight.jobs.rejected").counter().count()).isEqualTo(1);
   }
 
   @Test

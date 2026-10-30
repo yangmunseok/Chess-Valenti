@@ -1,5 +1,10 @@
 package org.spring.createa.chessvalenti.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.util.Map;
@@ -38,6 +43,19 @@ public class JobService {
       new ThreadPoolExecutor.AbortPolicy());
   private final ScheduledExecutorService watchdog =
       Executors.newSingleThreadScheduledExecutor(namedThreadFactory("insight-watchdog-"));
+  private final Counter rejectedCounter;
+
+  public JobService() {
+    this(Metrics.globalRegistry);
+  }
+
+  // 실행 중(executor.active)·대기 중(executor.queued) job 수와 거절 수를 지표로 내보낸다
+  JobService(MeterRegistry registry) {
+    new ExecutorServiceMetrics(executor, "insight", Tags.empty()).bindTo(registry);
+    rejectedCounter = Counter.builder("insight.jobs.rejected")
+        .description("대기열이 꽉 차서 거절된 분석 요청 수")
+        .register(registry);
+  }
 
   public void work(long id, Consumer<JobHandle> task) {
     work(id, null, task);
@@ -53,6 +71,7 @@ public class JobService {
       handle.setFuture(executor.submit(() -> run(id, handle, task)));
     } catch (RejectedExecutionException e) {
       jobs.remove(id, handle);
+      rejectedCounter.increment();
       log.warn("Job {} rejected (running: {}, waiting: {})", id, executor.getActiveCount(),
           executor.getQueue().size());
       throw new RuntimeException("현재 분석 요청이 많습니다. 잠시 후 다시 시도해주세요.");
