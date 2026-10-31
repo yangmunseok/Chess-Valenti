@@ -15,7 +15,7 @@
 
 .platform-toggle {
   display: flex;
-  background: #000;
+  background: var(--black);
   border-radius: 10px;
   padding: 4px;
 }
@@ -32,13 +32,13 @@
 }
 
 .tgl-btn.active {
-  background: #333;
-  color: #fff;
+  background: var(--gray-20);
+  color: var(--white);
 }
 
 #analyze-btn {
   background: var(--accent-blue);
-  color: #fff;
+  color: var(--white);
   border: none;
   padding: 0 24px;
   border-radius: 10px;
@@ -63,8 +63,8 @@
 }
 
 .re-search {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--white-a05);
+  border: 1px solid var(--white-a10);
   border-radius: 10px;
   color: var(--text-dim);
   padding: 8px 16px;
@@ -78,9 +78,9 @@
 }
 
 .re-search:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--white-a08);
   border-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: var(--white);
   transform: translateY(-2px);
 }
 
@@ -103,11 +103,11 @@
 }
 
 .highlight-green {
-  border-top: 4px solid #4ADE80;
+  border-top: 4px solid var(--green-400);
 }
 
 .highlight-red {
-  border-top: 4px solid #EF4444;
+  border-top: 4px solid var(--red-500);
 }
 
 .card-label {
@@ -143,7 +143,7 @@
 
 .structure-card {
   display: flex;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--white-a03);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 12px;
@@ -163,7 +163,7 @@
 
 .mini-board-wrapper:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px var(--black-a20);
 }
 
 /* 실제 보드가 그려질 div 스타일 */
@@ -196,8 +196,8 @@
 }
 
 .side-btn.active {
-  background: #333;
-  color: #fff;
+  background: var(--gray-20);
+  color: var(--white);
 }
 
 .win-rate-bar {
@@ -219,33 +219,33 @@
   transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   overflow: hidden;
-  color: #fff;
+  color: var(--white);
 }
 
 /* 색상 정의: 기존 테마와 어울리는 톤 */
 .bar.white {
   background-color: #eee;
-  color: #000;
+  color: var(--black);
 }
 
 .bar.draw {
-  background-color: #666;
-  color: #fff;
+  background-color: var(--gray-40);
+  color: var(--white);
 }
 
 .bar.black {
-  background-color: #333;
-  color: #fff;
+  background-color: var(--gray-20);
+  color: var(--white);
 }
 
 .bar.win {
-  background-color: #4ADE80; /* 승: 그린 */
+  background-color: var(--green-400); /* 승: 그린 */
   color: #064e3b; /* 가독성을 위해 어두운 글자색 */
 }
 
 .bar.loss {
   background-color: #334155; /* 패: 흑색 UI에 맞춘 짙은 네이비/블랙 */
-  color: #f1f5f9;
+  color: var(--slate-100);
 }
 
 .count-summary {
@@ -258,7 +258,7 @@
 
 /* 데이터가 없을 때의 바 스타일 */
 .win-rate-bar.no-data {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--white-a05);
   position: relative;
   display: flex;
   align-items: center;
@@ -277,8 +277,8 @@
       45deg,
       transparent,
       transparent 10px,
-      rgba(255, 255, 255, 0.02) 10px,
-      rgba(255, 255, 255, 0.02) 20px
+      var(--white-a02) 10px,
+      var(--white-a02) 20px
   );
 }
 
@@ -294,7 +294,7 @@
 .side-selector {
   display: flex;
   gap: 2px;
-  background: #000;
+  background: var(--black);
   padding: 3px;
   border-radius: 8px;
   width: fit-content;
@@ -302,7 +302,7 @@
 
 /* Total 버튼을 위한 약간의 구분감 (선택 사항) */
 .side-btn[data-side="total"] {
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid var(--white-a10);
   padding-right: 14px;
   margin-right: 4px;
 }
@@ -313,7 +313,7 @@
   backdrop-filter: blur(10px);
   padding: 30px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--white-a10);
   margin: 40px auto;
   max-width: 800px;
 }
@@ -321,8 +321,8 @@
 .type-selector .chip {
   display: inline-block;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--white-a05);
+  border: 1px solid var(--white-a10);
   border-radius: 30px;
   font-size: 13px;
   cursor: pointer;
@@ -336,10 +336,10 @@
 /* --- 공통 입력창 기본 스타일 --- */
 .stat-input,
 #username-input {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--white-a03);
+  border: 1px solid var(--white-a10);
   border-radius: 12px;
-  color: #fff;
+  color: var(--white);
   font-size: 15px;
   padding: 12px 16px;
   outline: none;
@@ -366,17 +366,17 @@
 /* Hover 상태: 테두리가 살짝 밝아짐 */
 .stat-input:hover,
 #username-input:hover {
-  border-color: rgba(187, 154, 247, 0.5);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--tn-purple-a50);
+  background: var(--white-a05);
 }
 
 /* Focus 상태: 메인 테마색인 보라색으로 빛남 */
 .stat-input:focus,
 #username-input:focus {
-  border-color: #bb9af7;
-  background: rgba(187, 154, 247, 0.1);
-  box-shadow: 0 0 15px rgba(187, 154, 247, 0.2),
-  inset 0 0 1px rgba(187, 154, 247, 0.5);
+  border-color: var(--tn-purple);
+  background: var(--tn-purple-a10);
+  box-shadow: 0 0 15px var(--tn-purple-a20),
+  inset 0 0 1px var(--tn-purple-a50);
   transform: translateY(-1px); /* 아주 미세하게 떠오르는 효과 */
 }
 
@@ -399,16 +399,16 @@
 }
 
 .stat-btn-primary {
-  background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+  background: linear-gradient(135deg, var(--tn-blue) 0%, var(--tn-purple) 100%);
   border: none;
   border-radius: 12px;
-  color: #fff;
+  color: var(--white);
   font-size: 15px;
   font-weight: 700;
   padding: 12px 24px; /* 상하 패딩을 입력창과 동일하게 12px로 맞춤 */
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 4px 15px rgba(187, 154, 247, 0.3); /* 그림자로 입체감 추가 */
+  box-shadow: 0 4px 15px var(--tn-purple-a30); /* 그림자로 입체감 추가 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -420,7 +420,7 @@
 /* Active: 실제로 눌리는 물리적 피드백 */
 .stat-btn-primary:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 10px rgba(187, 154, 247, 0.2);
+  box-shadow: 0 2px 10px var(--tn-purple-a20);
 }
 
 
@@ -440,7 +440,7 @@
 .hero-content h1 {
   font-size: 3rem;
   margin-bottom: 10px;
-  background: linear-gradient(to right, #fff, var(--accent-blue));
+  background: linear-gradient(to right, var(--white), var(--accent-blue));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -454,8 +454,8 @@
   background: var(--card-bg);
   padding: 30px;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--white-a05);
+  box-shadow: 0 20px 50px var(--black-a30);
 }
 
 .filter-row {
@@ -476,10 +476,10 @@
 
 /* 입력창 및 버튼 (높이 밸런스 핵심) */
 .stat-input, #username-input {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--black-a20);
+  border: 1px solid var(--white-a10);
   border-radius: 12px;
-  color: #fff;
+  color: var(--white);
   font-size: 15px;
   padding: 14px 16px; /* 통통한 볼륨감 */
   outline: none;
@@ -488,7 +488,7 @@
 
 .stat-input:focus, #username-input:focus {
   border-color: var(--accent-purple);
-  box-shadow: 0 0 15px rgba(187, 154, 247, 0.2);
+  box-shadow: 0 0 15px var(--tn-purple-a20);
 }
 
 .type-selector {
@@ -499,8 +499,8 @@
 
 .type-selector .chip {
   padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--white-a03);
+  border: 1px solid var(--white-a10);
   border-radius: 50px;
   font-size: 13px;
   cursor: pointer;
@@ -537,18 +537,18 @@
   background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
   border: none;
   border-radius: 12px;
-  color: #fff;
+  color: var(--white);
   font-size: 16px;
   font-weight: 800;
   padding: 0 30px;
   cursor: pointer;
   transition: 0.3s;
-  box-shadow: 0 4px 15px rgba(187, 154, 247, 0.3);
+  box-shadow: 0 4px 15px var(--tn-purple-a30);
 }
 
 .stat-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(187, 154, 247, 0.5);
+  box-shadow: 0 8px 25px var(--tn-purple-a50);
   filter: brightness(1.1);
 }
 
@@ -588,7 +588,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 30px rgba(187, 154, 247, 0.3);
+  box-shadow: 0 0 30px var(--tn-purple-a30);
   animation: pulse 2s infinite;
 }
 
@@ -618,7 +618,7 @@
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 10px;
-  color: #fff;
+  color: var(--white);
 }
 
 #friendly-sub {
@@ -637,12 +637,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--black-a20);
   border-radius: 20px;
   padding: 20px 40px;
   margin: 30px auto;
   max-width: 400px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--white-a05);
 }
 
 .stat-item {
@@ -661,7 +661,7 @@
 .stat-value {
   font-size: 28px;
   font-weight: 800;
-  color: #fff;
+  color: var(--white);
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -673,7 +673,7 @@
 .stat-divider {
   width: 1px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--white-a10);
   margin: 0 40px;
 }
 
@@ -691,7 +691,7 @@
 
 /* 중간 분석 버튼 스타일 */
 .btn-secondary-sm {
-  background: rgba(187, 154, 247, 0.1);
+  background: var(--tn-purple-a10);
   border: 1px solid var(--accent-purple);
   color: var(--accent-purple);
   padding: 12px 24px;
@@ -704,15 +704,15 @@
 
 .btn-secondary-sm:hover {
   background: var(--accent-purple);
-  color: #fff;
-  box-shadow: 0 0 20px rgba(187, 154, 247, 0.3);
+  color: var(--white);
+  box-shadow: 0 0 20px var(--tn-purple-a30);
 }
 
 .btn-ghost {
   margin-top: 40px;
   background: transparent;
   border: none;
-  color: #565f89;
+  color: var(--tn-comment);
   font-size: 14px;
   cursor: pointer;
   text-decoration: underline;
@@ -740,9 +740,9 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #161925;
+  background: var(--ink-900);
   border: 2px solid #363a4f;
-  color: #565f89;
+  color: var(--tn-comment);
   font-size: 12px;
   font-weight: 800;
   display: flex;
@@ -753,7 +753,7 @@
 
 .step-item span {
   font-size: 13px;
-  color: #565f89;
+  color: var(--tn-comment);
   transition: 0.4s;
 }
 
@@ -761,12 +761,12 @@
 .step-item.active .step-icon {
   background: var(--accent-purple);
   border-color: var(--accent-purple);
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 0 15px rgba(187, 154, 247, 0.4);
 }
 
 .step-item.active span {
-  color: #fff;
+  color: var(--white);
   font-weight: 600;
 }
 
@@ -789,7 +789,7 @@
 
 /* --- 버튼 디자인 보강 --- */
 .stat-btn-primary.secondary {
-  background: rgba(187, 154, 247, 0.1);
+  background: var(--tn-purple-a10);
   border: 2px solid var(--accent-purple);
   box-shadow: none;
   color: var(--accent-purple);
@@ -797,14 +797,14 @@
 
 .stat-btn-primary.secondary:hover {
   background: var(--accent-purple);
-  color: #fff;
-  box-shadow: 0 5px 15px rgba(187, 154, 247, 0.3);
+  color: var(--white);
+  box-shadow: 0 5px 15px var(--tn-purple-a30);
 }
 
 .footer-tip {
   margin-top: 20px;
   font-size: 13px;
-  color: #565f89;
+  color: var(--tn-comment);
 }
 
 /* --- [Responsive Design] --- */

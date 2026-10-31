@@ -1,30 +1,5 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 
-:root {
-  /* Linear Dark Blue Palette */
-  --bg-base: #0A0D14;
-  --bg-panel: #111520;
-  --bg-hover: #1A2133;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(255, 255, 255, 0.15);
-
-  /* Typography */
-  --text-primary: #F1F5F9;
-  --text-secondary: #8B94A5;
-
-  /* Accents */
-  --accent-blue: #3B82F6;
-  --accent-glow: rgba(59, 130, 246, 0.15);
-  --danger: #EF4444;
-  --danger-glow: rgba(239, 68, 68, 0.1);
-
-  /* 보드 색상을 조금 더 밝고 대비가 명확한 톤으로 교체 */
-  --square-light: #B8C0D1; /* 밝은 칸: 연한 블루그레이 */
-  --square-dark: #50658E; /* 어두운 칸: 차분한 미드나잇 블루 */
-
-  --text-dim: #9499b8;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -95,7 +70,7 @@ body {
   text-decoration: none;
   color: var(--text-primary);
   text-transform: uppercase;
-  background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+  background: linear-gradient(135deg, var(--white) 0%, #a5b4fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   transition: opacity 0.2s ease;
@@ -154,7 +129,7 @@ body {
   background: var(--bg-hover);
   color: var(--text-primary);
   transform: translateX(4px);
-  border-color: rgba(255, 255, 255, 0.03);
+  border-color: var(--white-a03);
 }
 
 .nav-item:hover svg {
@@ -364,7 +339,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px var(--black-a20);
 }
 
 .panel-header {
@@ -470,7 +445,7 @@ body {
 }
 
 .clickable-move:hover {
-  background: rgba(59, 130, 246, 0.15); /* Linear 스타일의 파란색 하이라이트 */
+  background: var(--blue-500-a15); /* Linear 스타일의 파란색 하이라이트 */
   color: var(--accent-blue);
 }
 
@@ -542,16 +517,16 @@ body {
   align-items: center;
   gap: 14px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--white-a02);
+  border: 1px solid var(--white-a04);
   border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .user-profile:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--white-a05);
+  border-color: var(--white-a08);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
@@ -564,9 +539,9 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: #fff;
+  color: var(--white);
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 10px var(--blue-500-a30);
 }
 
 .user-info {
@@ -619,9 +594,9 @@ body {
 }
 
 .logout-btn:hover {
-  color: #f87171;
+  color: var(--red-400);
   background: rgba(239, 68, 68, 0.15);
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 10px var(--red-500-a10);
 }
 
 /* CSS: 기존 테마와 통일성 유지 */
@@ -646,7 +621,7 @@ body {
   padding: 20px;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px var(--black-a50);
 }
 
 .promotion-options {
@@ -658,7 +633,7 @@ body {
 .promo-btn {
   width: 60px;
   height: 60px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--white-a05);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   cursor: pointer;
@@ -696,7 +671,7 @@ body {
     align-items: center;
     padding: 0 20px;
     height: 60px;
-    background: rgba(17, 21, 32, 0.8);
+    background: var(--navy-900-a80);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
@@ -715,7 +690,7 @@ body {
     align-items: center;
     gap: 10px;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+    background: linear-gradient(135deg, var(--white) 0%, #a5b4fc 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: 1px;
@@ -730,9 +705,9 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    color: #fff;
+    color: var(--white);
     font-size: 13px;
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 10px var(--blue-500-a30);
   }
 
   .mobile-nav {
@@ -740,7 +715,7 @@ body {
     justify-content: space-around;
     align-items: center;
     height: 70px;
-    background: rgba(17, 21, 32, 0.8);
+    background: var(--navy-900-a80);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid var(--border-color);
@@ -750,7 +725,7 @@ body {
     right: 0;
     z-index: 100;
     padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 -4px 20px var(--black-a30);
   }
 
   .mobile-nav-item {

@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column-reverse; /* Fill from bottom to top */
   border: 1px solid var(--border-color);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px var(--black-a30);
 }
 
 .eval-fill {
@@ -37,7 +37,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px var(--black-a20);
 }
 
 /* Engine Header */
@@ -47,7 +47,7 @@
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--white-a02);
 }
 
 .engine-info {
@@ -59,7 +59,7 @@
 }
 
 .engine-name {
-  color: #4ADE80; /* NNUE 등 활성화 표시용 녹색 */
+  color: var(--green-400); /* NNUE 등 활성화 표시용 녹색 */
   font-weight: 600;
 }
 
@@ -119,7 +119,7 @@
 }
 
 .highlight-good {
-  color: #4ADE80;
+  color: var(--green-400);
 }
 
 .highlight-inacc {
@@ -143,7 +143,7 @@
   background: var(--bg-panel);
   border: 1px solid var(--border-highlight);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px var(--black-a50);
   padding: 6px;
   display: none; /* 기본적으로 숨김 */
   min-width: 120px;
@@ -221,7 +221,7 @@
 }
 
 .sig-excellent {
-  color: #4ADE80 !important;
+  color: var(--green-400) !important;
 }
 
 .sig-mistake {
@@ -229,7 +229,7 @@
 }
 
 .sig-blunder {
-  color: #F87171 !important;
+  color: var(--red-400) !important;
   font-weight: 700;
 }
 
@@ -272,12 +272,12 @@
   transform: translate(-50%, -50%) !important;
 
   /* 점을 조금 더 진하게 표현 */
-  background-color: rgba(0, 0, 0, 0.3) !important;
+  background-color: var(--black-a30) !important;
 }
 
 /* 3. 배경색만 살짝 변경하여 클릭 가능하다는 피드백 제공 */
 .square.possible-move:hover {
-  background-color: rgba(59, 130, 246, 0.1) !important;
+  background-color: var(--blue-500-a10) !important;
   cursor: pointer;
 }
 
@@ -305,7 +305,7 @@
 /* 생략 기호 스타일 */
 .move-notation:empty::before {
   content: "...";
-  color: #666;
+  color: var(--gray-40);
 }
 
 /* 바리에이션을 담는 독립된 블록 */
@@ -341,10 +341,10 @@
   margin-top: 10px;
   font-weight: 800;
   font-size: 1.2em;
-  color: #fff;
+  color: var(--white);
   border-top: 1px solid #3d3d3d;
   letter-spacing: 2px;
-  background: rgba(255, 255, 255, 0.03); /* 미세한 배경 강조 */
+  background: var(--white-a03); /* 미세한 배경 강조 */
   border-radius: 0 0 4px 4px;
 }
 
@@ -369,10 +369,10 @@
 .menu-placeholder {
   grid-column: span 2;
   text-align: center;
-  color: #666;
+  color: var(--gray-40);
   font-size: 0.8em;
   padding: 20px;
-  border: 1px dashed #333;
+  border: 1px dashed var(--gray-20);
   border-radius: 6px;
   margin-top: 10px;
 }
@@ -384,7 +384,7 @@
   gap: 40px;
   margin-bottom: 20px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--gray-20);
 }
 
 .stats-item {
@@ -417,17 +417,17 @@
 
 .bar.white {
   background-color: #eee;
-  color: #000;
+  color: var(--black);
 }
 
 .bar.draw {
-  background-color: #666;
-  color: #fff;
+  background-color: var(--gray-40);
+  color: var(--white);
 }
 
 .bar.black {
-  background-color: #333;
-  color: #fff;
+  background-color: var(--gray-20);
+  color: var(--white);
 }
 
 /* 게임 테이블 */
@@ -441,7 +441,7 @@
   text-align: left;
   color: #888;
   padding: 10px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--gray-20);
 }
 
 .game-table td {
@@ -450,7 +450,7 @@
 }
 
 .game-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--white-a03);
 }
 
 /* 페이지네이션 */
@@ -463,9 +463,9 @@
 }
 
 .page-btn {
-  background: #333;
+  background: var(--gray-20);
   border: none;
-  color: #fff;
+  color: var(--white);
   padding: 5px 15px;
   border-radius: 4px;
   cursor: pointer;
@@ -499,7 +499,7 @@
 .analysis-footer {
   width: 100%;
   background-color: #1e1e1e;
-  border-top: 2px solid #333;
+  border-top: 2px solid var(--gray-20);
   padding: 20px;
   box-sizing: border-box;
   margin-top: 10px;
@@ -517,7 +517,7 @@
 /* 개별 메뉴 버튼 (카드 스타일) */
 .menu-item-btn {
   position: relative;
-  background: rgba(255, 255, 255, 0.03); /* 아주 투명한 배경 */
+  background: var(--white-a03); /* 아주 투명한 배경 */
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   padding: 20px 12px;
@@ -547,8 +547,8 @@
   border-color: var(--accent-blue);
   color: var(--text-primary);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3),
-  0 0 10px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 8px 20px var(--black-a30),
+  0 0 10px var(--blue-500-a10);
 }
 
 .menu-item-btn:hover .icon {
@@ -575,8 +575,8 @@
 
 /* 비활성화 버튼 (준비중 스타일) */
 .menu-item-btn.disabled {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: var(--black-a20);
+  border: 1px dashed var(--white-a10);
   opacity: 0.5;
   cursor: default;
 }
@@ -659,7 +659,7 @@
 }
 
 .action-btn.secondary {
-  background: #333;
+  background: var(--gray-20);
   color: #ccc;
 }
 
@@ -673,7 +673,7 @@
   flex-shrink: 0;
   padding: 16px;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--white-a02);
 }
 
 .back-to-menu {
@@ -755,7 +755,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--black-a30);
   padding: 2px 6px;
   border-radius: 12px;
 }
@@ -781,7 +781,7 @@
 
 /* 기물을 담는 아이템 박스 수정 */
 .filter-item {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--white-a03);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 12px 8px;
@@ -800,15 +800,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05); /* 기물 뒤에 밝은 원형 배경 */
+  background: var(--white-a05); /* 기물 뒤에 밝은 원형 배경 */
   border-radius: 50%;
   padding: 5px;
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 10px var(--white-a02);
 }
 
 /* 흑색 기물 그룹일 경우 배경을 조금 더 밝게 처리하여 대비 극대화 */
 .piece-group:nth-child(2) .piece-icon-wrapper {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--white-a10);
 }
 
 .filter-item img {
@@ -888,10 +888,10 @@
     font-size: 14px;
     font-weight: 800;
     z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 4px var(--black-a30);
     pointer-events: none;
     animation: symbol-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid #fff;
+    border: 2px solid var(--white);
     color: white;
 }
 
@@ -901,9 +901,9 @@
 }
 
 .symbol-brilliant { background-color: #22D3EE; }
-.symbol-excellent { background-color: #4ADE80; }
+.symbol-excellent { background-color: var(--green-400); }
 .symbol-mistake { background-color: #FB923C; }
-.symbol-blunder { background-color: #F87171; }
+.symbol-blunder { background-color: var(--red-400); }
 .symbol-inaccuracy { background-color: #60A5FA; }
 
 .clickable-move.selected-node {
@@ -986,7 +986,7 @@
 
 .explorer-table td {
   padding: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--white-a03);
 }
 
 .explorer-move-san {
@@ -1013,7 +1013,7 @@
   overflow: hidden;
 }
 
-.mini-result-bar .white { background-color: #f1f5f9; }
+.mini-result-bar .white { background-color: var(--slate-100); }
 .mini-result-bar .draw { background-color: #64748b; }
 .mini-result-bar .black { background-color: #1e293b; }
 
@@ -1034,7 +1034,7 @@
 
 .top-game-item {
   padding: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--white-a02);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 12px;
@@ -1055,7 +1055,7 @@
   font-size: 11px;
 }
 
-.winner-white { border-left: 3px solid #f1f5f9; }
+.winner-white { border-left: 3px solid var(--slate-100); }
 .winner-black { border-left: 3px solid #1e293b; }
 .winner-draw { border-left: 3px solid #64748b; }
 

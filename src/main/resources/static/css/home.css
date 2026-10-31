@@ -13,7 +13,7 @@
 
 .hero-label {
   font-size: 12px;
-  color: #3b82f6;
+  color: var(--blue-500);
   font-weight: 700;
   letter-spacing: 2px;
   margin-bottom: 12px;
@@ -27,17 +27,17 @@
 }
 
 .blue-text {
-  color: #3b82f6;
+  color: var(--blue-500);
 }
 
 .hero-desc {
-  color: #8b949e;
+  color: var(--github-muted);
   font-size: 16px;
   margin-bottom: 35px;
 }
 
 .action-banner {
-  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(90deg, var(--blue-500) 0%, #2563eb 100%);
   border-radius: 20px;
   padding: 40px 50px;
   display: flex;
@@ -56,7 +56,7 @@
   font-size: 24px;
   font-weight: 700;
   margin: 0;
-  color: #fff;
+  color: var(--white);
 }
 
 .action-text p {
@@ -67,7 +67,7 @@
 
 .action-arrow {
   font-size: 32px;
-  color: #fff;
+  color: var(--white);
 }
 
 /* --- [4] 표 형식 데이터 레이아웃 --- */
@@ -82,19 +82,19 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 15px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 2px solid var(--white-a05);
   margin-bottom: 10px;
 }
 
 .section-header h2 {
   font-size: 14px;
-  color: #3b82f6;
+  color: var(--blue-500);
   letter-spacing: 2px;
   font-weight: 800;
 }
 
 .btn-text {
-  color: #8b949e;
+  color: var(--github-muted);
   font-size: 12px;
   text-decoration: none;
 }
@@ -104,19 +104,19 @@
   display: flex;
   align-items: center;
   padding: 22px 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--white-a03);
   transition: background 0.2s ease;
   cursor: pointer;
 }
 
 .table-row:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--white-a02);
 }
 
 .col-meta {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  color: #4b5563;
+  color: var(--gray-600);
   width: 150px; /* 가로 확장 대응을 위해 살짝 늘림 */
   flex-shrink: 0;
 }
@@ -138,12 +138,12 @@
 }
 
 .table-row:hover .col-action {
-  color: #3b82f6;
+  color: var(--blue-500);
   transform: translateX(5px);
 }
 
 .table-row.important .col-main {
-  color: #f87171;
+  color: var(--red-400);
 }
 
 /* FAQ 아코디언 스타일 */
@@ -162,7 +162,7 @@
 
 /* FAQ 아이템 행 */
 .faq-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--white-a03);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -196,20 +196,20 @@
 
 .faq-item[open] .plus-icon {
   transform: rotate(45deg); /* + 가 x 로 변함 */
-  color: #3b82f6;
+  color: var(--blue-500);
 }
 
 .faq-item:hover .plus-icon {
-  color: #3b82f6;
+  color: var(--blue-500);
 }
 
 /* FAQ 답변 내용 창 */
 .faq-content {
   background: rgba(59, 130, 246, 0.02);
   font-size: 15px;
-  color: #8b949e;
+  color: var(--github-muted);
   line-height: 1.7;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--white-a03);
   padding: 0 15px 30px 165px;
   overflow: hidden;
   animation: slideDown 0.4s ease-out;
@@ -217,7 +217,7 @@
 
 .faq-content p {
   font-size: 15px;
-  color: #8b949e;
+  color: var(--github-muted);
   line-height: 1.8;
   margin: 0;
   max-width: 800px; /* 가로가 너무 길어지지 않게 조절 */

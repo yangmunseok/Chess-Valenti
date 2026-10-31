@@ -1,6 +1,6 @@
 /* --- 로딩 전용 고급 레이아웃 --- */
 .loading-layout {
-  background-color: #1a1b26; /* 다크 테마 */
+  background-color: var(--tn-bg); /* 다크 테마 */
   margin: 0;
   height: 100vh;
   width: 100%;
@@ -39,9 +39,9 @@
 
 /* 중앙 빛나는 칸 (Core) */
 .grid-square.active {
-  background: rgba(187, 154, 247, 0.2);
+  background: var(--tn-purple-a20);
   border: 1px solid rgba(187, 154, 247, 0.4);
-  box-shadow: 0 0 15px rgba(187, 154, 247, 0.3);
+  box-shadow: 0 0 15px var(--tn-purple-a30);
 }
 
 /* 칸들이 순차적으로 깜빡이는 애니메이션 */
@@ -76,8 +76,8 @@
   }
   50% {
     opacity: 1;
-    background: rgba(187, 154, 247, 0.3);
-    box-shadow: 0 0 10px rgba(187, 154, 247, 0.2);
+    background: var(--tn-purple-a30);
+    box-shadow: 0 0 10px var(--tn-purple-a20);
   }
 }
 
@@ -113,7 +113,7 @@
 
 /* --- 메시지 영역 --- */
 .loading-text-group h2 {
-  color: #fff;
+  color: var(--white);
   font-size: 20px;
   font-weight: 700;
   margin: 0 0 12px 0;
@@ -121,7 +121,7 @@
 }
 
 .loading-text-group p {
-  color: #565f89;
+  color: var(--tn-comment);
   font-size: 14px;
   margin: 0;
   max-width: 300px;

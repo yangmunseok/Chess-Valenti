@@ -1,28 +1,3 @@
-:root {
-  /* Linear Dark Blue Palette */
-  --bg-base: #0A0D14;
-  --bg-panel: #111520;
-  --bg-hover: #1A2133;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(255, 255, 255, 0.15);
-
-  /* Typography */
-  --text-primary: #F1F5F9;
-  --text-secondary: #8B94A5;
-
-  /* Accents */
-  --accent-blue: #3B82F6;
-  --accent-glow: rgba(59, 130, 246, 0.15);
-  --danger: #EF4444;
-  --danger-glow: rgba(239, 68, 68, 0.1);
-
-  /* 보드 색상을 조금 더 밝고 대비가 명확한 톤으로 교체 */
-  --square-light: #B8C0D1; /* 밝은 칸: 연한 블루그레이 */
-  --square-dark: #50658E; /* 어두운 칸: 차분한 미드나잇 블루 */
-
-  --text-dim: #9499b8;
-}
-
 .btn {
   border: none;
   display: flex;
@@ -83,14 +58,14 @@
 }
 
 .btn-outline.btn-glass {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--white-a03);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--white-a10);
   backdrop-filter: blur(10px);
 }
 
 .btn-outline.btn-glass:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--white-a08);
   border-color: rgba(255, 255, 255, 0.2);
 }
 

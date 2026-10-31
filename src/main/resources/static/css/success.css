@@ -15,7 +15,7 @@
   max-width: 500px;
   padding: 60px 40px;
   border-radius: 32px;
-  border: 1px solid rgba(187, 154, 247, 0.2);
+  border: 1px solid var(--tn-purple-a20);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   text-align: center;
   animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -89,7 +89,7 @@
 
 /* 요약 내역 보드 */
 .payment-summary {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--black-a20);
   border-radius: 20px;
   padding: 24px;
   margin: 35px 0;
@@ -108,7 +108,7 @@
 }
 
 .summary-item strong, .tier-tag {
-  color: #fff;
+  color: var(--white);
   font-weight: 700;
 }
 
@@ -125,7 +125,7 @@
 
 .btn-outline-sm {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--white-a10);
   color: var(--text-dim);
   padding: 12px;
   border-radius: 12px;
@@ -135,18 +135,18 @@
 
 .btn-outline-sm:hover {
   border-color: var(--text-dim);
-  color: #fff;
+  color: var(--white);
 }
 
 .share-section {
   margin-top: 40px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--white-a05);
 }
 
 .share-section span {
   font-size: 12px;
-  color: #565f89;
+  color: var(--tn-comment);
   display: block;
   margin-bottom: 15px;
 }
@@ -158,16 +158,16 @@
 }
 
 .stat-btn-primary {
-  background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+  background: linear-gradient(135deg, var(--tn-blue) 0%, var(--tn-purple) 100%);
   border: none;
   border-radius: 12px;
-  color: #fff;
+  color: var(--white);
   font-size: 15px;
   font-weight: 700;
   padding: 12px 24px; /* 상하 패딩을 입력창과 동일하게 12px로 맞춤 */
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 4px 15px rgba(187, 154, 247, 0.3); /* 그림자로 입체감 추가 */
+  box-shadow: 0 4px 15px var(--tn-purple-a30); /* 그림자로 입체감 추가 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,12 +177,12 @@
 /* Hover: 더 밝게 빛나며 위로 떠오름 */
 .stat-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(187, 154, 247, 0.5);
+  box-shadow: 0 8px 25px var(--tn-purple-a50);
   filter: brightness(1.1);
 }
 
 /* Active: 실제로 눌리는 물리적 피드백 */
 .stat-btn-primary:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 10px rgba(187, 154, 247, 0.2);
+  box-shadow: 0 2px 10px var(--tn-purple-a20);
 }
