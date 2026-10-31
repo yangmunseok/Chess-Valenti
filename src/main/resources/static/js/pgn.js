@@ -20,25 +20,33 @@ export function getPathToNodeSAN(targetNode) {
   return sanParts.join(' ');
 }
 
-// node 아래 트리 전체를 PGN 으로 만든다. 첫 번째 자식이 메인 라인이고 나머지는 괄호 안 변화수다.
+// node 아래 트리 전체를 PGN 으로 만든다. 첫 번째 자식이 메인 라인이고, 나머지 자식은 변화수로
+// 메인 수 바로 뒤에 괄호로 넣는다. 변화수나 주석 뒤에 이어지는 흑의 수에는 "2..." 처럼 번호를 다시 붙인다.
 export function generatePgn(node) {
-  if (node.ply === 0 && node.children.length === 0) {
-    return "";
-  }
-  let pgn = "";
-  node.children.forEach((child, index) => {
-    const moveNum = child.ply % 2 !== 0 ? Math.ceil(child.ply / 2) + ". " : "";
-    const commentPart = child.comment ? `{ ${child.comment} } ` : "";
+  return writeLine(node, false);
+}
 
-    if (index === 0) {
-      pgn += `${moveNum}${child.move}${child.symbol} ${commentPart}`;
-      pgn += generatePgn(child);
-    } else {
-      const varMoveNum = Math.ceil(child.ply / 2) + (child.ply % 2 === 0
-          ? "... " : ". ");
-      pgn += `(${varMoveNum}${child.move}${child.symbol} ${commentPart}${generatePgn(
-          child)}) `;
-    }
-  });
-  return pgn.trim();
+function writeLine(node, numberFirstMove) {
+  const parts = [];
+  let current = node;
+  let numberNext = numberFirstMove;
+  while (current.children.length > 0) {
+    const [main, ...variations] = current.children;
+    parts.push(moveText(main, numberNext));
+    variations.forEach(variation => {
+      const rest = writeLine(variation, Boolean(variation.comment));
+      parts.push(`(${moveText(variation, true)}${rest ? ' ' + rest : ''})`);
+    });
+    numberNext = variations.length > 0 || Boolean(main.comment);
+    current = main;
+  }
+  return parts.join(' ');
+}
+
+function moveText(node, withBlackNumber) {
+  const moveNumber = Math.ceil(node.ply / 2);
+  const isWhite = node.ply % 2 !== 0;
+  const prefix = isWhite ? `${moveNumber}. ` : (withBlackNumber ? `${moveNumber}... ` : '');
+  const comment = node.comment ? ` { ${node.comment} }` : '';
+  return `${prefix}${node.move}${node.symbol}${comment}`;
 }
