@@ -167,10 +167,6 @@
 }
 
 /* 실제 보드가 그려질 div 스타일 */
-.board {
-  width: 100%;
-  height: 100%;
-}
 
 .mini-board-wrapper .board {
   pointer-events: none;
@@ -708,15 +704,6 @@
   box-shadow: 0 0 20px var(--tn-purple-a30);
 }
 
-.btn-ghost {
-  margin-top: 40px;
-  background: transparent;
-  border: none;
-  color: var(--tn-comment);
-  font-size: 14px;
-  cursor: pointer;
-  text-decoration: underline;
-}
 
 /* --- 상단 스테퍼(Stepper) --- */
 .stepper-container {

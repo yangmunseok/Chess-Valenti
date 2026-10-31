@@ -1,13 +1,3 @@
-/* 관리자 페이지 전용 의미 토큰. 공통 토큰과 팔레트는 tokens.css 에 있다.
-   (다른 페이지의 CSS 도 이 변수를 쓰는 곳이 있지만, 그 페이지에서는 정의되지 않아 무시된다) */
-:root {
-  --admin-bg: var(--ink-950);
-  --sidebar-bg: var(--ink-900);
-  --card-bg: var(--ink-800);
-  --accent-purple: var(--tn-blue); /* 이름과 달리 파란색. 관리자 페이지 강조색 */
-  --warning-red: var(--tn-red);
-}
-
 .admin-body {
   display: flex;
   background: var(--admin-bg);
@@ -428,14 +418,6 @@
   background: rgba(247, 118, 142, 0.05);
 }
 
-.btn-sm {
-  background: var(--accent-purple);
-  border: none;
-  color: var(--white);
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
 
 /* Header Tools Layout */
 

@@ -84,18 +84,8 @@
   background: var(--bg-hover);
 }
 
-.nav-btn-text {
-  color: var(--text-secondary);
-  font-size: 14px;
-  transition: color 0.2s;
-}
 
 /* CTA 버튼 공통 스타일 */
-.hero-btns {
-  display: flex;
-  gap: 20px;
-  margin-top: 10px;
-}
 
 .cta-btn {
   position: relative;

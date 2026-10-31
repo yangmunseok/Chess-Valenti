@@ -95,7 +95,7 @@
 }
 
 /* Annotations & Variations */
-.move-history {
+.page-analysis .move-history {
   flex: 1;
   overflow-y: auto;
   display: flex;
@@ -282,7 +282,7 @@
 }
 
 /* 기보 행 스타일 */
-.move-entry {
+.page-analysis .move-entry {
   display: grid;
   grid-template-columns: 40px 1fr 1fr; /* 번호 / 백 / 흑 */
   align-items: center;
@@ -477,7 +477,7 @@
 }
 
 /* 전체 레이아웃 컨테이너가 있다면 */
-.main-content {
+.page-analysis .main-content {
   display: flex;
   flex-direction: column; /* 세로로 쌓이도록 변경 */
   width: 100%;
@@ -871,10 +871,6 @@
 }
 
 /* --- Board Symbol Indicators --- */
-.square {
-    position: relative;
-}
-
 .square-symbol {
     position: absolute;
     top: -8px;

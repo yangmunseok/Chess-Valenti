@@ -87,5 +87,10 @@
   --square-light: #b8c0d1;
   --square-dark: #50658e;
 
-  /* 관리자 페이지 전용 의미 토큰(--admin-bg, --card-bg ...)은 admin.css 에 있다 */
+  /* 카드, 강조 (관리자 페이지에서 시작했지만 인사이트, 홈, 결제 성공 페이지도 쓴다) */
+  --admin-bg: var(--ink-950);
+  --sidebar-bg: var(--ink-900);
+  --card-bg: var(--ink-800);
+  --accent-purple: var(--tn-blue); /* 이름과 달리 파란색 */
+  --warning-red: var(--tn-red);
 }
