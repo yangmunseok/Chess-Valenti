@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<!--
+  모든 페이지의 <head> 맨 앞에 들어가는 공통 부분: 문자셋, 뷰포트, Google Analytics.
+  사용: <th:block th:replace="~{fragment/head :: common}"></th:block>
+  제목과 페이지별 CSS 는 각 페이지 <head> 에 둔다.
+-->
+<head>
+  <th:block th:fragment="common">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+
+      gtag('js', new Date());
+
+      gtag('config', 'G-DBMLJY2F5L');
+    </script>
+  </th:block>
+</head>
+</html>
