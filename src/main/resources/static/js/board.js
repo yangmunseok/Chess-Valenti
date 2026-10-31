@@ -1,5 +1,5 @@
-import {getPossibleMoves} from "./state.js";
-import {executeMove} from "./game.js";
+// 체스판 그리기와 칸 클릭만 맡는다. 다른 모듈을 import 하지 않으므로 보드만 필요한 페이지(insight, pawn-games)는 이 파일만 불러온다.
+// 수를 둔 뒤의 처리(기보, 평가 등)는 bindMoveInput 에 넘긴 콜백이 한다.
 
 let selectedSquare = null;
 
@@ -173,33 +173,25 @@ export function drawSymbol(coord, symbol, id = 'chess-board') {
   targetSquare.appendChild(symbolEl);
 }
 
-function getPieceSymbol(char) {
-  const symbols = {
-    'r': 't', 'n': 'j', 'b': 'n', 'q': 'w', 'k': 'l', 'p': 'o',
-    'R': 'r', 'N': 'h', 'B': 'b', 'Q': 'q', 'K': 'k', 'P': 'p'
-  };
-  return symbols[char] || '';
-}
+// 합법 수(UCI 배열)로 칸 클릭을 연결한다. 이동할 칸까지 고르면 onMove(from, to) 를 부른다.
+export function bindMoveInput(legalMoves, onMove, id = 'chess-board') {
+  const boardEl = document.getElementById(id);
+  if (!boardEl) return;
 
-// 클릭 및 이동 하이라이트 이벤트 바인딩
-export function updateSquareEvent() {
-  const possibleMoves = getPossibleMoves();
-
-  document.querySelectorAll('#chess-board .square').forEach(square => {
+  boardEl.querySelectorAll('.square').forEach(square => {
     square.onclick = function () {
       const clickedCoord = this.dataset.coord;
 
       if (this.classList.contains('possible-move')) {
         const from = selectedSquare;
         const to = clickedCoord;
-        executeMove(from, to);
-        clearHighlights();
-        selectedSquare = null;
+        onMove(from, to);
+        clearHighlights(id);
         return;
       }
 
-      clearHighlights();
-      const targets = possibleMoves
+      clearHighlights(id);
+      const targets = legalMoves
       .filter(move => move.substring(0, 2) === clickedCoord)
       .map(move => move.substring(2, 4));
 
@@ -207,21 +199,19 @@ export function updateSquareEvent() {
         selectedSquare = clickedCoord;
         this.classList.add('selected-sq');
         targets.forEach(targetCoord => {
-          const targetSquare = document.querySelector(
+          const targetSquare = boardEl.querySelector(
               `.square[data-coord="${targetCoord}"]`);
           if (targetSquare) {
             targetSquare.classList.add('possible-move');
           }
         });
-      } else {
-        selectedSquare = null;
       }
     };
   });
 }
 
-export function clearHighlights() {
-  document.querySelectorAll('.square').forEach(sq => {
+export function clearHighlights(id = 'chess-board') {
+  document.getElementById(id)?.querySelectorAll('.square').forEach(sq => {
     sq.classList.remove('selected-sq', 'possible-move');
   });
   selectedSquare = null;

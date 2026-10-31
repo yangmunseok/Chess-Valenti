@@ -1,12 +1,13 @@
 import {currentNode} from "./state.js";
 import {executeMove} from "./game.js";
 
-const movesBody = document.getElementById('explorer-moves-body');
-const gamesBody = document.getElementById('top-games-body');
-
+// 오프닝 탐색 패널이 열려 있으면 현재 국면의 Lichess 마스터 통계를 보여 준다
 export async function updateOpeningExplorer() {
   const explorerPanel = document.getElementById('opening-explorer');
   if (!explorerPanel || !explorerPanel.classList.contains('active')) return;
+
+  const movesBody = document.getElementById('explorer-moves-body');
+  const gamesBody = document.getElementById('top-games-body');
 
   const playPath = currentNode.playPath;
   const url = playPath 
@@ -27,7 +28,7 @@ export async function updateOpeningExplorer() {
 
     if (!res.ok) throw new Error("Explorer data not found");
     const data = await res.json();
-    renderExplorerData(data);
+    renderExplorerData(data, movesBody, gamesBody);
   } catch (e) {
     console.warn("Lichess Explorer API failed:", e);
     movesBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-secondary);">No data available for this position.</td></tr>';
@@ -36,7 +37,7 @@ export async function updateOpeningExplorer() {
 }
 
 
-function renderExplorerData(data) {
+function renderExplorerData(data, movesBody, gamesBody) {
   // 1. Render Moves Table
   movesBody.innerHTML = '';
   if (data.moves && data.moves.length > 0) {

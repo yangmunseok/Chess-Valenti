@@ -1,14 +1,21 @@
 import {
   ChessNode,
   currentNode,
-  gameTree,
   getPossibleMoves,
   nodeMap,
   setCurrentNode,
   setPossibleMoves
 } from "./state.js";
-import {drawSymbol, renderBoardFromFen, updateSquareEvent, clearHighlights} from "./board.js";
-import {refreshMoveHistory, renderEvaluataion} from "./history.js";
+import {bindMoveInput, clearHighlights, drawSymbol, renderBoardFromFen} from "./board.js";
+import {getPathToNodeSAN} from "./pgn.js";
+
+// 수를 둔 뒤 부를 함수. 기보와 평가 화면을 갱신하는 일은 analysis-init.js 가 정해서 넘긴다.
+// game.js 가 history.js 등을 직접 import 하면 서로를 import 하는 순환이 생긴다.
+let afterMove = () => {};
+
+export function onMoveExecuted(listener) {
+  afterMove = listener;
+}
 
 function getMoveNotation(from, to, pieceText) {
   //check if castle or not
@@ -141,60 +148,7 @@ export async function executeMove(from, to, promotionPiece = null) {
   }
 
   await loadBoardFromNode(currentNode);
-  refreshMoveHistory();
-  renderEvaluataion();
-  updatePGN();
-}
-
-export function getPathToNodeSAN(targetNode) {
-  let path = [];
-  let curr = targetNode;
-  while (curr && curr.ply > 0) {
-    path.unshift(curr);
-    curr = curr.parent;
-  }
-  let sanParts = [];
-  path.forEach((node) => {
-    if (node.ply % 2 !== 0) {
-      sanParts.push(
-          `${Math.ceil(node.ply / 2)}. ${node.move}`);
-    } else {
-      sanParts.push(node.move);
-    }
-  });
-  return sanParts.join(' ');
-}
-
-// PGN 생성 및 로깅
-export function updatePGN() {
-  const fullPGN = generatePGN(gameTree);
-  //console.log("Current Full PGN:\n", fullPGN);
-}
-
-export function generateFullPgn() {
-  return generatePGN(gameTree);
-}
-
-function generatePGN(node) {
-  if (node.ply === 0 && node.children.length === 0) {
-    return "";
-  }
-  let pgn = "";
-  node.children.forEach((child, index) => {
-    const moveNum = child.ply % 2 !== 0 ? Math.ceil(child.ply / 2) + ". " : "";
-    const commentPart = child.comment ? `{ ${child.comment} } ` : "";
-
-    if (index === 0) {
-      pgn += `${moveNum}${child.move}${child.symbol} ${commentPart}`;
-      pgn += generatePGN(child);
-    } else {
-      const varMoveNum = Math.ceil(child.ply / 2) + (child.ply % 2 === 0
-          ? "... " : ". ");
-      pgn += `(${varMoveNum}${child.move}${child.symbol} ${commentPart}${generatePGN(
-          child)}) `;
-    }
-  });
-  return pgn.trim();
+  afterMove();
 }
 
 export async function loadBoardFromNode(node) {
@@ -279,7 +233,7 @@ export async function loadBoardFromNode(node) {
   }
 
   setPossibleMoves(node.legalMove || []);
-  updateSquareEvent();
+  bindMoveInput(getPossibleMoves(), executeMove);
 }
 
 let pendingMove = null;

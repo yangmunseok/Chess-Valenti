@@ -1,10 +1,10 @@
 import {ChessNode, gameTree, nodeMap} from "./state.js";
-import {refreshMoveHistory} from "./history.js";
 
 /**
  * PGN 문자열을 입력받아 전체 게임 트리를 다시 구축합니다.
  * @param {string} pgnString
  * @param {string[]} uciMoves - (옵션) 메인 라인의 UCI 수순 배열
+ * @returns {string} 게임 결과 (1-0, 0-1, 1/2-1/2, *). 없으면 빈 문자열
  */
 export function importPGN(pgnString, uciMoves = []) {
   let stack = [];
@@ -87,6 +87,5 @@ export function importPGN(pgnString, uciMoves = []) {
     }
   }
 
-  // 전역 상태나 UI에 결과값 전달
-  refreshMoveHistory(gameResult);
+  return gameResult;
 }
