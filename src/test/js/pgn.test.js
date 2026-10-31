@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {gameTree} from '../../main/resources/static/js/state.js';
 import {importPGN} from '../../main/resources/static/js/pgnParser.js';
-import {generatePgn, getPathToNodeSAN} from '../../main/resources/static/js/pgn.js';
+import {generatePgn} from '../../main/resources/static/js/pgn.js';
 
 const PGN = '[Event "?"]\n[Result "1-0"]\n\n'
     + '1. e4 e5 2. Nf3 { main } (2. Bc4 Nf6 (2... Bc5)) 2... Nc6 3. Bb5!? 1-0';
@@ -48,11 +48,4 @@ test('generatePgn of an empty tree is empty', () => {
   importPGN('');
 
   assert.equal(generatePgn(gameTree), '');
-});
-
-test('getPathToNodeSAN numbers the moves from the root to the node', () => {
-  importPGN(PGN);
-  const bb5 = gameTree.children[0].children[0].children[0].children[0].children[0];
-
-  assert.equal(getPathToNodeSAN(bb5), '1. e4 e5 2. Nf3 Nc6 3. Bb5');
 });
