@@ -237,10 +237,6 @@
   color: #60A5FA !important;
 }
 
-.annotation-block.new-save {
-  border-left: 3px solid var(--accent-blue);
-}
-
 /* 클릭한 기물의 위치 */
 .square.selected-sq {
   background-color: rgba(255, 255, 0, 0.5) !important; /* 노란색 하이라이트 */
@@ -313,27 +309,12 @@
 }
 
 /* 바리에이션을 담는 독립된 블록 */
-.variation-block {
-  display: block;
-  margin: 4px 0;
-}
 
 /* 바리에이션 안의 또 다른 중첩 바리에이션 (인라인 유지) */
-.variation-inline {
-  display: inline;
-}
 
 /* 괄호 () 스타일 */
-.var-paren {
-  font-weight: bold;
-  color: #888;
-}
 
 /* 서브 바리에이션 내부에 들어가는 주석 */
-.inline-comment {
-  font-style: italic;
-  margin: 0 4px;
-}
 
 /* 서브 바리에이션 컨테이너 */
 .variation-container {
@@ -350,16 +331,8 @@
 }
 
 /* 괄호 스타일 */
-.paren {
-  font-weight: bold;
-  color: #666;
-  margin: 0 2px;
-}
 
 /* 바리에이션 내 이동 수 */
-.var-move {
-  color: #bbb;
-}
 
 /* 기보 리스트 하단 결과 표시 */
 .game-result-display {
@@ -637,15 +610,6 @@
   background: rgba(0, 0, 0, 0.1);
   letter-spacing: 0.5px;
   opacity: 0.7;
-}
-
-.filter-card {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-highlight);
-  border-radius: 12px;
-  padding: 24px;
-  margin-top: 15px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .filter-header h3 {
@@ -1044,20 +1008,6 @@
 }
 
 /* 3. 복사 버튼: 보라색을 빼고 무채색/어두운 톤으로 변경 (유저 친화적) */
-.pgn-copy-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #383c44;
-  color: #d1d5db;
-  border: 1px solid #454a54;
-  padding: 5px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.15s ease;
-}
 
 /* 4. Textarea 본문: 가독성 유지 */
 .pgn-content {
@@ -1265,9 +1215,5 @@
   .pgn-card {
     width: 100%;
     margin: 10px 0;
-  }
-
-  .pgn-copy-button span {
-    display: none;
   }
 }

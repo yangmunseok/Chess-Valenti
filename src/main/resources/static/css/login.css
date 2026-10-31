@@ -98,23 +98,6 @@ body {
   box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
 }
 
-.submit-btn {
-  background: var(--accent-blue);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: opacity 0.2s;
-}
-
-.submit-btn:hover {
-  opacity: 0.9;
-}
-
 .footer-links {
   margin-top: 24px;
   text-align: center;

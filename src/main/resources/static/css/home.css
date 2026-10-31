@@ -166,21 +166,6 @@
 }
 
 /* --- [5] 하단 후원 배너 --- */
-.home-footer-promo {
-  background: #161b22;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 20px;
-  padding: 35px 50px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.home-footer-promo:hover {
-  border-color: #3b82f6;
-}
 
 /* --- FAQ 전용 수정 스타일 --- */
 
@@ -304,12 +289,5 @@
 
   .faq-content {
     padding-left: 15px;
-  }
-
-  .home-footer-promo {
-    padding: 24px 20px;
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
   }
 }

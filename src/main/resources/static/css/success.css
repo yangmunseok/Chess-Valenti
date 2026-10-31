@@ -1,8 +1,4 @@
 /* 성공 페이지 배경 */
-.success-page-bg {
-  background: radial-gradient(circle at center, #1e2335 0%, #1a1b26 100%);
-  overflow: hidden;
-}
 
 .full-height-center {
   width: 100%;
