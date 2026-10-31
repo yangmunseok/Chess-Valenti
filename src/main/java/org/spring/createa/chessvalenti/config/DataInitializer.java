@@ -5,6 +5,7 @@ import com.github.bhlangonijr.chesslib.move.Move;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -68,20 +69,29 @@ public class DataInitializer implements CommandLineRunner {
     CSV_TO_DB,
     OFF;
 
+    /**
+     * 설정 값을 모드로 바꾼다. 모르는 값이면 기동을 멈춘다.
+     *
+     * <p>예전에는 모르는 값을 PGN_TO_DB 로 바꿨다. YAML 에서 따옴표 없는 OFF 는 불리언 false 로 읽혀 "false"
+     * 가 들어오는데, 그 때문에 끄려던 대량 적재가 오히려 실행됐다.
+     */
     public static DataInitMode from(String value) {
       try {
-        return DataInitMode.valueOf(value.toUpperCase());
-      } catch (Exception e) {
-        return PGN_TO_DB;
+        return DataInitMode.valueOf(value.trim().toUpperCase());
+      } catch (IllegalArgumentException | NullPointerException e) {
+        throw new IllegalStateException(
+            "chess.data-init.mode 값이 잘못되었습니다: '" + value + "'. 가능한 값: "
+                + Arrays.toString(values())
+                + ". YAML 에서 OFF 는 따옴표로 감싸야 합니다(mode: \"OFF\").", e);
       }
     }
   }
 
   public void run(String... args) throws Exception {
 
-    initializeAdminUser();
     DataInitMode mode = DataInitMode.from(initMode);
-    log.info(String.valueOf(mode));
+    initializeAdminUser();
+    log.info("Data initialization mode: {}", mode);
     if (mode == DataInitMode.OFF) {
       log.info("Data initialization is OFF.");
       return;
