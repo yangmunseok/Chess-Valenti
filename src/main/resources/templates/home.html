@@ -10,10 +10,10 @@
       href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
       rel="stylesheet"
   />
-  <link th:href="@{/css/app.css}" rel="stylesheet">
-  <link th:href="@{/css/stat.css}" rel="stylesheet">
-  <link th:href="@{/css/home.css}" rel="stylesheet">
-  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link th:href="@{/css/pages/insight.css}" rel="stylesheet">
+  <link th:href="@{/css/pages/home.css}" rel="stylesheet">
+  <link th:href="@{/css/components/button.css}" rel="stylesheet">
 </head>
 <body>
 <div class="dashboard-wrapper">

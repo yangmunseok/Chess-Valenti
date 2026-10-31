@@ -1,3 +1,4 @@
+/* 사용하는 페이지: home, insight */
 /* stats.css */
 
 /* Hero Section */
@@ -304,44 +305,12 @@
 }
 
 /* --- 필터 및 입력창 --- */
-.insight-filters {
-  background: rgba(30, 35, 53, 0.6);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 20px;
-  border: 1px solid var(--white-a10);
-  margin: 40px auto;
-  max-width: 800px;
-}
-
-.type-selector .chip {
-  display: inline-block;
-  padding: 8px 16px;
-  background: var(--white-a05);
-  border: 1px solid var(--white-a10);
-  border-radius: 30px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: 0.3s;
-}
 
 /* --- 진행 상태 카드 --- */
 
 /* --- 실시간 로그 윈도우 --- */
 
 /* --- 공통 입력창 기본 스타일 --- */
-.stat-input,
-#username-input {
-  background: var(--white-a03);
-  border: 1px solid var(--white-a10);
-  border-radius: 12px;
-  color: var(--white);
-  font-size: 15px;
-  padding: 12px 16px;
-  outline: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-sizing: border-box; /* 패딩이 너비를 뚫지 않도록 고정 */
-}
 
 /* 날짜 입력창 (stat-input) 특화 */
 .stat-input {
@@ -367,14 +336,6 @@
 }
 
 /* Focus 상태: 메인 테마색인 보라색으로 빛남 */
-.stat-input:focus,
-#username-input:focus {
-  border-color: var(--tn-purple);
-  background: var(--tn-purple-a10);
-  box-shadow: 0 0 15px var(--tn-purple-a20),
-  inset 0 0 1px var(--tn-purple-a50);
-  transform: translateY(-1px); /* 아주 미세하게 떠오르는 효과 */
-}
 
 /* 입력창 내부 placeholder 색상 */
 #username-input::placeholder {
@@ -392,23 +353,6 @@
 .stat-input::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
   transform: scale(1.1);
-}
-
-.stat-btn-primary {
-  background: linear-gradient(135deg, var(--tn-blue) 0%, var(--tn-purple) 100%);
-  border: none;
-  border-radius: 12px;
-  color: var(--white);
-  font-size: 15px;
-  font-weight: 700;
-  padding: 12px 24px; /* 상하 패딩을 입력창과 동일하게 12px로 맞춤 */
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 4px 15px var(--tn-purple-a30); /* 그림자로 입체감 추가 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 120px;
 }
 
 /* Hover: 더 밝게 빛나며 위로 떠오름 */
@@ -447,6 +391,9 @@
 }
 
 .insight-filters {
+  backdrop-filter: blur(10px);
+  margin: 40px auto;
+  max-width: 800px;
   background: var(--card-bg);
   padding: 30px;
   border-radius: 24px;
@@ -472,17 +419,20 @@
 
 /* 입력창 및 버튼 (높이 밸런스 핵심) */
 .stat-input, #username-input {
+  box-sizing: border-box;
   background: var(--black-a20);
   border: 1px solid var(--white-a10);
   border-radius: 12px;
   color: var(--white);
   font-size: 15px;
-  padding: 14px 16px; /* 통통한 볼륨감 */
+  padding: 14px 16px;
   outline: none;
   transition: 0.3s;
 }
 
 .stat-input:focus, #username-input:focus {
+  background: var(--tn-purple-a10);
+  transform: translateY(-1px);
   border-color: var(--accent-purple);
   box-shadow: 0 0 15px var(--tn-purple-a20);
 }
@@ -494,6 +444,7 @@
 }
 
 .type-selector .chip {
+  display: inline-block;
   padding: 10px 18px;
   background: var(--white-a03);
   border: 1px solid var(--white-a10);
@@ -530,6 +481,10 @@
 }
 
 .stat-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
   background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
   border: none;
   border-radius: 12px;

@@ -3,9 +3,9 @@
 <head>
   <th:block th:replace="~{fragment/head :: common}"></th:block>
   <title>valenti - Master Your Strategy</title>
-  <link rel="stylesheet" th:href="@{/css/app.css}">
-  <link rel="stylesheet" th:href="@{/css/landing.css}">
-  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/pages/landing.css}">
+  <link th:href="@{/css/components/button.css}" rel="stylesheet">
 </head>
 <body class="page-landing">
 

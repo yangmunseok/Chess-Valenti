@@ -4,8 +4,8 @@
   <th:block th:replace="~{fragment/head :: common}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-  <link rel="stylesheet" th:href="@{/css/app.css}">
-  <link rel="stylesheet" th:href="@{/css/success.css}">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/pages/success.css}">
 </head>
 <body>
 <div

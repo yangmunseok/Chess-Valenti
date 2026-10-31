@@ -4,6 +4,9 @@
   모든 페이지의 <head> 맨 앞에 들어가는 공통 부분: 문자셋, 뷰포트, 디자인 토큰(tokens.css), Google Analytics.
   사용: <th:block th:replace="~{fragment/head :: common}"></th:block>
   제목과 페이지별 CSS 는 각 페이지 <head> 에 둔다.
+
+  appStyles: 일반 페이지의 공통 CSS. <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  CSS 구조: tokens.css(변수) → base.css → layout.css → components/ → pages/
 -->
 <head>
   <th:block th:fragment="common">
@@ -24,6 +27,13 @@
 
       gtag('config', 'G-DBMLJY2F5L');
     </script>
+  </th:block>
+
+  <th:block th:fragment="appStyles">
+    <link th:href="@{/css/base.css}" rel="stylesheet">
+    <link th:href="@{/css/layout.css}" rel="stylesheet">
+    <link th:href="@{/css/components/board.css}" rel="stylesheet">
+    <link th:href="@{/css/components/game-panel.css}" rel="stylesheet">
   </th:block>
 </head>
 </html>

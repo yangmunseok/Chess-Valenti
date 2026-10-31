@@ -10,10 +10,10 @@
       href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
       rel="stylesheet"
   />
-  <link th:href="@{/css/app.css}" rel="stylesheet">
-  <link th:href="@{/css/home.css}" rel="stylesheet">
-  <link th:href="@{/css/editor.css}" rel="stylesheet">
-  <link th:href="@{/css/inquiry.css}" rel="stylesheet">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link th:href="@{/css/pages/home.css}" rel="stylesheet">
+  <link th:href="@{/css/components/editor.css}" rel="stylesheet">
+  <link th:href="@{/css/pages/inquiry.css}" rel="stylesheet">
 </head>
 <body class="valenti-dark">
 

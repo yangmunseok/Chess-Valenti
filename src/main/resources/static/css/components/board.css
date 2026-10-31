@@ -1,0 +1,204 @@
+/* 체스판: 보드, 칸, 기물 이미지, 승진 선택 창. board.js 가 그리는 마크업 */
+
+/* --- Board Area --- */
+.board-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 580px;
+}
+
+.player-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.player-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.player-name {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-tag {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.square {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  position: relative;
+}
+
+.light {
+  background-color: var(--square-light);
+}
+
+.dark {
+  background-color: var(--square-dark);
+}
+
+.square:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 2px var(--accent-blue);
+  pointer-events: none;
+}
+
+.piece {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: grab;
+  transition: transform 0.25s ease-out; /* Smooth movement */
+  z-index: 5;
+}
+
+.piece:active {
+  transform: scale(1.1);
+  cursor: grabbing;
+}
+
+/* White Pieces */
+.piece.white.p {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
+}
+
+.piece.white.n {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg');
+}
+
+.piece.white.b {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg');
+}
+
+.piece.white.r {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg');
+}
+
+.piece.white.q {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg');
+}
+
+.piece.white.k {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg');
+}
+
+/* Black Pieces */
+.piece.black.p {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg');
+}
+
+.piece.black.n {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg');
+}
+
+.piece.black.b {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg');
+}
+
+.piece.black.r {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg');
+}
+
+.piece.black.q {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg');
+}
+
+.piece.black.k {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
+}
+
+/* CSS: 기존 테마와 통일성 유지 */
+.promotion-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* 보드 살짝 어둡게 */
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 8px;
+}
+
+.promotion-dialog {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px var(--black-a50);
+}
+
+.promotion-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.promo-btn {
+  width: 60px;
+  height: 60px;
+  background: var(--white-a05);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.promo-btn:hover {
+  background: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+/* 기물 아이콘은 기존에 사용하던 SVG나 이미지를 class로 매핑 */
