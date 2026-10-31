@@ -63,7 +63,7 @@
     </tbody>
   </table>
   <div class="pagination" th:data-page="${currentPage}">
-    <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+    <button data-page-step="-10" class="btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2">
         <polyline points="15 18 9 12 15 6"></polyline>
@@ -73,7 +73,7 @@
       <a th:text="${page}" th:href="@{/admin/support(page=${page}-1,mode='inquiry')}" class="btn"
          th:classappend="${currentPage + 1 == page} ? 'active'"></a>
     </th:block>
-    <button onclick="setCurrentPage(currentPage+10)" class="btn">
+    <button data-page-step="10" class="btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2">
         <polyline points="9 18 15 12 9 6"></polyline>
@@ -126,7 +126,7 @@
   </table>
 
   <div class="pagination" th:data-page="${currentPage}">
-    <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+    <button data-page-step="-10" class="btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2">
         <polyline points="15 18 9 12 15 6"></polyline>
@@ -136,7 +136,7 @@
       <a th:text="${page}" th:href="@{/admin/contents(page=${page}-1,mode='notice')}" class="btn"
          th:classappend="${currentPage + 1 == page} ? 'active'"></a>
     </th:block>
-    <button onclick="setCurrentPage(currentPage+10)" class="btn">
+    <button data-page-step="10" class="btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2">
         <polyline points="9 18 15 12 9 6"></polyline>
@@ -191,7 +191,7 @@
   </table>
 
   <div class="pagination" th:data-page="${currentPage}">
-    <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+    <button data-page-step="-10" class="btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2">
         <polyline points="15 18 9 12 15 6"></polyline>
@@ -201,7 +201,7 @@
       <a th:text="${page}" th:href="@{/admin/contents(page=${page}-1,mode='study')}" class="btn"
          th:classappend="${currentPage + 1 == page} ? 'active'"></a>
     </th:block>
-    <button onclick="setCurrentPage(currentPage+10)" class="btn">
+    <button data-page-step="10" class="btn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2">
         <polyline points="9 18 15 12 9 6"></polyline>
