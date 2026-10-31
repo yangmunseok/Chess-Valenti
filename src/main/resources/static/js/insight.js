@@ -1,10 +1,11 @@
 import {initBoard, renderBoardFromFen} from "./board.js";
+import {InsightLoadError, loadChessComGames, loadLichessGames} from "./insightLoader.js";
 
-let totalLoaded = 0;
-let totalFiltered = 0;
 let selectedPlatform = 'lichess';
-let jobId = 0;
-let systemUsername = '';
+// 로그인한 사용자만 결과를 서버에 저장한다
+let isLoggedIn = false;
+// 진행 중인 분석. 중단 버튼과 결과 처리에서 쓴다.
+let currentRun = null;
 
 const elements = {};
 
@@ -27,158 +28,130 @@ function initElements() {
   elements.filterCount = document.getElementById('filter-count');
 }
 
-// 서버에서 전달받은 데이터를 UI에 반영하는 함수
-function onServerUpdate(message) {
-  const type = message.goal;
-  const count = message.loadedGame;
-  const status = message.status;
-  jobId = message.jobId;
-
-  if (status === 'error') {
-    const errorModal = document.getElementById('error-modal');
-    if (errorModal) {
-      document.getElementById('error-message').innerText = message.goal;
-      errorModal.style.display = 'flex';
-    } else {
-      alert(message.goal);
-    }
-    elements.progressSection.style.display = 'none';
-    elements.insightFilters.style.display = 'block';
-    return;
-  }
-
-  if (type === 'load') {
-    totalLoaded = count;
-    elements.loadCount.innerText = `${totalLoaded}`;
-    elements.stepLoad.classList.add('active');
-    elements.stepFilter.classList.remove('active');
-    elements.stepDone.classList.remove('active');
-
-    if (status === 'done') {
-      elements.stepLoad.classList.remove('active');
-      elements.stepFilter.classList.add('active');
-      if (message.data) {
-        totalFiltered = Object.keys(message.data).length;
-        elements.filterCount.innerText = `${totalFiltered}`;
-      }
-    }
-  } else if (type === 'filter') {
-    elements.stepLoad.classList.remove('active');
-    elements.stepFilter.classList.add('active');
-    elements.stepDone.classList.remove('active');
-
-    if (status === 'done') {
-      if (message.data) {
-        totalFiltered = Object.keys(message.data).length;
-        elements.filterCount.innerText = `${totalFiltered}`;
-      }
-      elements.stepFilter.classList.remove('active');
-      elements.stepDone.classList.add('active');
-      renderResultPage(message.data);
-    }
-  }
-}
-
-const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-const stompClient = new StompJs.Client({
-  brokerURL: `${protocol}${window.location.host}/valenti-socket`
-});
-
-stompClient.onConnect = (frame) => {
-  stompClient.subscribe('/topic/insight', (res) => {
-    const message = JSON.parse(res.body);
-    if (message.systemUsername === systemUsername) {
-      onServerUpdate(message);
-    }
-  });
-};
-
-stompClient.onWebSocketError = (error) => {
-  // console.error('Error with websocket', error);
-};
-
-stompClient.onStompError = (frame) => {
-  // console.error('Broker reported error: ' + frame.headers['message']);
-  // console.error('Additional details: ' + frame.body);
-};
-
-function connect() {
-  stompClient.activate();
-}
-
-function disconnect() {
-  if (stompClient.connected || stompClient.active) {
-    stompClient.deactivate();
-  }
-}
-
-function sendRequest() {
-  const timeControls = document.getElementsByName("timeControl");
-  let perfType = "";
-  Array.from(timeControls).forEach((el) => {
-    if (el.checked) {
-      perfType += "," + el.value;
-    }
-  });
-
+function readRequest() {
+  const perfType = Array.from(document.getElementsByName("timeControl"))
+      .filter(el => el.checked)
+      .map(el => el.value)
+      .join(',');
   if (!perfType) {
     alert("최소 하나 이상의 게임 유형을 선택해주세요.");
-    return;
+    return null;
   }
-
-  perfType = perfType.substring(1);
   const sinceDate = elements.startDateInput.value;
   if (!sinceDate) {
     alert("분석 시작일을 선택해주세요.");
-    return;
+    return null;
   }
-  const since = new Date(sinceDate).getTime().toString();
-
-  if (!stompClient.connected) {
-    console.warn("STOMP not connected, attempting to reconnect...");
-    stompClient.activate();
-    setTimeout(() => {
-      if (stompClient.connected) {
-        stompClient.publish({
-          destination: "/app/insight",
-          body: JSON.stringify({
-            username: elements.usernameInput.value,
-            perfType,
-            since,
-            platform: selectedPlatform
-          })
-        });
-      } else {
-        alert("서버와 연결이 원활하지 않습니다. 잠시 후 다시 시도해주세요.");
-      }
-    }, 500);
-    return;
-  }
-
-  stompClient.publish({
-    destination: "/app/insight",
-    body: JSON.stringify({
-      username: elements.usernameInput.value,
-      perfType,
-      since,
-      platform: selectedPlatform
-    })
-  });
+  return {
+    username: elements.usernameInput.value.trim(),
+    perfType,
+    since: new Date(sinceDate).getTime(),
+  };
 }
 
-function sendCancel() {
-  if (!stompClient.connected) {
+function setStep(step) {
+  elements.stepLoad.classList.toggle('active', step === 'load');
+  elements.stepFilter.classList.toggle('active', step === 'filter');
+  elements.stepDone.classList.toggle('active', step === 'done');
+}
+
+function showModal(message) {
+  const errorModal = document.getElementById('error-modal');
+  if (errorModal) {
+    document.getElementById('error-message').innerText = message;
+    errorModal.style.display = 'flex';
+  } else {
+    alert(message);
+  }
+}
+
+function showError(message) {
+  showModal(message);
+  elements.progressSection.style.display = 'none';
+  elements.insightFilters.style.display = 'block';
+}
+
+async function saveResult(request, top) {
+  const headers = {'Content-Type': 'application/json'};
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+  const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+  if (csrfHeader && csrfToken) {
+    headers[csrfHeader] = csrfToken;
+  }
+  const response = await fetch('/api/insight', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({...request, data: top}),
+  });
+  // 세션이 만료되면 로그인 안내 페이지로 리다이렉트되어 200 이 오므로 redirected 도 확인한다
+  if (!response.ok || response.redirected) {
+    throw new Error(`Failed to save insight: ${response.status}`);
+  }
+}
+
+/**
+ * 게임을 받아 Worker 에 넘기고, 다 받으면(또는 중단하면) 결과를 계산해 보여 준다.
+ * 받는 일은 이 화면 스레드에서, 분석은 Worker 에서 동시에 진행된다.
+ */
+async function runAnalysis(request) {
+  const controller = new AbortController();
+  const worker = new Worker('/js/insightWorker.js', {type: 'module'});
+  const run = {controller, worker};
+  currentRun = run;
+  let loadedGame = 0;
+
+  const stop = () => {
+    worker.terminate();
+    if (currentRun === run) {
+      currentRun = null;
+    }
+  };
+
+  worker.onmessage = ({data}) => {
+    if (data.type === 'progress') {
+      elements.filterCount.innerText = `${data.structureCount}`;
+    } else if (data.type === 'result') {
+      stop();
+      elements.filterCount.innerText = `${data.filteredCount}`;
+      setStep('done');
+      renderResultPage(data.top);
+      if (isLoggedIn) {
+        saveResult(request, data.top).catch(e => {
+          console.warn(e);
+          showModal("분석 결과를 저장하지 못했습니다. 다시 로그인한 뒤 분석해주세요.");
+        });
+      }
+    } else if (data.type === 'error') {
+      stop();
+      showError("분석 중 오류가 발생했습니다.");
+    }
+  };
+  worker.onerror = () => {
+    stop();
+    showError("분석 중 오류가 발생했습니다.");
+  };
+
+  worker.postMessage({type: 'start', username: request.username});
+  const load = selectedPlatform === 'chesscom' ? loadChessComGames : loadLichessGames;
+  try {
+    await load({
+      ...request,
+      signal: controller.signal,
+      onGames: games => {
+        loadedGame += games.length;
+        elements.loadCount.innerText = `${loadedGame}`;
+        worker.postMessage({type: 'games', games});
+      },
+    });
+  } catch (e) {
+    stop();
+    showError(e instanceof InsightLoadError ? e.message : "게임을 불러오지 못했습니다.");
     return;
   }
-  stompClient.publish({
-    destination: "/app/insight",
-    body: JSON.stringify({
-      username: elements.usernameInput.value,
-      cancel: true,
-      id: jobId,
-      platform: selectedPlatform
-    })
-  });
+
+  // 다 받았거나 '여기까지 데이터로 분석' 으로 멈췄다. 비슷한 구조를 합치고 상위 구조를 고른다.
+  setStep('filter');
+  worker.postMessage({type: 'finish'});
 }
 
 function updateCardUI(cardElement, stats, side) {
@@ -365,9 +338,7 @@ function renderResultPage(map) {
 
 export function initInsight(config) {
   initElements();
-  systemUsername = config.username || '';
-
-  connect();
+  isLoggedIn = Boolean(config.isLoggedIn);
 
   const defaultStartDate = new Date();
   defaultStartDate.setFullYear(defaultStartDate.getFullYear() - 1);
@@ -400,12 +371,13 @@ export function initInsight(config) {
     };
   });
 
-  window.addEventListener('beforeunload', disconnect);
-
   elements.analyzeBtn.onclick = () => {
-    const user = elements.usernameInput.value;
-    if (!user) {
+    if (!elements.usernameInput.value.trim()) {
       return alert("아이디를 입력해주세요.");
+    }
+    const request = readRequest();
+    if (!request || currentRun) {
+      return;
     }
 
     elements.insightFilters.style.display = 'none';
@@ -414,14 +386,13 @@ export function initInsight(config) {
 
     elements.loadCount.innerText = '0';
     elements.filterCount.innerText = '0';
-    elements.stepLoad.classList.add('active');
-    elements.stepFilter.classList.remove('active');
-    elements.stepDone.classList.remove('active');
+    setStep('load');
 
-    sendRequest();
+    runAnalysis(request);
   };
 
+  // 받기를 멈추고 지금까지 받은 게임으로 결과를 낸다
   elements.partialAnalyzeBtn.onclick = () => {
-    sendCancel();
+    currentRun?.controller.abort();
   };
 }

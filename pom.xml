@@ -18,6 +18,9 @@
     <java.version>17</java.version>
     <byte-buddy.version>1.17.8</byte-buddy.version>
     <surefire.argLine></surefire.argLine>
+    <!-- JS 테스트(src/test/js)를 돌릴 Node. 빌드 중에 target/node 에 내려받으므로 따로 설치할 필요가 없다. -->
+    <node.version>v22.12.0</node.version>
+    <skipJsTests>false</skipJsTests>
   </properties>
   <repositories>
     <repository>
@@ -49,10 +52,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-websocket</artifactId>
     </dependency>
     <dependency>
       <groupId>org.thymeleaf.extras</groupId>
@@ -115,11 +114,6 @@
       <version>2.6.0</version>
     </dependency>
     <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>mockwebserver</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
@@ -135,6 +129,11 @@
     <dependency>
       <groupId>org.springframework.batch</groupId>
       <artifactId>spring-batch-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -173,10 +172,63 @@
           <argLine>${surefire.argLine}</argLine>
         </configuration>
       </plugin>
+      <!-- test 단계에서 Java 테스트와 함께 JS 테스트(npm run test:js)도 돌린다 -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>2.0.2</version>
+        <configuration>
+          <nodeVersion>${node.version}</nodeVersion>
+          <installDirectory>target</installDirectory>
+          <skip>${skipJsTests}</skip>
+        </configuration>
+        <executions>
+          <execution>
+            <id>install-node</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>js-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run test:js</arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
   <profiles>
+    <!-- -DskipTests 나 -Dmaven.test.skip=true 로 테스트를 건너뛰면 JS 테스트와 Node 다운로드도 건너뛴다 -->
+    <profile>
+      <id>skip-js-tests-with-skipTests</id>
+      <activation>
+        <property>
+          <name>skipTests</name>
+        </property>
+      </activation>
+      <properties>
+        <skipJsTests>true</skipJsTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>skip-js-tests-with-maven-test-skip</id>
+      <activation>
+        <property>
+          <name>maven.test.skip</name>
+        </property>
+      </activation>
+      <properties>
+        <skipJsTests>true</skipJsTests>
+      </properties>
+    </profile>
     <profile>
       <id>jdk24-plus-test-warnings</id>
       <activation>

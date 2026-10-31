@@ -1,0 +1,32 @@
+# 테스트 전용 설정. src/test/resources/application.properties 가 test 프로필을 켠다.
+# 외부 DB 없이 메모리 H2 를 쓰므로 DB 환경 변수(DB_URL 등) 없이 테스트가 돈다.
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    # MySQL 호환 모드. DB_CLOSE_DELAY=-1: 마지막 연결이 닫혀도 테스트 컨텍스트가 살아 있는 동안 유지
+    url: jdbc:h2:mem:chessvalenti;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  batch:
+    jdbc:
+      initialize-schema: always
+  mail:
+    username: test@example.com
+
+chess:
+  pgn:
+    path: src/test/resources/pgn/test-games.pgn
+  data-init:
+    mode: "OFF"
+
+admin:
+  username: admin
+  password: test-admin-password
+  email: admin@example.com
+
+toss:
+  payment:
+    secret-key: test-secret-key

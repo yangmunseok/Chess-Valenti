@@ -1,0 +1,42 @@
+# 부하 테스트용 모니터링: Prometheus(지표 수집) + Grafana(그래프)
+#
+# 실행:  cd monitoring && docker compose up -d
+# 종료:  docker compose down        (수집한 데이터까지 지우려면 down -v)
+#
+# 앱은 호스트에서 dev 프로필로 8080 포트에 떠 있어야 한다.
+#   Prometheus  http://localhost:9090   (Status > Targets 에서 수집 상태 확인)
+#   Grafana     http://localhost:3000   (admin / admin)
+services:
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: chess-valenti-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    extra_hosts:
+      # 컨테이너 안에서 호스트(앱)에 접근하기 위한 주소. Docker Desktop 은 기본 제공, Linux 는 이 설정이 필요
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: chess-valenti-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/insight-load-test.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:

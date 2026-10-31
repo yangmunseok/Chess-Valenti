@@ -1,157 +1,69 @@
 package org.spring.createa.chessvalenti.service;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
 import java.time.LocalDateTime;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.spring.createa.chessvalenti.db.InsightRepository;
 import org.spring.createa.chessvalenti.domain.Insight;
 import org.spring.createa.chessvalenti.domain.User;
 import org.spring.createa.chessvalenti.dto.game.GameResults;
-import org.spring.createa.chessvalenti.dto.insight.InsightGame;
-import org.spring.createa.chessvalenti.dto.request.InsightRequestMessage;
-import org.spring.createa.chessvalenti.dto.response.InsightProgressResponse;
-import org.spring.createa.chessvalenti.exception.UserNotFoundException;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.spring.createa.chessvalenti.dto.game.PlayerColor;
+import org.spring.createa.chessvalenti.dto.request.InsightSaveRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
+/**
+ * 인사이트 결과를 저장한다. 게임을 받아 분석하는 일은 브라우저(insightAnalysis.js)가 한다.
+ */
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class InsightService {
 
-  private final SimpMessagingTemplate simpMessagingTemplate;
-  private final LichessService lichessService;
-  private final ChessComService chessComService;
-  private final InsightGameProcessor insightGameProcessor;
-  private final JobService jobService;
+  // 폰만 남긴 FEN: 8개 랭크(폰 P/p 와 빈칸 수 1~8) + " w"
+  private static final Pattern PAWNS_ONLY_FEN = Pattern.compile("([pP1-8]{1,8}/){7}[pP1-8]{1,8} w");
+
   private final InsightRepository insightRepository;
-  private final Counter successCounter = Metrics.counter("function.count",
-      Tags.of("state", "success", "class", "insightService", "function", "createInsight"));
-  private final Counter failCounter = Metrics.counter("function.count",
-      Tags.of("state", "fail", "class", "insightService", "function", "createInsight"));
 
-  public void createInsight(InsightRequestMessage request, User user) {
-    if (Boolean.TRUE.equals(request.cancel())) {
-      if (request.id() != null) {
-        jobService.dispose(request.id());
-      }
-      return;
-    }
+  /**
+   * 브라우저에서 계산한 결과를 사용자의 인사이트로 저장한다. 사용자당 하나이며 이전 결과를 덮어쓴다.
+   */
+  public void save(User user, InsightSaveRequest request) {
+    request.data().forEach(InsightService::validateStructure);
 
-    String systemUsername = (user != null) ? user.getUsername() : "Guest";
-    Map<String, GameResults> result = new java.util.concurrent.ConcurrentHashMap<>();
-    AtomicInteger cnt = new AtomicInteger();
-    long id = jobService.getAvailableId();
-
-    Mono<Object> mono = Mono.create(sink -> {
-      Disposable innerSubscription = loadInsightGames(request)
-          .subscribe(game -> {
-            insightGameProcessor.loadGame(game, request.username(), result);
-            int count = cnt.incrementAndGet();
-            sendProgress(systemUsername, request.username(), count, "pending", "load", id, null);
-          }, error -> {
-            log.error("Error loading games from {}", platform(request), error);
-            String errorMessage = "분석 중 오류가 발생했습니다.";
-            if (error instanceof UserNotFoundException) {
-              errorMessage = "존재하지 않는 사용자 아이디입니다.";
-            }
-            sendProgress(systemUsername, request.username(), 0, "error", errorMessage, id, null);
-            failCounter.increment();
-            sink.error(error);
-          }, () -> {
-            int count = cnt.get();
-            log.info("Finished loading {} games for user {}", count, request.username());
-            sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
-            sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
-
-            insightGameProcessor.filterSimilarGame(result);
-            sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
-            saveInsight(user, request, result);
-            successCounter.increment();
-            sink.success(result);
-          });
-
-      sink.onCancel(() -> {
-        log.info("Analysis job {} cancelled for user {}. Stopping {} fetch.", id,
-            request.username(), platform(request));
-        innerSubscription.dispose();
-
-        int count = cnt.get();
-        sendProgress(systemUsername, request.username(), count, "done", "load", id, result);
-        sendProgress(systemUsername, request.username(), count, "pending", "filter", id, null);
-
-        insightGameProcessor.filterSimilarGame(result);
-        sendProgress(systemUsername, request.username(), count, "done", "filter", id, result);
-        saveInsight(user, request, result);
-        successCounter.increment();
-      });
-    });
-
-    try {
-      jobService.work(mono, id);
-      sendProgress(systemUsername, request.username(), 0, "done", "register", id, null);
-    } catch (RuntimeException e) {
-      log.error("Failed to register analysis job", e);
-      sendProgress(systemUsername, request.username(), 0, "error", e.getMessage(), id, null);
-    }
-  }
-
-  private Flux<InsightGame> loadInsightGames(InsightRequestMessage request) {
-    Flux<InsightGame> gameFlux;
-    if ("chesscom".equals(platform(request))) {
-      gameFlux = chessComService.loadGames(request.username(), request.perfType(), request.since());
-    } else {
-      gameFlux = lichessService.loadGames(request.username(), request.perfType(), request.since());
-    }
-
-    return gameFlux.onErrorMap(WebClientResponseException.NotFound.class,
-        e -> new UserNotFoundException("존재하지 않는 사용자입니다: " + request.username()));
-  }
-
-  private String platform(InsightRequestMessage request) {
-    return request.platform() == null || request.platform().isBlank()
-        ? "lichess"
-        : request.platform().toLowerCase(Locale.ROOT);
-  }
-
-  private void saveInsight(User user, InsightRequestMessage request,
-      Map<String, GameResults> result) {
-    if (user == null) {
-      return;
-    }
-    Insight insight = insightRepository.findByUser(user)
-        .orElse(new Insight());
-
+    Insight insight = insightRepository.findByUser(user).orElse(new Insight());
     insight.setUser(user);
     insight.setLichessUsername(request.username());
     insight.setPerfType(request.perfType());
-    try {
-      insight.setSince(Long.parseLong(request.since()));
-    } catch (NumberFormatException e) {
-      log.warn("Invalid since value: {}", request.since());
-    }
-    insight.setData(result);
+    insight.setSince(request.since());
+    insight.setData(request.data());
     insight.setCreatedAt(LocalDateTime.now());
-
     insightRepository.save(insight);
   }
 
-  private void sendProgress(String systemUsername, String username, int loadedGame, String status,
-      String goal, Long jobId,
-      Map<String, GameResults> data) {
-    InsightProgressResponse payload = new InsightProgressResponse(systemUsername, username,
-        loadedGame, status,
-        goal, jobId, data);
-    simpMessagingTemplate.convertAndSend("/topic/insight", payload);
+  private static void validateStructure(String fen, GameResults results) {
+    if (fen == null || !PAWNS_ONLY_FEN.matcher(fen).matches() || !hasEightSquaresPerRank(fen)) {
+      throw new IllegalArgumentException("잘못된 폰 구조입니다: " + fen);
+    }
+    if (results == null || !isValidCount(results.getWhite())
+        || !isValidCount(results.getBlack())) {
+      throw new IllegalArgumentException("잘못된 승패 기록입니다: " + fen);
+    }
+  }
+
+  private static boolean hasEightSquaresPerRank(String fen) {
+    for (String rank : fen.substring(0, fen.length() - 2).split("/")) {
+      int squares = 0;
+      for (char c : rank.toCharArray()) {
+        squares += Character.isDigit(c) ? c - '0' : 1;
+      }
+      if (squares != 8) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean isValidCount(PlayerColor color) {
+    return color != null && color.getWhiteWon() >= 0 && color.getBlackWon() >= 0
+        && color.getDrawn() >= 0;
   }
 }

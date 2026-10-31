@@ -1,0 +1,13 @@
+global:
+  # 부하 테스트는 짧게 끝나므로 기본값(1분)보다 촘촘하게 수집한다
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: chess-valenti
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+        labels:
+          # Grafana 공개 대시보드(JVM Micrometer, ID 4701)가 application 라벨로 앱을 고른다
+          application: chess-valenti

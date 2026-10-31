@@ -11,13 +11,20 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.spring.createa.chessvalenti.domain.GameIndex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.test.context.ActiveProfiles;
 
+// MySQL 인덱스 힌트(force index) 성능 비교라서 H2 로는 돌릴 수 없다.
+// DB_URL 로 MySQL 을 지정했을 때만 dev 프로필로 실행한다.
+@EnabledIfEnvironmentVariable(named = "DB_URL", matches = ".+",
+    disabledReason = "MySQL(DB_URL)이 있어야 하는 인덱스 성능 비교 테스트")
+@ActiveProfiles("dev")
 @DataJpaTest(showSql = false, properties = {
     "spring.jpa.show-sql=false",
     "spring.jpa.properties.hibernate.show_sql=false",

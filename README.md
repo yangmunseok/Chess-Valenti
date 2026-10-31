@@ -19,8 +19,8 @@ https://github.com/user-attachments/assets/291a835d-5e8a-4d66-b9e8-88bce533fee8
 
 ### 2. Chess Insight (데이터 시각화)
 
-- **플랫폼 연동:** Lichess 및 Chess.com API를 통해 사용자의 게임 데이터를 동기화합니다.
-- **통계 분석:** 폰구조별 게임 수, 색깔별 승률등 다양한 통계 데이터를 시각화하여 제공합니다.
+- **플랫폼 연동:** 브라우저가 Lichess 및 Chess.com 공개 API에서 사용자의 게임을 직접 받아옵니다. 요청이 사용자 IP에서 나가므로 API 한도도 사용자마다 따로 적용됩니다.
+- **통계 분석:** 폰구조별 게임 수, 색깔별 승률등 다양한 통계 데이터를 Web Worker에서 계산하여 시각화합니다. 로그인 사용자는 결과가 저장됩니다.
 -
 
 ### 3. 커뮤니티 및 소통
@@ -53,7 +53,6 @@ https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
 - **Spring Security** (OAuth2/RBAC)
 - **Spring WebFlux & Reactor** (비동기 데이터 스트리밍)
 - **Spring Mail** (비밀번호 재설정 및 알림)
-- **Spring WebSocket** (실시간 통신)
 - **Chesslib** (체스 로직 및 PGN 처리)
 
 ### Frontend
@@ -81,21 +80,19 @@ https://github.com/user-attachments/assets/564c30a7-1101-4a59-b1c7-7eeb5a4830cc
 
 ### 2. 데이터 분석 및 통계 (Insight & Analysis)
 
-* **`InsightService` (Service):** 사용자의 '개인 분석가'입니다. Lichess나 Chess.com 같은 외부 사이트에서 대국 기록을 가져와 승률,
-  선호하는 배치 등 통계 데이터를 계산하고 시각화하기 위한 데이터를 가공합니다.
-* **`LichessApi` & `ChessComApi` (Service/API):** 외부 체스 플랫폼과 소통하는 API입니다. 각 플랫폼의 서로 다른 데이터 형식을
-  표준화하여 우리 시스템으로 안전하게 가져오는 역할을 합니다.
-* **`JobService` (Service):** 수많은 대국 데이터를 분석할 때 서버가 멈추지 않도록 백그라운드에서 작업을 관리합니다.
+* **`insightLoader.js` (Frontend):** 브라우저에서 Lichess(ndjson 스트리밍)와 Chess.com(월별 아카이브) 공개 API로 대국 기록을
+  받아옵니다. 받는 도중 멈추면 그때까지 받은 게임으로 분석합니다.
+* **`insightAnalysis.js` & `insightWorker.js` (Frontend):** 사용자의 '개인 분석가'입니다. 대국마다 폰 구조를 추출해 승패를 집계하고,
+  비슷한 구조를 합친 뒤 화면에 보여 줄 상위 구조를 고릅니다. Web Worker에서 돌아 화면이 멈추지 않습니다.
+* **`InsightService` (Service):** 브라우저가 계산한 결과를 검증(구조 개수, FEN 형식, 승패 수)한 뒤 사용자의 인사이트로 저장합니다.
 
 ### 3. 사용자 경험 및 커뮤니티 (UX & Community)
 
 * **`PostService` & `InquiryService` (Service):** 사용자들이 정보를 공유하는 게시판과 1:1로 소통하는 고객센터의 심장부입니다. 댓글의 계층
   구조나 에디터의 리치 텍스트 처리를 담당합니다.
 
-### 4. 실시간 통신 및 웹 (WebSocket & Web)
+### 4. 웹 (Web)
 
-* **`WebSocketConfig` (Config):** 분석 결과나 알림이 새로고침 없이 사용자 화면에 즉시 나타날 수 있도록 서버와 브라우저 사이에 실시간 통로를
-  열어줍니다.
 * **`GlobalExceptionHandler` (Controller Advice):** 프로그램 실행 중 발생하는 예기치 못한 에러들을 감지하고, 사용자에게 친절한 안내
   문구를 보여주어 서비스의 안정성을 높입니다.
 
