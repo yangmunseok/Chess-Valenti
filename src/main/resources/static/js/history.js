@@ -59,11 +59,13 @@ function renderNodeRecursive(node, container, isMainLine) {
 
     if (isWhite || prevWasComment || !lastElement.classList.contains(
         'move-entry')) {
+      // 새 줄을 흑의 수로 시작할 때(변화수나 주석 다음)는 백 칸에 "..." 을 넣어 "2. ... Nc6" 으로 보이게 한다.
+      // 백의 수로 시작하는 줄은 흑의 수가 아직 없으므로 흑 칸에 "..." 을 넣어 둔다
       targetRow = document.createElement('div');
       targetRow.className = 'move-entry';
       targetRow.innerHTML = `
         <div class="move-number">${moveNum}.</div>
-        <div class="move-notation white-part"></div>
+        <div class="move-notation white-part">${isWhite ? '' : '...'}</div>
         <div class="move-notation black-part">${isWhite ? '...' : ''}</div>`;
       container.appendChild(targetRow);
     } else {
