@@ -1,4 +1,5 @@
 // 두 스크린샷 폴더를 픽셀 단위로 비교한다. 다른 화면은 diff 이미지(달라진 픽셀 = 빨강)를 남긴다.
+// 계산된 스타일(*.styles.json)이 있으면 요소별 속성 값도 비교해 달라진 속성을 보여 준다.
 //
 //   node scripts/visual-check/compare.mjs <기준 폴더> <비교 폴더> [diff 폴더]
 //
@@ -40,9 +41,43 @@ for (const name of names) {
       + (result.sameSize ? '' : `, size ${result.baseSize} -> ${result.nextSize}`)
       + (box ? `, area x ${box.minX}-${box.maxX}, y ${box.minY}-${box.maxY}` : ''));
 }
+// 계산된 스타일 비교 (*.styles.json). 같은 위치의 요소끼리 속성 값을 비교한다.
+let styleChanged = 0;
+const styleNames = [...new Set([...readdirSync(baseDir), ...readdirSync(nextDir)])]
+    .filter(name => name.endsWith('.styles.json')).sort();
+for (const name of styleNames) {
+  const basePath = join(baseDir, name);
+  const nextPath = join(nextDir, name);
+  if (!existsSync(basePath) || !existsSync(nextPath)) {
+    continue;
+  }
+  const base = JSON.parse(readFileSync(basePath, 'utf-8'));
+  const next = JSON.parse(readFileSync(nextPath, 'utf-8'));
+  const differences = [];
+  for (const path of new Set([...Object.keys(base.elements), ...Object.keys(next.elements)])) {
+    const a = base.elements[path]?.split('|');
+    const b = next.elements[path]?.split('|');
+    if (!a || !b) {
+      differences.push(`${path}: ${a ? 'removed' : 'added'}`);
+      continue;
+    }
+    base.props.forEach((prop, i) => {
+      if (a[i] !== b[i]) {
+        differences.push(`${path}: ${prop} ${a[i]} -> ${b[i]}`);
+      }
+    });
+  }
+  if (differences.length) {
+    styleChanged++;
+    console.log(`STYLES   ${name}: ${differences.length} differences`);
+    differences.slice(0, 8).forEach(d => console.log(`           ${d}`));
+  }
+}
+
 console.log(`\n${names.length - changed} same, ${changed} changed`
-    + (changed ? ` (diff images: ${diffDir})` : ''));
-process.exit(changed ? 1 : 0);
+    + (changed ? ` (diff images: ${diffDir})` : '')
+    + (styleNames.length ? `; computed styles: ${styleNames.length - styleChanged} same, ${styleChanged} changed` : ''));
+process.exit(changed || styleChanged ? 1 : 0);
 
 function compare(base, next) {
   const width = Math.max(base.width, next.width);

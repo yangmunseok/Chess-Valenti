@@ -9,6 +9,9 @@
 //      node scripts/visual-check/capture.mjs target/visual/current
 //      node scripts/visual-check/compare.mjs target/visual/baseline target/visual/current
 //
+// 스크린샷과 함께 페이지마다 모든 요소의 계산된 스타일(*.styles.json)도 저장한다.
+// 픽셀이 같아도 속성이 달라진 경우(예: 인라인 style 을 클래스로 옮긴 뒤)를 compare.mjs 가 잡아낸다.
+//
 // 환경 변수: BASE_URL (기본 http://127.0.0.1:8090), CHROME_PATH, ADMIN_USER / ADMIN_PASSWORD
 // (기본값은 application-test.yml 의 관리자 계정)
 import {spawn} from 'node:child_process';
@@ -62,6 +65,38 @@ const VIEWPORTS = [
   ['mobile', {width: 390, height: 844, deviceScaleFactor: 1, mobile: true}],
 ];
 const MAX_HEIGHT = 6000;
+
+// 비교할 계산된 스타일 속성. 화면에 보이는 결과를 좌우하는 것들이다.
+const STYLE_PROPS = ['display', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'float',
+  'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height', 'box-sizing',
+  'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+  'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width',
+  'border-top-style', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color',
+  'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius',
+  'color', 'background-color', 'background-image', 'opacity', 'visibility', 'box-shadow', 'outline-style',
+  'font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'text-align',
+  'text-decoration-line', 'text-transform', 'white-space', 'word-break', 'vertical-align', 'cursor', 'resize',
+  'flex-direction', 'flex-wrap', 'flex-grow', 'flex-shrink', 'flex-basis', 'justify-content', 'align-items',
+  'align-self', 'gap', 'row-gap', 'column-gap', 'grid-template-columns', 'grid-template-rows', 'order',
+  'overflow-x', 'overflow-y', 'transform', 'transition-property', 'filter', 'backdrop-filter', 'pointer-events'];
+const COLLECT_STYLES = `(() => {
+  const props = ${JSON.stringify(STYLE_PROPS)};
+  const out = {};
+  const path = el => {
+    const parts = [];
+    for (let e = el; e && e !== document.documentElement; e = e.parentElement) {
+      parts.unshift(e.tagName.toLowerCase() + ':' + [...e.parentElement.children].indexOf(e));
+    }
+    return parts.join('>');
+  };
+  for (const el of document.body.querySelectorAll('*')) {
+    if (el.closest('svg') && el.tagName.toLowerCase() !== 'svg') continue;
+    const cs = getComputedStyle(el);
+    out[path(el)] = props.map(p => cs.getPropertyValue(p)).join('|');
+  }
+  return JSON.stringify({props, elements: out});
+})()`;
 
 // 찍을 때마다 값이 바뀌는 요소. 내용을 고정 값으로 바꾼다 (예: 로그인할 때마다 늘어나는 접속자 수)
 const VOLATILE = ['.value > span:first-child'];
@@ -140,6 +175,7 @@ async function capturePages(cdp, pages) {
       });
       const file = `${name}.${viewportName}.png`;
       writeFileSync(join(outDir, file), Buffer.from(data, 'base64'));
+      writeFileSync(join(outDir, `${name}.${viewportName}.styles.json`), await cdp.evaluate(COLLECT_STYLES));
       const at = await cdp.evaluate('location.pathname + location.search');
       console.log(`${file.padEnd(40)} ${at}`);
     }
