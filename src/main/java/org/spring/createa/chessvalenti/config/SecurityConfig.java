@@ -48,7 +48,9 @@ public class SecurityConfig {
     return httpSecurity
         .csrf(csrf -> csrf.ignoringRequestMatchers("/logout"))
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers("/login", "/signup", "/css/**", "/", "/landing", "/js/**", "/forgot-password", "/reset-password", "/favicon.ico", "/login-required", "/access-denied", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            auth -> auth.requestMatchers("/login", "/signup", "/css/**", "/", "/landing", "/js/**",
+                    "/forgot-password", "/reset-password", "/favicon.ico", "/login-required",
+                    "/access-denied", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/analysis", "/insight", "/board", "/api/games/**",
                     "/api/evaluation", "/api/evaluation/stream", "/games/**", "/posts/**",
                     "/valenti-socket/**", "/study", "/pawn-games").permitAll()
@@ -75,7 +77,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  AuthenticationProvider authenticationProvider(UserRepository userRepository) {
+  AuthenticationProvider authenticationProvider() {
     DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
     authenticationProvider.setUserDetailsService(userDetailsService);
     authenticationProvider.setPasswordEncoder(passwordEncoder());

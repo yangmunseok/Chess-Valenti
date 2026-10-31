@@ -56,7 +56,7 @@ public class DataInitializer implements CommandLineRunner {
   @Value("${admin.email}")
   private String adminEmail;
 
-  @Value("${chess.data-init.mode:PGN_TO_DB}")
+  @Value("${chess.data-init.mode:OFF}")
   private String initMode;
 
   @Value("${chess.data-init.csv-dir:data/csv}")
