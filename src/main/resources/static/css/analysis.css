@@ -365,12 +365,6 @@
 }
 
 /* 메뉴 그리드 레이아웃 */
-.menu-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 10px;
-}
 
 .menu-placeholder {
   grid-column: span 2;
@@ -381,13 +375,6 @@
   border: 1px dashed #333;
   border-radius: 6px;
   margin-top: 10px;
-}
-
-.analysis-footer {
-  background-color: #1e1e1e;
-  border-top: 2px solid #333;
-  padding: 20px;
-  margin-top: 20px;
 }
 
 /* 통계 대시보드 */
@@ -510,13 +497,13 @@
 
 /* 하단 분석 영역 (폰 구조 탐색) */
 .analysis-footer {
-  width: 100%; /* 가로 전체 차지 */
+  width: 100%;
   background-color: #1e1e1e;
   border-top: 2px solid #333;
   padding: 20px;
-  box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+  box-sizing: border-box;
   margin-top: 10px;
-  clear: both; /* 주변 요소의 영향을 받지 않도록 */
+  clear: both;
 }
 
 /* 메뉴 그리드 컨테이너 */
@@ -631,16 +618,6 @@
   margin-bottom: 24px;
 }
 
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
 .filter-item img {
   width: 40px;
   height: 40px;
@@ -648,14 +625,6 @@
 }
 
 /* Stepper 디자인 */
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #000;
-  padding: 4px 8px;
-  border-radius: 20px;
-}
 
 .stepper button {
   background: none;
@@ -673,10 +642,6 @@
 }
 
 /* 하단 버튼 */
-.filter-actions {
-  display: flex;
-  gap: 10px;
-}
 
 .action-btn {
   flex: 1;
@@ -730,29 +695,9 @@
   margin-bottom: 15px;
 }
 
-.filter-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
 .filter-item img {
   width: 32px;
   height: 32px;
-}
-
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 2px 8px;
-  border-radius: 15px;
 }
 
 .stepper button {
@@ -766,7 +711,7 @@
 
 .filter-actions {
   display: flex;
-  flex-direction: column; /* 사이드바 공간 확보를 위해 세로 배치 */
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -799,17 +744,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-}
-
-.filter-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
 }
 
 .filter-item img {

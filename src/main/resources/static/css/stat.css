@@ -1,10 +1,6 @@
 /* stats.css */
 
 /* Hero Section */
-.stats-hero {
-  text-align: center;
-  max-width: 600px;
-}
 
 .stats-hero h1 {
   font-size: 2.5rem;
@@ -204,12 +200,6 @@
   color: #fff;
 }
 
-.count-summary {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
 .win-rate-bar {
   display: flex;
   width: 100%;
@@ -259,6 +249,7 @@
 }
 
 .count-summary {
+  margin-top: 4px;
   font-size: 11px;
   color: var(--text-secondary);
   text-align: right;
@@ -327,13 +318,6 @@
   max-width: 800px;
 }
 
-.filter-row {
-  display: flex;
-  gap: 40px;
-  margin-bottom: 25px;
-  justify-content: center;
-}
-
 .type-selector .chip {
   display: inline-block;
   padding: 8px 16px;
@@ -343,16 +327,6 @@
   font-size: 13px;
   cursor: pointer;
   transition: 0.3s;
-}
-
-.type-selector .chip:has(input:checked) {
-  background: rgba(187, 154, 247, 0.2);
-  border-color: #bb9af7;
-  color: #bb9af7;
-}
-
-.type-selector input {
-  display: none;
 }
 
 /* --- 진행 상태 카드 --- */
@@ -424,11 +398,6 @@
   transform: scale(1.1);
 }
 
-.type-selector {
-  display: flex;
-  column-gap: 4px;
-}
-
 .stat-btn-primary {
   background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
   border: none;
@@ -447,11 +416,6 @@
 }
 
 /* Hover: 더 밝게 빛나며 위로 떠오름 */
-.stat-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(187, 154, 247, 0.5);
-  filter: brightness(1.1);
-}
 
 /* Active: 실제로 눌리는 물리적 피드백 */
 .stat-btn-primary:active {
@@ -468,6 +432,7 @@
 
 /* 히어로 및 필터 섹션 */
 .stats-hero {
+  max-width: 600px;
   text-align: center;
   margin-bottom: 50px;
 }
@@ -527,6 +492,7 @@
 }
 
 .type-selector {
+  column-gap: 4px;
   display: flex;
   gap: 8px;
 }
@@ -662,37 +628,9 @@
 
 /* 단계별 스텝퍼(Stepper) */
 
-.step-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  width: 80px;
-}
-
-.step-item span {
-  font-size: 12px;
-  color: #565f89;
-  transition: 0.5s;
-}
-
 /* 활성화된 스텝 */
 
-.step-item.active span {
-  color: #fff;
-  font-weight: 600;
-}
-
 /* 중단 버튼 (고스트 스타일) */
-.btn-ghost {
-  margin-top: 40px;
-  background: transparent;
-  border: none;
-  color: #565f89;
-  font-size: 14px;
-  cursor: pointer;
-  text-decoration: underline;
-}
 
 /* 실시간 수집 현황판 */
 .live-status-board {
@@ -771,6 +709,7 @@
 }
 
 .btn-ghost {
+  margin-top: 40px;
   background: transparent;
   border: none;
   color: #565f89;
@@ -789,6 +728,7 @@
 }
 
 .step-item {
+  width: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;

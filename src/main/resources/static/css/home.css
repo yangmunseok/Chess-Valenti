@@ -156,15 +156,6 @@
   display: none;
 }
 
-.faq-content {
-  background: rgba(59, 130, 246, 0.02);
-  padding: 20px 15px 20px 165px; /* col-meta(150px) + padding 여백 */
-  font-size: 15px;
-  color: #8b949e;
-  line-height: 1.7;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
-
 /* --- [5] 하단 후원 배너 --- */
 
 /* --- FAQ 전용 수정 스타일 --- */
@@ -214,9 +205,14 @@
 
 /* FAQ 답변 내용 창 */
 .faq-content {
-  padding: 0 15px 30px 165px; /* col-meta 너비(150px) + 여백(15px) */
+  background: rgba(59, 130, 246, 0.02);
+  font-size: 15px;
+  color: #8b949e;
+  line-height: 1.7;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 0 15px 30px 165px;
   overflow: hidden;
-  animation: slideDown 0.4s ease-out; /* 열릴 때 애니메이션 */
+  animation: slideDown 0.4s ease-out;
 }
 
 .faq-content p {

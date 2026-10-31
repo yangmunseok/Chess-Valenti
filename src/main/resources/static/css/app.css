@@ -66,13 +66,6 @@ body {
   display: none;
 }
 
-.main-content {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  padding: 60px 80px;
-}
-
 /* --- Sidebar --- */
 .sidebar {
   width: 250px;
