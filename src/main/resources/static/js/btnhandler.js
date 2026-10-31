@@ -1,7 +1,6 @@
-const faqFormTemplate = document.getElementById('faq-form-template');
+import {withCsrf} from "./csrf.js";
 
-const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+const faqFormTemplate = document.getElementById('faq-form-template');
 
 document.getElementById('faq-add-btn').addEventListener("click", () => {
 
@@ -35,10 +34,7 @@ function saveFaq(e) {
   if (id != null) {
     fetch(`/api/admin/posts/${id}`,
         {
-          method: 'PATCH', headers: {
-            "Content-Type": "application/json",
-            [csrfHeader]: csrfToken
-          }, body: JSON.stringify({title, content, postType: "FAQ"})
+          method: 'PATCH', headers: withCsrf({"Content-Type": "application/json"}), body: JSON.stringify({title, content, postType: "FAQ"})
         }).then(
         (res) => {
           alert('글이 성공적으로 기록되었습니다.')
@@ -49,10 +45,7 @@ function saveFaq(e) {
     //create
     fetch("/api/admin/posts",
         {
-          method: 'post', headers: {
-            "Content-Type": "application/json",
-            [csrfHeader]: csrfToken
-          }, body: JSON.stringify({title, content, postType: "FAQ"})
+          method: 'post', headers: withCsrf({"Content-Type": "application/json"}), body: JSON.stringify({title, content, postType: "FAQ"})
         }).then(
         (res) => {
           alert('글이 성공적으로 기록되었습니다.')
@@ -68,10 +61,7 @@ function deleteFaq(e) {
 
   fetch(`/api/admin/posts/${id}`,
       {
-        method: 'DELETE', headers: {
-          "Content-Type": "application/json",
-          [csrfHeader]: csrfToken
-        }
+        method: 'DELETE', headers: withCsrf({"Content-Type": "application/json"})
       }).then(
       (res) => {
         alert('글이 성공적으로 삭제되었습니다.')
