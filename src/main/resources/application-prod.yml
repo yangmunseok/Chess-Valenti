@@ -38,7 +38,7 @@ chess:
   pgn:
     path: ${CHESS_PGN_PATH:/app/data/AJ-OTB-PGN-001.pgn}
   data-init:
-    mode: OFF
+    mode: "OFF"
     csv-dir: ${CHESS_CSV_PATH:/app/data/csv}
 
 admin:
