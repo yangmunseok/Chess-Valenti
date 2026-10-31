@@ -1,0 +1,52 @@
+// signup.html 에서 옮긴 페이지 스크립트
+
+document.addEventListener('DOMContentLoaded', () => {
+  const password = document.getElementById('password');
+  const passwordConfirm = document.getElementById('password-confirm');
+  const email = document.getElementById('email');
+  const username = document.getElementById('username');
+  const submitBtn = document.getElementById('signup-btn');
+
+  // 메시지를 표시할 엘리먼트 생성 및 삽입
+  const message = document.createElement('div');
+  message.className = 'input-helper';
+  passwordConfirm.parentNode.appendChild(message);
+
+  function validatePasswords() {
+    const p1 = password.value;
+    const p2 = passwordConfirm.value;
+
+    if (p2.length === 0) {
+      message.innerText = '';
+      return false;
+    }
+
+    if (p1 === p2) {
+      message.innerText = '비밀번호가 일치합니다.';
+      message.style.color = '#4ADE80'; // 성공 색상 (그린)
+      passwordConfirm.style.borderColor = '#4ADE80';
+      return true;
+    }
+
+    message.innerText = '비밀번호가 일치하지 않습니다.';
+    passwordConfirm.style.borderColor = '#EF4444';
+    message.style.color = '#EF4444'; // 에러 색상 (레드)
+
+    return false;
+  }
+
+  function checkForm() {
+    if (validatePasswords()) {
+      if (email.value.length > 0 && username.value.length > 0) {
+        submitBtn.disabled = false;
+        return;
+      }
+    }
+    submitBtn.disabled = true;
+  }
+
+  email.addEventListener('input', checkForm);
+  username.addEventListener('input', checkForm);
+  password.addEventListener('input', checkForm);
+  passwordConfirm.addEventListener('input', checkForm);
+});
