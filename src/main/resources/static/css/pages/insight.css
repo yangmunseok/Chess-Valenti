@@ -438,7 +438,6 @@
 }
 
 .type-selector {
-  column-gap: 4px;
   display: flex;
   gap: 8px;
 }

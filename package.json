@@ -2,6 +2,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:js": "node --test \"src/test/js/**/*.test.js\""
+    "test:js": "node --test \"src/test/js/**/*.test.js\"",
+    "lint:css": "stylelint \"src/main/resources/static/css/**/*.css\""
+  },
+  "devDependencies": {
+    "stylelint": "16.26.1"
   }
 }

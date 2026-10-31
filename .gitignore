@@ -38,3 +38,6 @@ src/main/resources/application-dev.properties
 ### Large Files ###
 /data/
 src/main/resources/static/pgn/AJ-OTB-PGN-001.pgn
+
+### Node (stylelint) ###
+node_modules/
