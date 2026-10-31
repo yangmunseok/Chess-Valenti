@@ -197,3 +197,298 @@
     gap: 4px;
   }
 }
+
+/* ---- 답변과 댓글 (post-detail.html 의 인라인 style 에서 옮김) ---- */
+/* 섹션 범위로 묶어, 인라인일 때처럼 다른 공통 규칙(.user-avatar 등)보다 우선하게 한다 */
+
+.author-meta {
+  margin-top: 10px;
+  color: var(--gray-600);
+  font-size: 14px;
+}
+
+/* 문의 답변 */
+.reply-section {
+  margin-top: 40px;
+  border-top: 1px solid var(--white-a05);
+  padding-top: 30px;
+}
+
+.reply-section .answer-box {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.reply-section .answer-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.reply-section .answer-label {
+  color: #10b981;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reply-section .answer-date {
+  color: var(--gray-600);
+  font-size: 13px;
+}
+
+.reply-section .answer-content {
+  color: var(--slate-100);
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* 답변 작성 폼 (관리자) */
+.reply-section .admin-reply-form {
+  margin-top: 30px;
+}
+
+.reply-section .admin-reply-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+
+#reply-editor {
+  height: 300px;
+  background: var(--github-canvas);
+  border: 1px solid var(--white-a08);
+  border-radius: 14px;
+}
+
+.reply-section .admin-reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+#submit-reply {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+/* 댓글 */
+.comment-section {
+  margin-top: 50px;
+  border-top: 1px solid var(--white-a05);
+  padding-top: 40px;
+}
+
+.comment-section .comment-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-section .comment-count {
+  color: var(--accent-purple);
+}
+
+.comment-section .comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.comment-section .comment-item {
+  display: flex;
+  gap: 16px;
+}
+
+.comment-section .comment-avatar {
+  width: 40px;
+  height: 40px;
+  background: #3b4261;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+.comment-section .comment-body {
+  flex: 1;
+}
+
+.comment-section .comment-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.comment-section .comment-author-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-section .comment-author {
+  font-weight: 600;
+  color: var(--slate-100);
+  font-size: 14px;
+}
+
+.comment-section .comment-date {
+  color: var(--gray-600);
+  font-size: 12px;
+}
+
+.comment-section .comment-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.comment-section .btn-reply,
+.comment-section .btn-delete-comment {
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-section .btn-delete-comment {
+  color: var(--tn-red);
+}
+
+.comment-section .comment-content {
+  color: var(--slate-400);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 답글 작성 폼. 처음에는 숨김(display: none 은 인라인, JS 가 토글) */
+.comment-section .reply-form {
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--white-a05);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.comment-section .reply-form textarea {
+  width: 100%;
+  min-height: 60px;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 13px;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.comment-section .reply-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.comment-section .btn-reply-cancel {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--white-a10);
+  color: var(--slate-400);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.comment-section .reply-form .btn-comment-submit {
+  padding: 6px 16px;
+  font-size: 12px;
+}
+
+/* 대댓글: 들여쓰고 조금 작게 */
+.comment-section .replies-container {
+  margin-left: 56px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-left: 2px solid var(--white-a03);
+  padding-left: 20px;
+}
+
+.comment-section .reply-item {
+  gap: 12px;
+}
+
+.comment-section .reply-item .comment-avatar {
+  width: 32px;
+  height: 32px;
+  background: #2a2f41;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.comment-section .reply-item .comment-meta {
+  margin-bottom: 4px;
+}
+
+.comment-section .reply-item .comment-author-line {
+  gap: 8px;
+}
+
+.comment-section .reply-item .comment-author {
+  font-size: 13px;
+}
+
+.comment-section .reply-item .comment-date,
+.comment-section .reply-item .btn-delete-comment {
+  font-size: 11px;
+}
+
+.comment-section .reply-item .comment-content {
+  font-size: 13px;
+}
+
+.comment-section .comment-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--gray-600);
+  background: var(--white-a02);
+  border-radius: 12px;
+}
+
+/* 댓글 작성 폼 */
+.comment-section .comment-form-box {
+  background: var(--white-a02);
+  border: 1px solid var(--white-a05);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+#comment-input {
+  width: 100%;
+  min-height: 80px;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.comment-section .comment-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}

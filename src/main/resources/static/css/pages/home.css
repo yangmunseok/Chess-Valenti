@@ -288,3 +288,24 @@
     padding-left: 15px;
   }
 }
+
+/* 메인 액션 배너 두 개 (인사이트, 폰 구조 분석). :hover 보다 뒤에 두어 배경과 테두리를 유지한다 */
+.banner-group {
+  display: flex;
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.banner-group .action-banner {
+  flex: 1;
+  margin-top: 0;
+}
+
+.banner-group .action-banner.analysis-banner {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.analysis-banner .action-arrow {
+  color: var(--accent-blue);
+}

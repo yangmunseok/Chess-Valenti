@@ -1,0 +1,61 @@
+/* 사용하는 페이지: study (템플릿의 <style> 블록에서 옮김) */
+.study-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+.study-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 0; /* Changed to handle image */
+  transition: transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+  overflow: hidden; /* Added for image corners */
+}
+.study-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-blue);
+}
+.study-card .thumbnail {
+  width: 100%;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.05);
+  object-fit: cover;
+  display: block;
+}
+.study-card .card-body {
+  padding: 24px;
+}
+.study-card .category {
+  font-size: 12px;
+  color: var(--accent-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.study-card h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+.study-card p {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+/* 이미지가 없는 카드의 썸네일 자리 (이모지 표시) */
+.study-card .thumbnail.thumbnail-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: var(--white-a10);
+}
+
+/* 글이 없을 때 보여 주는 안내 카드 */
+.study-card.study-card-empty {
+  cursor: default;
+}

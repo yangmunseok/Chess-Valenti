@@ -8,78 +8,7 @@
   <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
   <link th:href="@{/css/pages/analysis.css}" rel="stylesheet">
   <link th:href="@{/css/components/button.css}" rel="stylesheet">
-  <style>
-    .pawn-games-header {
-      display: flex;
-      align-items: center;
-      gap: 30px;
-      margin-bottom: 40px;
-      padding: 30px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 20px;
-      border: 1px solid var(--border-color);
-    }
-
-    .preview-board-wrapper {
-      width: 200px;
-      height: 200px;
-      flex-shrink: 0;
-    }
-
-    .header-info h1 {
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    .header-info p {
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-
-    .results-container {
-      width: 100%;
-      max-width: 1000px;
-    }
-
-    @media (max-width: 768px) {
-      .pawn-games-header {
-        flex-direction: column;
-        padding: 20px;
-        gap: 20px;
-        text-align: center;
-        margin-bottom: 24px;
-      }
-
-      .preview-board-wrapper {
-        width: 150px;
-        height: 150px;
-      }
-
-      .header-info h1 {
-        font-size: 20px;
-      }
-
-      .hide-mobile {
-        display: none;
-      }
-
-      .game-table th, .game-table td {
-        padding: 12px 8px;
-        font-size: 13px;
-      }
-
-      .mobile-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .player-sub {
-        font-size: 11px;
-        color: var(--text-secondary);
-      }
-    }
-  </style>
+  <link th:href="@{/css/pages/pawn-games.css}" rel="stylesheet">
 </head>
 <body class="page-analysis">
 <div class="dashboard-wrapper">
@@ -122,8 +51,7 @@
             </thead>
             <tbody id="game-list-body">
             <tr>
-              <td colspan="8"
-                  style="text-align: center; padding: 40px; color: var(--text-secondary);">
+              <td colspan="8" class="table-message">
                 게임 데이터를 불러오고 있습니다...
               </td>
             </tr>

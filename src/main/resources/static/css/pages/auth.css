@@ -108,3 +108,25 @@
   min-height: 18px; /* 메시지가 나타날 때 레이아웃 흔들림 방지 */
   transition: color 0.2s ease;
 }
+/* 로그인 화면 위쪽 안내 (비밀번호 재설정 요청, 완료, 오류) */
+.alert {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.alert-info {
+  color: var(--blue-500);
+  background: var(--blue-500-a10);
+}
+
+.alert-success {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.alert-danger {
+  color: var(--tn-red);
+  background: var(--tn-red-a10);
+}

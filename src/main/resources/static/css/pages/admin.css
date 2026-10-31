@@ -1433,3 +1433,33 @@ tr.user-stopped td {
   gap: 12px;
   flex-wrap: wrap;
 }
+/* ---- 관리자 공통 조각 (fragment/component, fragment/content 의 인라인 style 에서 옮김) ---- */
+.admin-sidebar .admin-logo {
+  cursor: pointer;
+}
+
+/* 로그아웃 form. base.css 의 .inline-form 과 같지만 base.css 를 불러오지 않는 관리자 페이지(manage-user)가 있다 */
+.admin-user-bottom .inline-form {
+  display: contents;
+}
+
+/* :hover 규칙보다 뒤에 두어 배경을 유지한다 */
+.admin-user-bottom .logout-link.logout-button {
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  background: var(--tn-red-a10);
+}
+
+.badge-success.answered-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

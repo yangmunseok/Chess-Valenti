@@ -339,3 +339,20 @@
     padding: 24px 16px;
   }
 }
+
+/* 로그인하지 않은 사용자의 사이드바 프로필 */
+a.user-profile.guest-profile {
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-avatar.guest {
+  background: var(--border-color);
+}
+
+/* 모바일 상단 바 오른쪽 (사용자 아바타 등) */
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

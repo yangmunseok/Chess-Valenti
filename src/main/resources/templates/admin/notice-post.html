@@ -15,23 +15,7 @@
   <link rel="stylesheet" th:href="@{/css/pages/home.css}">
   <link rel="stylesheet" th:href="@{/css/components/editor.css}">
   <link rel="stylesheet" th:href="@{/css/components/button.css}">
-  <style>
-    .valenti-input.error {
-      border-color: #ff4444 !important;
-      box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2) !important;
-      background: rgba(255, 68, 68, 0.05) !important;
-    }
-    .error-message {
-      color: #ff4444;
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 8px;
-      display: none;
-    }
-    .error-message.show {
-      display: block;
-    }
-  </style>
+  <link th:href="@{/css/pages/admin-editor.css}" rel="stylesheet">
 </head>
 <body class="valenti-dark">
 
@@ -71,8 +55,7 @@
               STUDY
             </option>
           </select>
-          <p th:if="${post != null or param.containsKey('type')}" class="hero-desc"
-             style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
+          <p th:if="${post != null or param.containsKey('type')}" class="hero-desc field-hint">
             * 작성 중에는 타입을 변경할 수 없습니다.
           </p>
         </div>
@@ -107,8 +90,7 @@
             <label for="image-file">THUMBNAIL IMAGE (Optional)</label>
             <input type="file" id="image-file" accept="image/*" class="valenti-input">
             <p th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.imageUrl != null}"
-               class="hero-desc"
-               style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
+               class="hero-desc field-hint">
               * 현재 이미지: <span th:text="${post.imageUrl}"></span> (새 파일을 선택하면 교체됩니다)
             </p>
           </div>

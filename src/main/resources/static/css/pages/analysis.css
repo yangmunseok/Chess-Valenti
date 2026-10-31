@@ -1093,3 +1093,18 @@
     margin: 10px 0;
   }
 }
+
+/* 하단 버튼줄의 세로 구분선 */
+.toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-color);
+  margin: 0 8px;
+}
+
+/* 기보 우클릭 메뉴의 기호 색 */
+.context-menu-item[data-symbol="!"] .symbol-badge { color: #4ade80; }
+.context-menu-item[data-symbol="!!"] .symbol-badge { color: #22d3ee; }
+.context-menu-item[data-symbol="?"] .symbol-badge { color: #f87171; }
+.context-menu-item[data-symbol="??"] .symbol-badge { color: #ef4444; }
+.context-menu-item[data-symbol="?!"] .symbol-badge { color: #60a5fa; }

@@ -28,3 +28,8 @@ body {
   background-image: radial-gradient(circle at 50% -20%, var(--accent-glow), transparent 60%);
   -webkit-font-smoothing: antialiased;
 }
+
+/* 버튼 하나만 감싸는 form 이 레이아웃에 끼어들지 않게 한다 (로그아웃 버튼 등) */
+.inline-form {
+  display: contents;
+}
