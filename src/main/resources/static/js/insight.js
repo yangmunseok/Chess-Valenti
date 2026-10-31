@@ -1,5 +1,6 @@
 import {initBoard, renderBoardFromFen} from "./board.js";
 import {InsightLoadError, loadChessComGames, loadLichessGames} from "./insightLoader.js";
+import {withCsrf} from "./csrf.js";
 
 let selectedPlatform = 'lichess';
 // 로그인한 사용자만 결과를 서버에 저장한다
@@ -72,15 +73,9 @@ function showError(message) {
 }
 
 async function saveResult(request, top) {
-  const headers = {'Content-Type': 'application/json'};
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
-  const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
-  if (csrfHeader && csrfToken) {
-    headers[csrfHeader] = csrfToken;
-  }
   const response = await fetch('/api/insight', {
     method: 'POST',
-    headers,
+    headers: withCsrf({'Content-Type': 'application/json'}),
     body: JSON.stringify({...request, data: top}),
   });
   // 세션이 만료되면 로그인 안내 페이지로 리다이렉트되어 200 이 오므로 redirected 도 확인한다

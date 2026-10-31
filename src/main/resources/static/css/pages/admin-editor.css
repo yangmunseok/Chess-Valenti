@@ -1,0 +1,24 @@
+/* 사용하는 페이지: admin/notice-post (템플릿의 <style> 블록에서 옮김) */
+.valenti-input.error {
+  border-color: #ff4444 !important;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2) !important;
+  background: rgba(255, 68, 68, 0.05) !important;
+}
+.error-message {
+  color: #ff4444;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  display: none;
+}
+.error-message.show {
+  display: block;
+}
+
+
+/* 입력란 아래 작은 안내 문구 */
+.hero-desc.field-hint {
+  font-size: 12px;
+  margin-top: 4px;
+  color: var(--text-muted);
+}

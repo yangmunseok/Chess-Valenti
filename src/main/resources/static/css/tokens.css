@@ -1,0 +1,96 @@
+/*
+ * 디자인 토큰. 모든 페이지가 다른 CSS 보다 먼저 불러온다 (fragment/head.html :: common).
+ *
+ * 1. 팔레트: 색 자체에 붙인 이름. 여러 곳에서 쓰는 색만 둔다.
+ *    -aNN 은 투명도 (a05 = 0.05, a30 = 0.3)
+ * 2. 의미 토큰: 용도에 붙인 이름. 새 스타일은 가능하면 이쪽을 쓴다.
+ */
+:root {
+  /* ---- 팔레트: 무채색 ---- */
+  --white: #fff;
+  --black: #000;
+  --gray-20: #333;
+  --gray-40: #666;
+  --gray-600: #4b5563;
+  --slate-100: #f1f5f9;
+  --slate-400: #94a3b8;
+
+  --white-a02: rgba(255, 255, 255, 0.02);
+  --white-a03: rgba(255, 255, 255, 0.03);
+  --white-a04: rgba(255, 255, 255, 0.04);
+  --white-a05: rgba(255, 255, 255, 0.05);
+  --white-a08: rgba(255, 255, 255, 0.08);
+  --white-a10: rgba(255, 255, 255, 0.1);
+  --white-a15: rgba(255, 255, 255, 0.15);
+  --black-a20: rgba(0, 0, 0, 0.2);
+  --black-a30: rgba(0, 0, 0, 0.3);
+  --black-a50: rgba(0, 0, 0, 0.5);
+
+  /* ---- 팔레트: 관리자 페이지 배경 ---- */
+  --ink-950: #0f111a;
+  --ink-900: #161925;
+  --ink-800: #1f2335;
+
+  /* ---- 팔레트: 남색 배경 ---- */
+  --navy-950: #0a0d14;
+  --navy-900: #111520;
+  --navy-800: #1a2133;
+  --navy-900-a80: rgba(17, 21, 32, 0.8);
+
+  /* ---- 팔레트: 강조색 ---- */
+  --blue-500: #3b82f6;
+  --blue-500-a10: rgba(59, 130, 246, 0.1);
+  --blue-500-a15: rgba(59, 130, 246, 0.15);
+  --blue-500-a30: rgba(59, 130, 246, 0.3);
+  --red-500: #ef4444;
+  --red-500-a10: rgba(239, 68, 68, 0.1);
+  --red-400: #f87171;
+  --green-400: #4ade80;
+
+  /* ---- 팔레트: GitHub 다크 (게시글, 편집기) ---- */
+  --github-canvas: #161b22;
+  --github-muted: #8b949e;
+
+  /* ---- 팔레트: Tokyo Night (관리자, 인사이트) ---- */
+  --tn-bg: #1a1b26;
+  --tn-fg: #c0caf5;
+  --tn-comment: #565f89;
+  --tn-blue: #7aa2f7;
+  --tn-blue-a10: rgba(122, 162, 247, 0.1);
+  --tn-purple: #bb9af7;
+  --tn-purple-a10: rgba(187, 154, 247, 0.1);
+  --tn-purple-a20: rgba(187, 154, 247, 0.2);
+  --tn-purple-a30: rgba(187, 154, 247, 0.3);
+  --tn-purple-a50: rgba(187, 154, 247, 0.5);
+  --tn-green: #9ece6a;
+  --tn-red: #f7768e;
+  --tn-red-a10: rgba(247, 118, 142, 0.1);
+  --tn-red-a20: rgba(247, 118, 142, 0.2);
+
+  /* ---- 의미 토큰: 공통 ---- */
+  --bg-base: var(--navy-950);
+  --bg-panel: var(--navy-900);
+  --bg-hover: var(--navy-800);
+  --border-color: var(--white-a08);
+  --border-highlight: var(--white-a15);
+
+  --text-primary: var(--slate-100);
+  --text-secondary: #8b94a5;
+  --text-dim: #9499b8;
+
+  --accent-blue: var(--blue-500);
+  --accent-glow: var(--blue-500-a15);
+  --danger: var(--red-500);
+  --danger-glow: var(--red-500-a10);
+
+  /* 체스판 칸 */
+  --square-light: #b8c0d1;
+  --square-dark: #50658e;
+
+  /* 카드, 강조 (관리자 페이지에서 시작했지만 인사이트, 홈, 결제 성공 페이지도 쓴다) */
+  --admin-bg: var(--ink-950);
+  --sidebar-bg: var(--ink-900);
+  --card-bg: var(--ink-800);
+  --accent-purple: var(--tn-blue); /* 이름과 달리 파란색 */
+  --warning-red: var(--tn-red);
+}

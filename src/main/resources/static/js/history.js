@@ -1,3 +1,4 @@
+// 기보(수 목록) 렌더링과 기보 조작: 수 클릭과 이동 버튼, 기호(!, ?) 붙이기, 주석 저장
 import {
   currentNode,
   findNodeById,
@@ -6,9 +7,16 @@ import {
   setCurrentNode,
   setGameResultState
 } from "./state.js";
-import {generateFullPgn, loadBoardFromNode, updatePGN} from "./game.js";
-import {drawSymbol, renderBoardFromFen, updateSquareEvent} from "./board.js";
+import {loadBoardFromNode} from "./game.js";
+import {drawSymbol} from "./board.js";
+import {generatePgn} from "./pgn.js";
+import {renderEvaluation} from "./evaluation.js";
 import {updateOpeningExplorer} from "./explorer.js";
+
+const SYMBOL_CLASSES = {
+  '!!': 'sig-brilliant', '!': 'sig-excellent',
+  '?': 'sig-mistake', '??': 'sig-blunder', '?!': 'sig-inaccuracy'
+};
 
 let selectedMoveElement = null;
 
@@ -17,7 +25,7 @@ export function refreshMoveHistory(gameResult = gameResultState) {
   const pgnInput = document.getElementById(
       'pgnInput');
   if (pgnInput) {
-    pgnInput.value = generateFullPgn();
+    pgnInput.value = generatePgn(gameTree);
   }
   const moveHistory = document.getElementById('move-history');
   moveHistory.innerHTML = `<div class="move-row starting">Starting position</div>`;
@@ -51,11 +59,13 @@ function renderNodeRecursive(node, container, isMainLine) {
 
     if (isWhite || prevWasComment || !lastElement.classList.contains(
         'move-entry')) {
+      // 새 줄을 흑의 수로 시작할 때(변화수나 주석 다음)는 백 칸에 "..." 을 넣어 "2. ... Nc6" 으로 보이게 한다.
+      // 백의 수로 시작하는 줄은 흑의 수가 아직 없으므로 흑 칸에 "..." 을 넣어 둔다
       targetRow = document.createElement('div');
       targetRow.className = 'move-entry';
       targetRow.innerHTML = `
         <div class="move-number">${moveNum}.</div>
-        <div class="move-notation white-part"></div>
+        <div class="move-notation white-part">${isWhite ? '' : '...'}</div>
         <div class="move-notation black-part">${isWhite ? '...' : ''}</div>`;
       container.appendChild(targetRow);
     } else {
@@ -64,11 +74,7 @@ function renderNodeRecursive(node, container, isMainLine) {
 
     // 수 삽입
     const moveSpan = document.createElement('span');
-    const symbolMap = {
-      '!!': 'sig-brilliant', '!': 'sig-excellent',
-      '?': 'sig-mistake', '??': 'sig-blunder', '?!': 'sig-inaccuracy'
-    }
-    moveSpan.className = `clickable-move ${symbolMap[node.symbol]}`;
+    moveSpan.className = `clickable-move ${SYMBOL_CLASSES[node.symbol]}`;
     if (node === currentNode) {
       moveSpan.classList.add('selected-node');
       selectedMoveElement = moveSpan;
@@ -144,11 +150,7 @@ function renderVariationBlock(startNode, container,
         : '...'} ` : '';
 
     const moveSpan = document.createElement('span');
-    const symbolMap = {
-      '!!': 'sig-brilliant', '!': 'sig-excellent',
-      '?': 'sig-mistake', '??': 'sig-blunder', '?!': 'sig-inaccuracy'
-    }
-    moveSpan.className = `clickable-move highlight-move ${symbolMap[curr.symbol]}`;
+    moveSpan.className = `clickable-move highlight-move ${SYMBOL_CLASSES[curr.symbol]}`;
     moveSpan.dataset.nodeId = curr.id;
     moveSpan.innerText = `${prefix}${curr.move}${curr.symbol} `;
     content.appendChild(moveSpan);
@@ -178,46 +180,90 @@ function renderVariationBlock(startNode, container,
   }
 }
 
+// 기보에서 nodeId 수를 선택 표시한다
+function markSelectedMove(nodeId) {
+  document.querySelectorAll('.clickable-move').forEach(el => {
+    if (el.dataset.nodeId === nodeId) {
+      el.classList.add("selected-node");
+      selectedMoveElement = el;
+    } else {
+      el.classList.remove("selected-node");
+    }
+  });
+}
+
+// targetNode 국면으로 이동한다. 기보 클릭과 이동 버튼이 함께 쓴다.
+function goToNode(targetNode) {
+  if (!targetNode) {
+    return;
+  }
+  loadBoardFromNode(targetNode).then(() => {
+    setCurrentNode(targetNode);
+    renderEvaluation();
+    updateOpeningExplorer();
+    markSelectedMove(targetNode.id);
+  });
+}
+
+function hideMenu() {
+  const menu = document.getElementById('move-context-menu');
+  if (menu) {
+    menu.style.display = 'none';
+  }
+}
+
+// 우클릭 메뉴에서 고른 기호를 선택한 수에 붙인다
+function addSymbol(symbol) {
+  if (!selectedMoveElement) {
+    return;
+  }
+  const selectedNode = findNodeById(selectedMoveElement.dataset.nodeId);
+  selectedNode.symbol = symbol;
+  refreshMoveHistory();
+
+  // Draw symbol on board if it's the current node
+  if (selectedNode === currentNode && selectedNode.uci) {
+    const to = selectedNode.uci.substring(2, 4);
+    drawSymbol(to, symbol);
+  }
+
+  hideMenu();
+}
+
+function lastMainLineNode() {
+  let node = gameTree;
+  while (node.children.length > 0) {
+    node = node.children[0];
+  }
+  return node;
+}
+
+function showPanel(panelId) {
+  document.querySelectorAll('.side-pannel .panel').forEach(
+      p => p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
 // 각종 UI 이벤트 바인딩
 export function initHistoryEvents() {
-  // 1. 기보 클릭 시 턴 되돌리기
+  // 1. 기보 클릭 시 그 국면으로 이동
   document.addEventListener('click', function (e) {
     const moveSpan = e.target.closest('.clickable-move');
-    const textarea = document.querySelector('.editor-textarea'); // 주석 입력창
-
-    if (moveSpan) {
-      // 선택 하이라이트
-      document.querySelectorAll('.clickable-move').forEach(
-          el => el.classList.remove("selected-node"));
-      selectedMoveElement = moveSpan;
-      selectedMoveElement.classList.add("selected-node");
-
-      const nodeId = moveSpan.dataset.nodeId;
-      const targetNode = findNodeById(nodeId);
-      console.log(targetNode)
-      if (targetNode) {
-        if (textarea) {
-          textarea.value = targetNode.comment || "";
-        }
-
-        loadBoardFromNode(targetNode).then(() => {
-          setCurrentNode(targetNode);
-          renderEvaluataion();
-          updateOpeningExplorer();
-          document.querySelectorAll('.clickable-move').forEach(
-              el => {
-                if (el.dataset.nodeId === targetNode.id) {
-                  console.log("hi")
-                  el.classList.add("selected-node")
-                  selectedMoveElement = el
-                } else {
-                  el.classList.remove("selected-node")
-                }
-              });
-        });
-      }
+    if (!moveSpan) {
+      return;
     }
-  })
+    const targetNode = findNodeById(moveSpan.dataset.nodeId);
+    if (!targetNode) {
+      return;
+    }
+    markSelectedMove(targetNode.id);
+    const textarea = document.querySelector('.editor-textarea'); // 주석 입력창
+    if (textarea) {
+      textarea.value = targetNode.comment || "";
+    }
+    goToNode(targetNode);
+  });
+
   // 2. 우클릭 메뉴 및 기호
   document.addEventListener('contextmenu', function (e) {
     const moveSpan = e.target.closest('.clickable-move');
@@ -235,33 +281,8 @@ export function initHistoryEvents() {
 
   document.addEventListener('click', hideMenu);
 
-  function hideMenu() {
-    const menu = document.getElementById('move-context-menu');
-    if (menu) {
-      menu.style.display = 'none';
-    }
-  }
-
-  // HTML에 있는 기호 버튼 onclick과 연동 (전역 노출 필요 시 window 객체 활용)
-  window.addSymbol = function (symbol) {
-    if (!selectedMoveElement) {
-      return;
-    }
-    const selectedNode = findNodeById(selectedMoveElement.dataset.nodeId)
-    selectedNode.symbol = symbol;
-    
-    // Refresh PGN and Move History
-    updatePGN();
-    refreshMoveHistory();
-
-    // Draw symbol on board if it's the current node
-    if (selectedNode === currentNode && selectedNode.uci) {
-      const to = selectedNode.uci.substring(2, 4);
-      drawSymbol(to, symbol);
-    }
-    
-    hideMenu();
-  };
+  document.querySelectorAll('#move-context-menu [data-symbol]').forEach(item =>
+      item.addEventListener('click', () => addSymbol(item.dataset.symbol)));
 
   // 3. Annotation 저장
   document.querySelector('.editor-footer .btn').addEventListener('click',
@@ -273,244 +294,43 @@ export function initHistoryEvents() {
           return;
         }
 
-        const id = selectedMoveElement.dataset.nodeId;
-        const targetNode = findNodeById(id);
-
+        const targetNode = findNodeById(selectedMoveElement.dataset.nodeId);
         if (targetNode) {
           targetNode.comment = content;
-          updatePGN();
           refreshMoveHistory();
           textarea.value = '';
         }
       });
 
-  function goFirst() {
-    const targetNode = gameTree
-    loadBoardFromNode(targetNode).then(() => {
-      setCurrentNode(targetNode);
-      renderEvaluataion();
-      document.querySelectorAll('.clickable-move').forEach(
-          el => {
-            if (el.dataset.nodeId === targetNode.id) {
-              el.classList.add("selected-node")
-              selectedMoveElement = el
-            } else {
-              el.classList.remove("selected-node")
-            }
-          });
-    })
-  }
+  // 4. 이동 버튼
+  document.querySelector('#btn-first').addEventListener('click', () => goToNode(gameTree));
+  document.querySelector('#btn-last').addEventListener('click',
+      () => goToNode(lastMainLineNode()));
+  document.querySelector('#go-back-btn').addEventListener('click',
+      () => goToNode(currentNode.parent));
+  document.querySelector('#go-front-btn').addEventListener('click',
+      () => goToNode(currentNode.children[0]));
 
-  function goLast() {
-    let targetNode = gameTree
-    while (targetNode.children.length > 0) {
-      targetNode = targetNode.children[0];
-    }
-    loadBoardFromNode(targetNode).then(() => {
-      setCurrentNode(targetNode);
-      renderEvaluataion();
-      document.querySelectorAll('.clickable-move').forEach(
-          el => {
-            if (el.dataset.nodeId === targetNode.id) {
-              el.classList.add("selected-node")
-              selectedMoveElement = el
-            } else {
-              el.classList.remove("selected-node")
-            }
-          });
-    })
-  }
-
-  function goBackward() {
-    const targetNode = currentNode.parent;
-    if (!targetNode) {
-      return;
-    }
-
-    loadBoardFromNode(targetNode).then(() => {
-      //refreshMoveHistory();
-      setCurrentNode(targetNode);
-      renderEvaluataion();
-      document.querySelectorAll('.clickable-move').forEach(
-          el => {
-            if (el.dataset.nodeId === targetNode.id) {
-              el.classList.add("selected-node")
-              selectedMoveElement = el
-            } else {
-              el.classList.remove("selected-node")
-            }
-          });
-    });
-  }
-
-  function goForward() {
-    const targetNode = currentNode.children[0];
-    if (!targetNode) {
-      return;
-    }
-
-    loadBoardFromNode(targetNode).then(() => {
-      //refreshMoveHistory();
-      setCurrentNode(targetNode);
-      renderEvaluataion();
-      updateOpeningExplorer();
-      document.querySelectorAll('.clickable-move').forEach(
-          el => {
-            if (el.dataset.nodeId === targetNode.id) {
-              el.classList.add("selected-node")
-              selectedMoveElement = el;
-            } else {
-              el.classList.remove("selected-node")
-            }
-          });
-    });
-  }
-
-  document.querySelector('#btn-first').addEventListener('click', goFirst);
-
-  document.querySelector('#btn-last').addEventListener('click', goLast);
-
-  document.querySelector('#go-back-btn').addEventListener('click', goBackward);
-
-  document.querySelector('#go-front-btn').addEventListener('click', goForward);
+  // 5. 옆 패널 전환
   document.getElementById('menu-toggle-btn')?.addEventListener('click',
       function () {
-        const editor = document.getElementById('annotation-editor');
-        const menu = document.getElementById('extra-menu');
-        const explorer = document.getElementById('opening-explorer');
-
         // 모든 패널 비활성화 후 에디터/메뉴 토글
-        const isMenuVisible = menu.classList.contains('active');
-
-        document.querySelectorAll('.side-pannel .panel').forEach(
-            p => p.classList.remove('active'));
-
+        const isMenuVisible = document.getElementById('extra-menu').classList.contains('active');
         if (isMenuVisible) {
-          editor.classList.add('active');
+          showPanel('annotation-editor');
           this.style.color = '';
         } else {
-          menu.classList.add('active');
+          showPanel('extra-menu');
           this.style.color = '#3b82f6';
         }
       });
 
   document.getElementById('opening-explorer-btn')?.addEventListener('click',
       () => {
-        document.querySelectorAll('.side-pannel .panel').forEach(
-            p => p.classList.remove('active'));
-        document.getElementById('opening-explorer').classList.add('active');
+        showPanel('opening-explorer');
         updateOpeningExplorer();
       });
 
   document.getElementById('explorer-back-btn')?.addEventListener('click',
-      () => {
-        document.querySelectorAll('.side-pannel .panel').forEach(
-            p => p.classList.remove('active'));
-        document.getElementById('extra-menu').classList.add('active');
-      });
+      () => showPanel('extra-menu'));
 }
-
-const toggle = document.querySelector('.toggle');
-const evaluation = document.querySelector('.engine-evaluation');
-const evalFill = document.getElementById('eval-fill');
-let evaluationStream = null;
-
-function updateEvalBar(score, isMate = false) {
-  if (!evalFill) {
-    return;
-  }
-
-  let percent;
-  if (isMate) {
-    percent = score > 0 ? 100 : 0;
-  } else {
-    // Clamped linear scale: +/- 10.0 -> 100%/0%
-    percent = Math.max(0, Math.min(100, 50 + (score / 10) * 50));
-  }
-
-  evalFill.style.height = percent + '%';
-}
-
-function closeEvaluationStream() {
-  if (evaluationStream) {
-    evaluationStream.close();
-    evaluationStream = null;
-  }
-}
-
-function renderEvaluationData(data) {
-  evaluation.style.display = 'inline-block';
-
-  if (data.pvs && data.pvs.length > 0) {
-    if (data.pvs[0].hasOwnProperty("cp") && data.pvs[0].cp !== null) {
-      const score = data.pvs[0].cp / 100;
-      const displayScore = (score > 0 ? "+" : "") + score.toFixed(2);
-      evaluation.textContent = displayScore;
-      updateEvalBar(score);
-    } else if (data.pvs[0].hasOwnProperty("mate") && data.pvs[0].mate
-        !== null) {
-      const mate = data.pvs[0].mate;
-      evaluation.textContent = '#' + mate;
-      updateEvalBar(mate, true);
-    }
-  }
-}
-
-export const renderEvaluataion = async () => {
-  closeEvaluationStream();
-
-  if (currentNode.eval !== "") {
-    evaluation.textContent = currentNode.eval;
-    // Parse stored eval if available to update bar
-    const storedEval = currentNode.eval;
-    if (storedEval.startsWith('#')) {
-      updateEvalBar(parseInt(storedEval.substring(1)), true);
-    } else if (storedEval !== "Mate!") {
-      updateEvalBar(parseFloat(storedEval));
-    }
-    return;
-  }
-
-  if (currentNode.move.endsWith('#')) {
-    evaluation.textContent = 'Mate!';
-    const winnerIsWhite = (currentNode.ply % 2 !== 0);
-    updateEvalBar(winnerIsWhite ? 1 : -1, true);
-    return;
-  }
-
-  if (toggle.checked) {
-    const streamFen = currentNode.fen;
-    let receivedEvaluation = false;
-    evaluationStream = new EventSource(
-        `/api/evaluation/stream?fen=${encodeURIComponent(streamFen)}`
-    );
-
-    evaluationStream.onmessage = (event) => {
-      if (streamFen !== currentNode.fen) {
-        closeEvaluationStream();
-        return;
-      }
-      receivedEvaluation = true;
-      renderEvaluationData(JSON.parse(event.data));
-    };
-
-    evaluationStream.addEventListener('done', () => {
-      closeEvaluationStream();
-    });
-
-    evaluationStream.onerror = (e) => {
-      console.warn("Stockfish eval failed:", e);
-      closeEvaluationStream();
-      if (!receivedEvaluation) {
-        evaluation.style.display = 'none';
-      }
-    };
-  } else {
-    evaluation.style.display = 'none';
-  }
-}
-
-if (toggle) {
-  toggle.addEventListener('change', renderEvaluataion);
-}
-

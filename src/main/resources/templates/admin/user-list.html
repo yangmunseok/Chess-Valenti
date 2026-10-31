@@ -1,27 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-DBMLJY2F5L');
-  </script>
-  <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <th:block th:replace="~{fragment/head :: common}"></th:block>
   <title>valenti Admin - Control Center</title>
   <link rel="stylesheet" as="style" crossorigin
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"/>
   <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
-  <link rel="stylesheet" href="/css/app.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/pages/admin.css}">
 </head>
 <body class="admin-body">
 <nav th:replace="~{fragment/component :: adminSidebar(url='/admin/users')}"></nav>
@@ -55,147 +41,7 @@
     </div>
   </header>
 
-  <style>
-    /* Admin Header Layout */
-    .admin-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-      gap: 20px;
-      flex-wrap: wrap;
-      width: 100%;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      padding-bottom: 20px;
-    }
-
-    .admin-header h2 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      margin: 0;
-      letter-spacing: -0.02em;
-    }
-
-    .admin-header h2 .count {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent-purple);
-      background: rgba(122, 162, 247, 0.1);
-      border: 1px solid rgba(122, 162, 247, 0.15);
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-left: 12px;
-      letter-spacing: 0;
-    }
-
-    .header-tools {
-      flex-shrink: 0;
-    }
-
-    .filter-form {
-      background: rgba(255, 255, 255, 0.02);
-      padding: 10px 18px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .filter-input {
-      background: rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      width: 140px;
-    }
-
-    .filter-input[type="date"] {
-      width: 150px;
-      color-scheme: dark;
-    }
-
-    .filter-input:focus {
-      border-color: var(--accent-purple);
-      background: rgba(0, 0, 0, 0.3);
-      box-shadow: 0 0 8px rgba(122, 162, 247, 0.2);
-    }
-
-    .online-filter {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: #9499b8;
-      cursor: pointer;
-      user-select: none;
-      transition: color 0.2s;
-    }
-
-    .online-filter:hover {
-      color: #fff;
-    }
-
-    .online-filter input {
-      accent-color: var(--accent-purple);
-      cursor: pointer;
-    }
-
-    .filter-submit-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      background: linear-gradient(135deg, var(--accent-purple) 0%, #5d83d6 100%);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(122, 162, 247, 0.15);
-    }
-
-    .filter-submit-btn:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(122, 162, 247, 0.25);
-    }
-
-    .filter-submit-btn:active {
-      transform: translateY(0);
-    }
-
-    .filter-reset-btn {
-      color: #9499b8;
-      text-decoration: none;
-      font-size: 13px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .filter-reset-btn:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.05);
-    }
-  </style>
+  <link th:href="@{/css/pages/admin-users.css}" rel="stylesheet">
 
   <section class="admin-mini-dashboard">
     <div class="mini-card">
@@ -299,7 +145,7 @@
     </table>
 
     <div class="pagination" th:data-page="${currentPage}">
-      <button disabled onclick="setCurrentPage(currentPage-10)" class="btn">
+      <button data-page-step="-10" class="btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2">
           <polyline points="15 18 9 12 15 6"></polyline>
@@ -311,7 +157,7 @@
            class="btn"
            th:classappend="${currentPage + 1 == page} ? 'active'"></a>
       </th:block>
-      <button onclick="setCurrentPage(currentPage+10)" class="btn">
+      <button data-page-step="10" class="btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2">
           <polyline points="9 18 15 12 9 6"></polyline>
@@ -322,88 +168,6 @@
 </main>
 <div th:replace="~{fragment/component :: stopModal}"></div>
 </body>
-<script>
-  let currentPage = 1;
-  const pagination = document.querySelector('.pagination');
-  setCurrentPage(pagination.dataset.page);
-
-  function setCurrentPage(page) {
-    if (page < 1) {
-      page = 1;
-    }
-    currentPage = page;
-    let buttons = pagination.getElementsByTagName("button");
-
-    if (buttons.length - 2 < page) {
-      currentPage = buttons.length - 2;
-      page = buttons.length - 2;
-      buttons[buttons.length - 1].disabled = true;
-    }
-    if (page < 11) {
-      buttons[0].disabled = true;
-    }
-
-    for (let i = 1; i < buttons.length - 1; i++) {
-      const btn = buttons[i];
-      const num = parseInt(btn.textContent);
-      const bottom = Math.floor(num / 10) * 10 + 1;
-      btn.style.display = 'block';
-      if (num < bottom || bottom > page + 10) {
-        btn.style.display = 'none';
-      }
-    }
-  }
-
-  function closeModal() {
-    document.getElementById('stop-modal').classList.remove('active');
-  }
-
-  // 오버레이 클릭 시 닫기
-  window.onclick = function (event) {
-    const modal = document.getElementById('stop-modal');
-    if (event.target == modal) {
-      closeModal();
-    }
-  }
-
-  // 전역 변수로 현재 조작 중인 행을 저장 (예시용)
-  let currentTargetRow = null;
-
-  function openStopModal(button) {
-    // 버튼이 속한 tr(행)을 찾아서 저장
-    currentTargetRow = button.closest('tr');
-
-    const modal = document.getElementById('stop-modal');
-    modal.classList.add('active');
-  }
-
-  function confirmStop() {
-    console.log(currentTargetRow);
-    if (!currentTargetRow) {
-      return;
-    }
-
-    // 1. 상태 컬럼(td)을 찾아 내용 변경
-    const statusCell = currentTargetRow.querySelector('.status-cell'); // HTML에 클래스 추가 필요
-    statusCell.innerHTML = `
-        <span class="status-indicator stopped"></span>
-        <span class="badge-stopped">활동 정지</span>
-    `;
-
-    // 2. 제어 버튼을 '정지 해제'로 변경 (선택 사항)
-    const actionCell = currentTargetRow.querySelector('.action-cell');
-    actionCell.innerHTML = `
-        <button class="btn-action-resume" onclick="resumeUser(this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-            정지 해제
-        </button>
-    `;
-
-    // 3. 행 스타일 변경
-    currentTargetRow.classList.add('user-stopped');
-
-    alert("해당 사용자의 활동이 정지되었습니다.");
-    closeModal();
-  }
-</script>
+<script type="module" th:src="@{/js/pagination.js}"></script>
+<script th:src="@{/js/pages/admin/user-list.js}"></script>
 </html>

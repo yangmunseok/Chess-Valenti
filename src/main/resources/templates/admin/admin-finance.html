@@ -1,80 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-DBMLJY2F5L');
-  </script>
-  <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <th:block th:replace="~{fragment/head :: common}"></th:block>
   <title>valenti Admin - Control Center</title>
   <link rel="stylesheet" as="style" crossorigin
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"/>
   <link href="https://fonts.cdnfonts.com/css/chess-alpha" rel="stylesheet">
-  <link rel="stylesheet" href="/css/app.css">
-  <link rel="stylesheet" href="/css/admin.css">
-  <link rel="stylesheet" href="/css/btn-refactor.css">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/pages/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/components/button.css}">
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta name="_csrf" th:content="${_csrf.token}">
-  <style>
-    /* 결제 리포트 추출 버튼 스타일 */
-    .btn-excel {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      background: rgba(122, 162, 247, 0.1);
-      color: var(--accent-purple);
-      border: 1px solid rgba(122, 162, 247, 0.25);
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(122, 162, 247, 0.1);
-    }
-
-    .btn-excel:hover {
-      background: rgba(122, 162, 247, 0.18);
-      color: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(122, 162, 247, 0.2);
-    }
-
-    .btn-excel:active {
-      transform: translateY(0);
-    }
-
-    /* 날짜 선택 인풋 스타일 (Month) */
-    .header-tools input[type="month"] {
-      background: rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-      transition: all 0.2s ease;
-      color-scheme: dark;
-      cursor: pointer;
-    }
-
-    .header-tools input[type="month"]:focus {
-      border-color: var(--accent-purple);
-      background: rgba(0, 0, 0, 0.3);
-      box-shadow: 0 0 8px rgba(122, 162, 247, 0.2);
-    }
-  </style>
+  <link th:href="@{/css/pages/admin-finance.css}" rel="stylesheet">
 </head>
 <body class="admin-body">
 <nav th:replace="~{fragment/component :: adminSidebar(url='/admin/finance')}"></nav>
@@ -116,50 +53,6 @@
     <div th:replace="~{fragment/content :: refundTable(content=${payments})}"></div>
   </section>
 </main>
-<script>
-  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-  document.getElementById('tab-payments').display = 'block';
-
-  function switchTab(event, tabId) {
-    document.querySelectorAll(".tab-btn-sm").forEach(btn => btn.classList.remove("active"))
-    document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"))
-    event.currentTarget.classList.add("active");
-    document.getElementById(tabId).classList.add("active");
-  }
-
-  function requestRefund(id) {
-    fetch("/payment/refund/request", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        [csrfHeader]: csrfToken
-      },
-      body: JSON.stringify(id)
-    }).then(() => location.reload());
-  }
-
-  function approveRefund(id) {
-    fetch("/payment/refund/accept", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        [csrfHeader]: csrfToken
-      },
-      body: JSON.stringify(id)
-    }).then(() => location.reload());
-  }
-
-  function rejectRefund(id) {
-    fetch("/payment/refund/reject", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        [csrfHeader]: csrfToken
-      },
-      body: JSON.stringify(id)
-    }).then(() => location.reload());
-  }
-</script>
+<script th:src="@{/js/pages/admin/admin-finance.js}"></script>
 </body>
 </html>

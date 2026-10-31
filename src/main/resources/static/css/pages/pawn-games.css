@@ -1,0 +1,79 @@
+/* 사용하는 페이지: pawn-games (템플릿의 <style> 블록에서 옮김) */
+.pawn-games-header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 40px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.preview-board-wrapper {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.header-info h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.header-info p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.results-container {
+  width: 100%;
+  max-width: 1000px;
+}
+
+@media (max-width: 768px) {
+  .pawn-games-header {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .preview-board-wrapper {
+    width: 150px;
+    height: 150px;
+  }
+
+  .header-info h1 {
+    font-size: 20px;
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+
+  .game-table th, .game-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .player-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+}
+
+
+/* 게임 목록을 불러오기 전 안내 행 */
+#game-list-body .table-message {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}

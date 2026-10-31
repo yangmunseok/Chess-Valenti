@@ -1,0 +1,114 @@
+/* 사용하는 페이지: access-denied, admin/admin-contents, admin/admin-finance, admin/admin-support, admin/manage-user, admin/notice-post, analysis, forgot-password, home, insight, landing, login, login-required, pawn-games, reset-password, signup, study */
+.btn {
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.btn:not(.btn-link) {
+  text-decoration: none;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: var(--text-primary);
+}
+
+.btn:not(.btn-link):not(:disabled):hover {
+  opacity: 0.9;
+}
+
+.btn-md {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.btn-lg {
+  padding: 16px 36px;
+  border-radius: 14px;
+  font-size: 16px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+
+.btn-primary.btn-shadow {
+  box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4);
+}
+
+.btn-primary.btn-shadow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 122, 255, 0.3), 0 0 0 4px rgba(0, 122, 255, 0.1);
+  background: #0084ff; /* 살짝 더 밝은 블루 */
+}
+
+.btn-outline.btn-glass {
+  background: var(--white-a03);
+  color: var(--text-primary);
+  border: 1px solid var(--white-a10);
+  backdrop-filter: blur(10px);
+}
+
+.btn-outline.btn-glass:hover {
+  background: var(--white-a08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary.btn-outline {
+  color: var(--accent-blue);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+
+/* CTA 버튼 공통 스타일 */
+
+.cta-btn {
+  position: relative;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cta-btn:hover {
+  transform: translateY(-4px);
+}
+
+/* 버튼 내부 화살표 애니메이션을 위한 가상 요소 (선택 사항) */
+.cta-btn.btn-primary::after {
+  content: '→';
+  margin-left: 8px;
+  transition: transform 0.3s;
+}
+
+.cta-btn.btn-primary:hover::after {
+  transform: translateX(4px);
+}

@@ -1,21 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-DBMLJY2F5L');
-  </script>
-  <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <th:block th:replace="~{fragment/head :: common}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="post_id" th:unless="${post==null}" th:content="${post.postId}"/>
@@ -24,28 +10,12 @@
       href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
       rel="stylesheet"
   />
-  <link rel="stylesheet" href="/css/app.css">
-  <link rel="stylesheet" href="/css/admin.css">
-  <link rel="stylesheet" href="/css/home.css">
-  <link rel="stylesheet" href="/css/editor.css">
-  <link rel="stylesheet" href="/css/btn-refactor.css">
-  <style>
-    .valenti-input.error {
-      border-color: #ff4444 !important;
-      box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2) !important;
-      background: rgba(255, 68, 68, 0.05) !important;
-    }
-    .error-message {
-      color: #ff4444;
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 8px;
-      display: none;
-    }
-    .error-message.show {
-      display: block;
-    }
-  </style>
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link rel="stylesheet" th:href="@{/css/pages/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/pages/home.css}">
+  <link rel="stylesheet" th:href="@{/css/components/editor.css}">
+  <link rel="stylesheet" th:href="@{/css/components/button.css}">
+  <link th:href="@{/css/pages/admin-editor.css}" rel="stylesheet">
 </head>
 <body class="valenti-dark">
 
@@ -85,8 +55,7 @@
               STUDY
             </option>
           </select>
-          <p th:if="${post != null or param.containsKey('type')}" class="hero-desc"
-             style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
+          <p th:if="${post != null or param.containsKey('type')}" class="hero-desc field-hint">
             * 작성 중에는 타입을 변경할 수 없습니다.
           </p>
         </div>
@@ -121,8 +90,7 @@
             <label for="image-file">THUMBNAIL IMAGE (Optional)</label>
             <input type="file" id="image-file" accept="image/*" class="valenti-input">
             <p th:if="${post instanceof T(org.spring.createa.chessvalenti.domain.Study) and post.imageUrl != null}"
-               class="hero-desc"
-               style="font-size: 12px; margin-top: 4px; color: var(--text-muted);">
+               class="hero-desc field-hint">
               * 현재 이미지: <span th:text="${post.imageUrl}"></span> (새 파일을 선택하면 교체됩니다)
             </p>
           </div>
@@ -155,117 +123,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
-<script>
-  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
-  const postId = document.querySelector('meta[name="post_id"]') ? document.querySelector(
-      'meta[name="post_id"]').content : null
-  // 에디터 설정
-  var quill = new Quill('#editor-container', {
-    modules: {
-      toolbar: [
-        [{header: [1, 2, false]}],
-        ['bold', 'italic', 'underline', 'strike'],
-        ['blockquote', 'code-block'],
-        [{'list': 'ordered'}, {'list': 'bullet'}],
-        ['link', 'image'],
-        ['clean']
-      ]
-    },
-    placeholder: '내용을 상세히 입력해주세요...',
-    theme: 'snow'
-  });
-
-  function toggleStudyFields() {
-    const postType = document.getElementById('post-type').value;
-    const studyFields = document.getElementById('study-only-fields');
-    if (postType === 'STUDY') {
-      studyFields.style.display = 'block';
-    } else {
-      studyFields.style.display = 'none';
-    }
-  }
-
-  // 초기 로드 시 실행
-  toggleStudyFields();
-
-  // 제목 입력 시 에러 상태 해제
-  document.getElementById('post-title').addEventListener('input', function() {
-    this.classList.remove('error');
-    document.getElementById('title-error').classList.remove('show');
-  });
-
-  // 발행 버튼 클릭 이벤트
-  document.getElementById('save-post').addEventListener('click', function () {
-    const titleInput = document.getElementById('post-title');
-    const title = titleInput.value;
-    const postType = document.getElementById('post-type').value;
-    const videoUrl = document.getElementById('video-url').value;
-    const difficulty = document.getElementById('difficulty').value;
-    const introduction = document.getElementById('introduction').value;
-    const imageFile = document.getElementById('image-file').files[0];
-    const content = quill.root.innerHTML; // HTML 형태로 내용 가져오기
-
-    if (!title) {
-      alert('제목을 입력해주세요.');
-      titleInput.focus();
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
-    formData.append('postType', postType);
-    formData.append('videoUrl', videoUrl);
-    formData.append('difficulty', difficulty);
-    formData.append('introduction', introduction);
-    if (imageFile) {
-      formData.append('imageFile', imageFile);
-    }
-
-    const url = postId === null ? "/api/admin/posts" : `/api/admin/posts/${postId}`;
-    const method = postId === null ? 'POST' : 'PATCH';
-
-    fetch(url, {
-      method: method,
-      headers: {
-        [csrfHeader]: csrfToken
-        // Note: Do NOT set Content-Type header for FormData; the browser will set it with the correct boundary
-      },
-      body: formData
-    }).then(res => {
-      if (res.ok) {
-        alert('글이 성공적으로 기록되었습니다.');
-        location.href = '/admin/contents';
-      } else if (res.status === 409) {
-        const errorMsg = document.getElementById('title-error');
-        titleInput.classList.add('error');
-        errorMsg.classList.add('show');
-        titleInput.focus();
-      } else {
-        alert('오류가 발생했습니다.');
-      }
-    });
-  });
-
-  // 삭제 버튼 클릭 이벤트
-  if (document.getElementById('delete-post') !== null) {
-    document.getElementById('delete-post').addEventListener('click', function () {
-      console.log('delete post.')
-      fetch(`/api/admin/posts/${postId}`,
-          {
-            method: 'DELETE', headers: {
-              "Content-Type": "application/json",
-              [csrfHeader]: csrfToken
-            }
-          }).then(
-          (res) => {
-            alert('글이 성공적으로 삭제되었습니다.')
-            const json = res.json().then((json) => console.log(json))
-          })
-    })
-  }
-
-</script>
+<script th:src="@{/js/pages/admin/notice-post.js}"></script>
 </body>
 </html>

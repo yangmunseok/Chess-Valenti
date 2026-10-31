@@ -1,11 +1,12 @@
 import {setPossibleMoves, gameTree, setCurrentNode} from "./state.js";
-import {renderBoardFromFen, updateSquareEvent, initBoard} from "./board.js";
+import {bindMoveInput, initBoard, renderBoardFromFen} from "./board.js";
+import {executeMove, onMoveExecuted, selectPromotion} from "./game.js";
 import {initHistoryEvents, refreshMoveHistory} from "./history.js";
+import {initEvaluation, renderEvaluation} from "./evaluation.js";
 import {importPGN} from "./pgnParser.js";
-import {selectPromotion} from "./game.js";
 
 /**
- * Analysis 페이지 초기화 함수
+ * Analysis 페이지 초기화 함수. 모듈끼리 서로 import 하지 않도록, 연결은 여기서만 한다.
  * @param {Object} config 서버에서 전달받은 초기 설정 데이터
  */
 export function initAnalysisPage(config) {
@@ -13,12 +14,17 @@ export function initAnalysisPage(config) {
 
   // 1. 체스판 및 UI 이벤트 초기화
   initBoard();
+  initEvaluation();
   initHistoryEvents();
+  onMoveExecuted(() => {
+    refreshMoveHistory();
+    renderEvaluation();
+  });
 
   // 2. 초기 데이터 렌더링
   renderBoardFromFen(fen);
   setPossibleMoves(legalMove);
-  importPGN(pgn, uciMoves);
+  refreshMoveHistory(importPGN(pgn, uciMoves));
 
   // 3. 게임 트리 노드 동기화 (기존 로직 유지)
   syncGameTree(idx, fen, legalMove);
@@ -48,8 +54,8 @@ function syncGameTree(idx, fen, legalMove) {
     refreshMoveHistory();
   }
 
-  // 칸 이벤트 업데이트
-  updateSquareEvent();
+  // 칸 클릭 연결
+  bindMoveInput(legalMove, executeMove);
 }
 
 /**

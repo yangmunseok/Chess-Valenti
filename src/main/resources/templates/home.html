@@ -1,21 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DBMLJY2F5L"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-DBMLJY2F5L');
-  </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <th:block th:replace="~{fragment/head :: common}"></th:block>
   <title>valenti - Dashboard</title>
 
   <link rel="stylesheet" as="style" crossorigin
@@ -24,10 +10,10 @@
       href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"
       rel="stylesheet"
   />
-  <link th:href="@{/css/app.css}" rel="stylesheet">
-  <link th:href="@{/css/stat.css}" rel="stylesheet">
-  <link th:href="@{/css/home.css}" rel="stylesheet">
-  <link th:href="@{/css/btn-refactor.css}" rel="stylesheet">
+  <th:block th:replace="~{fragment/head :: appStyles}"></th:block>
+  <link th:href="@{/css/pages/insight.css}" rel="stylesheet">
+  <link th:href="@{/css/pages/home.css}" rel="stylesheet">
+  <link th:href="@{/css/components/button.css}" rel="stylesheet">
 </head>
 <body>
 <div class="dashboard-wrapper">
@@ -40,9 +26,8 @@
         <h1>안녕하세요, <span class="blue-text" th:text="${username}">User</span>님</h1>
         <p class="hero-desc">발렌티의 정밀 알고리즘으로 당신의 모든 대국을 해부합니다.</p>
 
-        <div class="banner-group" style="display: flex; gap: 20px; margin-top: 32px;">
-          <div class="action-banner" onclick="location.href='/insight'"
-               style="flex: 1; margin-top: 0;">
+        <div class="banner-group">
+          <div class="action-banner" onclick="location.href='/insight'">
             <div class="action-text">
               <h3>나의 대국 인사이트</h3>
               <p>Lichess 데이터를 불러와 패턴을 분석합니다.</p>
@@ -50,13 +35,12 @@
             <span class="action-arrow">→</span>
           </div>
 
-          <div class="action-banner" onclick="location.href='/analysis'"
-               style="flex: 1; margin-top: 0; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
+          <div class="action-banner analysis-banner" onclick="location.href='/analysis'">
             <div class="action-text">
               <h3>폰 구조 분석 도구</h3>
               <p>특정 구조를 탐색하고 마스터 대국을 검색합니다.</p>
             </div>
-            <span class="action-arrow" style="color: var(--accent-blue);">→</span>
+            <span class="action-arrow">→</span>
           </div>
         </div>
       </header>
