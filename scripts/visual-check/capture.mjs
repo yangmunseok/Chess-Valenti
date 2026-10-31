@@ -206,7 +206,7 @@ async function login(cdp) {
   }
 }
 
-// 게시글 1~3(공지, FAQ, 스터디), 문의 1, 댓글, 관리자의 인사이트 결과를 만든다. 앱을 새로 띄운 직후에 한 번만 실행한다.
+// 게시글 1~3(공지, FAQ, 스터디), 문의 1과 답변, 댓글과 대댓글, 관리자의 인사이트 결과를 만든다. 앱을 새로 띄운 직후에 한 번만 실행한다.
 async function seedData(cdp) {
   await navigate(cdp, '/admin/editor?type=NOTICE');
   const result = await cdp.evaluate(`(async () => {
@@ -225,6 +225,8 @@ async function seedData(cdp) {
       await post({title: '카로칸 디펜스 기초', content: '<p>1. e4 c6 으로 시작하는 단단한 오프닝입니다.</p>', postType: 'STUDY', difficulty: 'BEGINNER', introduction: '카로칸의 기본 구조를 배웁니다.'}),
       await json('/api/inquiries', {title: '결제 후 등급이 바뀌지 않았어요', content: '결제는 완료되었는데 등급이 그대로입니다.', category: 'INQUIRY_ACCOUNT'}),
       await json('/api/posts/1/comments', {content: '확인했습니다. 감사합니다.'}),
+      await json('/api/posts/1/comments', {content: '언제 끝나나요?', parentId: 1}),
+      await json('/api/admin/inquiries/1/answer', {answer: '<p>확인 후 등급을 반영했습니다.</p>'}),
       // 인사이트 결과 화면(미니 보드, 승률 막대)이 보이도록 저장된 결과를 하나 만든다
       await json('/api/insight', {username: 'hikaru', perfType: 'blitz', since: 1735689600000, data: {
         '8/pp3ppp/8/2ppp3/2PPP3/8/PP3PPP/8 w': {white: {whiteWon: 12, blackWon: 5, drawn: 3}, black: {whiteWon: 4, blackWon: 9, drawn: 2}},
