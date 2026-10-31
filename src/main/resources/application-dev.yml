@@ -22,7 +22,7 @@ chess:
 admin:
   username: admin
   password: 1234s
-  email: ${ROOT_EMAIL_ADRESS}
+  email: ${MAIL_USERNAME}
 management:
   endpoints:
     web:
@@ -40,10 +40,11 @@ logging:
 toss:
   payment:
     secret-key: ${TOSS_API_KEY}
-render:
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${RENDER_DB_URL}
-    username: ${RENDER_DB_USER}
-    password: ${RENDER_DB_PASSWORD}
+
+#render:
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: ${RENDER_DB_URL}
+#    username: ${RENDER_DB_USER}
+#    password: ${RENDER_DB_PASSWORD}
 
